@@ -1,8 +1,9 @@
-<strong>In this fork the source code was extended with the following features:</strong>
+# In this fork the source code was extended with the following features:
 
-- Improved strings encryption (real encryption)
-- additional obfuscation of the forms.
+## - Improved strings encryption (real encryption)
+## - additional obfuscation of the forms.
 
+--------------------------------------------------------------------------
 
 # MacroToolsVBA https://vbatools.ru/
 **Macro Tools VBA** - a tool for automating the development of macros in the Visual Basic Editor (VBE) MS Excel and Word
