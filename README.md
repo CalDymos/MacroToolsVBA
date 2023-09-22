@@ -32,7 +32,7 @@ Add-in
  - changing the theme of the VBE code editor - dark and light
  - hot keys module https://github.com/vbatools/MacroToolsVBAHotKeys
 
-## Zen Macro Tools VBA:
+## LICENSE AGREEMENT:
 - do not use third-party dlls,
 - the add-in should only use VBA MS Office
 - installation that does not require the user to have administrator rights
