@@ -96,6 +96,9 @@ Private Sub MainObfParser(ByRef objWB As Object, Optional bEncodeStr As Boolean 
 34        If objWB.VBProject.Protection = vbext_pp_locked Then
 35            Call MsgBox("The project is protected, remove the password!", vbCritical, "The project is protected:")
 36        Else
+              'Save WB First 16.10.24
+              objWB.Save
+              
 37            Call ParserProjectVBA(objWB, bEncodeStr, bSafeMode)
 38            If Not bNoFinishMessage Then
 39                Call MsgBox("Book code [" & objWB.Name & "] assembled!", vbInformation, "Code parsing:")
@@ -130,6 +133,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
           Dim asSplitKey() As String
           Dim z1 As Integer
           Dim z2 As Integer
+          Dim blnAddModule1 As Boolean
           
           'del old Data
 42        If Not IsArrayEmpty(AddCtrlProp()) Then
@@ -191,7 +195,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 91        DelWorksheet NAME_SH_CTL, objWB
           
 92        With varModule
-              '–≥–ª–∞–≤–Ω—ã–π –ø–∞—Ä—Å–µ—Ä
+              '„Î‡‚Ì˚È Ô‡ÒÂ
 93            Set .objName = AddNewDictionary(.objName)
 94            Set .objDimVar = AddNewDictionary(.objDimVar)
 95            Set .objSubFun = AddNewDictionary(.objSubFun)
@@ -221,8 +225,10 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 111               Next objVBComp
 
                   'If no module exist
-112               If objTmpModuleName.Count = 0 Then objTmpModuleName.Add "Modul1", 1
-                  
+112               If objTmpModuleName.Count = 0 Then
+                      objTmpModuleName.Add "Modul1", 1
+                      blnAddModule1 = True
+                  End If
                   
 113               Randomize Timer
 114               z1 = Int(Rnd * objTmpModuleName.Count) 'Random number for the selection of the module for the function
@@ -232,9 +238,13 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 117               CryptKey(0).ModuleName = objTmpModuleName.Keys(z2)
                               
 118           End If
+              Dim skey As String
+              If blnAddModule1 Then
+                  skey = vbext_ct_StdModule & CHR_TO & "Module1"
+                  If Not .objName.Exists(skey) Then .objName.Add skey, 0
+              End If
 119           For Each objVBComp In objWB.VBProject.VBComponents
                   'Collect module names
-                  Dim skey As String
 120               skey = objVBComp.Type & CHR_TO & objVBComp.Name
 121               If Not .objName.Exists(skey) Then .objName.Add skey, 0
                   
@@ -256,7 +266,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 130               If bEncodeStr Then Call ParserVariebleSubFuncFromAddProc(objVBComp, .objDimVar, .objStringCode, CryptFunc())
                   
 131           Next objVBComp
-              '–∫–æ–Ω–µ—Ü –ø–∞—Ä—Å–µ—Ä–∞
+              'ÍÓÌÂˆ Ô‡ÒÂ‡
 132       End With
 
           'Create a Sheet in the active workbook
@@ -738,7 +748,7 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 465                                   sVar = ParserStrDimConst(itemArr, sSubName, .Name)
 
 466                               End If
-                                  'Wenn in der Aufz–¥hlung und im Datentyp
+                                  'Wenn in der Aufz‰hlung und im Datentyp
 467                               If itemArr Like "Private Enum *" Or itemArr Like "Public Enum *" Or itemArr Like "Enum *" Or itemArr Like "Private Type *" Or itemArr Like "Public Type *" Or itemArr Like "Type *" Then
 468                                   arrEnum = VBA.Split(itemArr, " ")
 469                                   If VBA.CStr(itemArr) Like "Private *" Then
@@ -753,12 +763,12 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 478                                       sType = "Type"
 479                                   End If
 480                               End If
-                                  'aus dem Prozess oder der Aufz–¥hlung herausgehen
+                                  'aus dem Prozess oder der Aufz‰hlung herausgehen
 481                               If itemArr Like "*End Sub" Or itemArr Like "*End Function" Or itemArr Like "*End Property" Or itemArr Like "*End Enum" Or itemArr Like "*End Type" Then
 482                                   sSubName = vbNullString
 483                                   sNumTypeName = vbNullString
 484                               End If
-                                  'Falls innerhalb des Typs oder der Aufz–¥hlung
+                                  'Falls innerhalb des Typs oder der Aufz‰hlung
 485                               If sNumTypeName <> vbNullString And Not itemArr Like "* Enum *" And Not itemArr Like "Enum *" And Not itemArr Like "* Type *" And Not itemArr Like "Type *" Then
 486                                   arrEnum = VBA.Split(VBA.Trim$(itemArr), " ")
 487                                   sVar = arrEnum(0)
@@ -792,7 +802,7 @@ End Sub
 '* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
-'* ByVal sStrCode As String : —Å—Ç—Ä–æ–∫–∞
+'* ByVal sStrCode As String : ÒÚÓÍ‡
 '*
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 13-09-2023 13:41    CalDymos
@@ -958,14 +968,14 @@ End Function
 
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : ParserNameSubFunc - —Å–±–æ—Ä –Ω–∞–∑–≤–∞–Ω–∏–π –ø—Ä–æ—Ü–µ–¥—É—Ä –∏ —Ñ—É–Ω–∫—Ü–∏–π
+'* Sub        : ParserNameSubFunc - Ò·Ó Ì‡Á‚‡ÌËÈ ÔÓˆÂ‰Û Ë ÙÛÌÍˆËÈ
 '* Created    : 27-03-2020 13:20
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
-'* ByRef objCodeModule As VBIDE.CodeModule : –æ–±—ä–µ–∫—Ç –º–æ–¥—É–ª—å
+'* ByRef objCodeModule As VBIDE.CodeModule : Ó·˙ÂÍÚ ÏÓ‰ÛÎ¸
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
@@ -1083,130 +1093,148 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
           Dim objChkBox As MSForms.CheckBox
           Dim objOptBtn As MSForms.OptionButton
           Dim objTglBtn As MSForms.ToggleButton
+          Dim blnRestoreAutoSize As Boolean
 
           Dim i1 As Long
           Dim i2 As Long
 
-640       If Not objVBC.Designer Is Nothing And objVBC.Type = vbext_ct_MSForm Then
-641           If Not IsArrayEmpty(varAddCtrlProp()) Then
-642               i1 = UBound(varAddCtrlProp()) + 1
-643               ReDim Preserve varAddCtrlProp(i1)
-644           Else
-645               ReDim varAddCtrlProp(0)
-646               i1 = 0
-647           End If
-648           Set varAddCtrlProp(i1) = New CAddProc
+1         If Not objVBC.Designer Is Nothing And objVBC.Type = vbext_ct_MSForm Then
+2             If Not IsArrayEmpty(varAddCtrlProp()) Then
+3                 i1 = UBound(varAddCtrlProp()) + 1
+4                 ReDim Preserve varAddCtrlProp(i1)
+5             Else
+6                 ReDim varAddCtrlProp(0)
+7                 i1 = 0
+8             End If
+9             Set varAddCtrlProp(i1) = New CAddProc
               
-649           i2 = 0
+10            i2 = 0
                     
-650           varAddCtrlProp(i1).ModuleName = sNameVBC
-651           varAddCtrlProp(i1).BehavProcExists = enumBehavProcExistInsCodeAtBegin
-652           varAddCtrlProp(i1).Name = "UserForm_Initialize"
-653           varAddCtrlProp(i1).AddCodeLine "Private Sub " & varAddCtrlProp(i1).Name & "()"
-654           i2 = i2 + 1
+11            varAddCtrlProp(i1).ModuleName = sNameVBC
+12            varAddCtrlProp(i1).BehavProcExists = enumBehavProcExistInsCodeAtBegin
+13            varAddCtrlProp(i1).Name = "UserForm_Initialize"
+14            varAddCtrlProp(i1).AddCodeLine "Private Sub " & varAddCtrlProp(i1).Name & "()"
+15            i2 = i2 + 1
 
-655           If objVBC.Properties("Caption") <> "" Then
-656               varAddCtrlProp(i1).AddCodeLine "Me.Caption = " & Chr$(34) & objVBC.Properties("Caption") & Chr$(34)
-657               i2 = i2 + 1
-658               obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Caption" & CHR_TO & objVBC.Properties("Caption"), "UserForm"
-659           End If
-660           If objVBC.Properties("Tag") <> "" Then
-661               varAddCtrlProp(i1).AddCodeLine "Me.Tag= " & Chr$(34) & objVBC.Properties("Tag") & Chr$(34)
-662               i2 = i2 + 1
-663               obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Tag" & CHR_TO & objVBC.Properties("Tag"), "UserForm"
-664           End If
-665           With objVBC.Designer
-666               For Each objCtl In .Controls
-667                   If TypeOf objCtl Is MSForms.TextBox Then
-668                       Set objTxtBox = objCtl
-669                       If objTxtBox.Text <> "" Then
-670                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Text = " & Chr$(34) & objTxtBox.Text & Chr$(34)
-671                           i2 = i2 + 1
-672                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Text" & CHR_TO & objTxtBox.Text, TypeName(objCtl)
-673                       End If
-674                   ElseIf TypeOf objCtl Is MSForms.Label Then
-675                       Set objLbl = objCtl
-676                       If objLbl.Caption <> "" Then
-677                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objLbl.Caption & Chr$(34)
-678                           i2 = i2 + 1
-679                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objLbl.Caption, TypeName(objCtl)
-680                       End If
-681                   ElseIf TypeOf objCtl Is MSForms.CommandButton Then
-682                       Set objCmdBtn = objCtl
-683                       If objCmdBtn.Caption <> "" Then
-684                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objCmdBtn.Caption & Chr$(34)
-685                           i2 = i2 + 1
-686                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objCmdBtn.Caption, TypeName(objCtl)
-687                       End If
-688                   ElseIf TypeOf objCtl Is MSForms.Frame Then
-689                       Set objFrame = objCtl
-690                       If objFrame.Caption <> "" Then
-691                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objFrame.Caption & Chr$(34)
-692                           i2 = i2 + 1
-693                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objFrame.Caption, TypeName(objCtl)
-694                       End If
-695                   ElseIf TypeOf objCtl Is MSForms.CheckBox Then
-696                       Set objChkBox = objCtl
-697                       If objChkBox.Caption <> "" Then
-698                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objChkBox.Caption & Chr$(34)
-699                           i2 = i2 + 1
-700                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objChkBox.Caption, TypeName(objCtl)
-701                       End If
-702                   ElseIf TypeOf objCtl Is MSForms.OptionButton Then
-703                       Set objOptBtn = objCtl
-704                       If objOptBtn.Caption <> "" Then
-705                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objOptBtn.Caption & Chr$(34)
-706                           i2 = i2 + 1
-707                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objOptBtn.Caption, TypeName(objCtl)
-708                       End If
-709                   ElseIf TypeOf objCtl Is MSForms.ToggleButton Then
-710                       Set objTglBtn = objCtl
-711                       If objTglBtn.Caption <> "" Then
-712                           varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objTglBtn.Caption & Chr$(34)
-713                           i2 = i2 + 1
-714                           obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objTglBtn.Caption, TypeName(objCtl)
-715                       End If
-716                   End If
-717                   If objCtl.Tag <> "" Then
-718                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Tag = " & Chr$(34) & objCtl.Tag & Chr$(34)
-719                       i2 = i2 + 1
-720                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Tag" & CHR_TO & objCtl.Tag, TypeName(objCtl)
-721                   End If
-722                   If objCtl.ControlTipText <> "" Then
-723                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".ControlTipText = " & Chr$(34) & objCtl.ControlTipText & Chr$(34)
-724                       i2 = i2 + 1
-725                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "ControlTipText" & CHR_TO & objCtl.ControlTipText, TypeName(objCtl)
-726                   End If
-727                   If objCtl.Height > 0 Then
-728                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Height = " & Replace$(CStr(objCtl.Height), ",", ".")
-729                       i2 = i2 + 1
-730                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Height" & CHR_TO & objCtl.Height, TypeName(objCtl)
-731                   End If
-732                   If objCtl.Width > 0 Then
-733                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Width = " & Replace$(CStr(objCtl.Width), ",", ".")
-734                       i2 = i2 + 1
-735                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Width" & CHR_TO & objCtl.Width, TypeName(objCtl)
-736                   End If
-737                   If objCtl.Left > 0 Then
-738                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Left = " & Replace$(CStr(objCtl.Left), ",", ".")
-739                       i2 = i2 + 1
-740                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Left" & CHR_TO & objCtl.Left, TypeName(objCtl)
-741                   End If
-742                   If objCtl.top > 0 Then
-743                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Top = " & Replace$(CStr(objCtl.top), ",", ".")
-744                       i2 = i2 + 1
-745                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Top" & CHR_TO & objCtl.top, TypeName(objCtl)
-746                   End If
-                          
-747               Next objCtl
-748               varAddCtrlProp(i1).AddCodeLine "End Sub"
-749               varAddCtrlProp(i1).SetCodeLinesSize (i2)
-750           End With
-751       End If
+16            If objVBC.Properties("Caption") <> "" Then
+17                varAddCtrlProp(i1).AddCodeLine "Me.Caption = " & Chr$(34) & objVBC.Properties("Caption") & Chr$(34)
+18                i2 = i2 + 1
+19                obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Caption" & CHR_TO & objVBC.Properties("Caption"), "UserForm"
+20            End If
+21            If objVBC.Properties("Tag") <> "" Then
+22                varAddCtrlProp(i1).AddCodeLine "Me.Tag= " & Chr$(34) & objVBC.Properties("Tag") & Chr$(34)
+23                i2 = i2 + 1
+24                obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Tag" & CHR_TO & objVBC.Properties("Tag"), "UserForm"
+25            End If
+26            With objVBC.Designer
+27                For Each objCtl In .Controls
+28                    If TypeOf objCtl Is MSForms.TextBox Then
+29                        Set objTxtBox = objCtl
+30                        If objTxtBox.Text <> "" Then
+31                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Text = " & Chr$(34) & objTxtBox.Text & Chr$(34)
+32                            i2 = i2 + 1
+33                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Text" & CHR_TO & objTxtBox.Text, TypeName(objCtl)
+34                        End If
+35                    ElseIf TypeOf objCtl Is MSForms.Label Then
+36                        Set objLbl = objCtl
+37                        If objLbl.Caption <> "" Then
+38                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objLbl.Caption & Chr$(34)
+39                            i2 = i2 + 1
+40                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objLbl.Caption, TypeName(objCtl)
+41                        End If
+42                    ElseIf TypeOf objCtl Is MSForms.CommandButton Then
+43                        Set objCmdBtn = objCtl
+44                        If objCmdBtn.Caption <> "" Then
+45                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objCmdBtn.Caption & Chr$(34)
+46                            i2 = i2 + 1
+47                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objCmdBtn.Caption, TypeName(objCtl)
+48                        End If
+49                    ElseIf TypeOf objCtl Is MSForms.Frame Then
+50                        Set objFrame = objCtl
+51                        If objFrame.Caption <> "" Then
+52                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objFrame.Caption & Chr$(34)
+53                            i2 = i2 + 1
+54                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objFrame.Caption, TypeName(objCtl)
+55                        End If
+56                    ElseIf TypeOf objCtl Is MSForms.CheckBox Then
+57                        Set objChkBox = objCtl
+58                        If objChkBox.Caption <> "" Then
+59                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objChkBox.Caption & Chr$(34)
+60                            i2 = i2 + 1
+61                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objChkBox.Caption, TypeName(objCtl)
+62                        End If
+63                        If objChkBox.AutoSize = True Then
+64                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".AutoSize = False"
+65                            i2 = i2 + 1
+66                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "AutoSize" & CHR_TO & "False", TypeName(objCtl)
+67                            blnRestoreAutoSize = True
+68                        End If
+69                    ElseIf TypeOf objCtl Is MSForms.OptionButton Then
+70                        Set objOptBtn = objCtl
+71                        If objOptBtn.Caption <> "" Then
+72                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objOptBtn.Caption & Chr$(34)
+73                            i2 = i2 + 1
+74                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objOptBtn.Caption, TypeName(objCtl)
+75                        End If
+76                        If objOptBtn.AutoSize = True Then
+77                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".AutoSize = False"
+78                            i2 = i2 + 1
+79                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "AutoSize" & CHR_TO & "False", TypeName(objCtl)
+80                            blnRestoreAutoSize = True
+81                        End If
+82                    ElseIf TypeOf objCtl Is MSForms.ToggleButton Then
+83                        Set objTglBtn = objCtl
+84                        If objTglBtn.Caption <> "" Then
+85                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objTglBtn.Caption & Chr$(34)
+86                            i2 = i2 + 1
+87                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objTglBtn.Caption, TypeName(objCtl)
+88                        End If
+89                    End If
+90                    If objCtl.Tag <> "" Then
+91                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Tag = " & Chr$(34) & objCtl.Tag & Chr$(34)
+92                        i2 = i2 + 1
+93                        obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Tag" & CHR_TO & objCtl.Tag, TypeName(objCtl)
+94                    End If
+95                    If objCtl.ControlTipText <> "" Then
+96                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".ControlTipText = " & Chr$(34) & objCtl.ControlTipText & Chr$(34)
+97                        i2 = i2 + 1
+98                        obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "ControlTipText" & CHR_TO & objCtl.ControlTipText, TypeName(objCtl)
+99                    End If
+100                   If objCtl.Height > 0 Then
+101                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Height = " & Replace$(CStr(objCtl.Height), ",", ".")
+102                       i2 = i2 + 1
+103                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Height" & CHR_TO & objCtl.Height, TypeName(objCtl)
+104                   End If
+105                   If objCtl.Width > 0 Then
+106                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Width = " & Replace$(CStr(objCtl.Width), ",", ".")
+107                       i2 = i2 + 1
+108                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Width" & CHR_TO & objCtl.Width, TypeName(objCtl)
+109                   End If
+110                   If objCtl.Left > 0 Then
+111                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Left = " & Replace$(CStr(objCtl.Left), ",", ".")
+112                       i2 = i2 + 1
+113                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Left" & CHR_TO & objCtl.Left, TypeName(objCtl)
+114                   End If
+115                   If objCtl.Top > 0 Then
+116                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Top = " & Replace$(CStr(objCtl.Top), ",", ".")
+117                       i2 = i2 + 1
+118                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Top" & CHR_TO & objCtl.Top, TypeName(objCtl)
+119                   End If
+120                   If blnRestoreAutoSize Then
+121                       varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".AutoSize = True"
+122                       i2 = i2 + 1
+123                       obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "AutoSize" & CHR_TO & "True", TypeName(objCtl)
+124                       blnRestoreAutoSize = False
+125                   End If
+126               Next objCtl
+127               varAddCtrlProp(i1).AddCodeLine "End Sub"
+128               varAddCtrlProp(i1).SetCodeLinesSize (i2)
+129           End With
+130       End If
 End Sub
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : ParserNameGlobalVariable - —Å–±–æ—Ä –≥–ª–æ–±–∞–ª—å–Ω—ã—Ö –ø–µ—Ä–µ–º–µ–Ω–Ω—ã—Ö
+'* Sub        : ParserNameGlobalVariable - Ò·Ó „ÎÓ·‡Î¸Ì˚ı ÔÂÂÏÂÌÌ˚ı
 '* Created    : 27-03-2020 15:38
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -1390,7 +1418,7 @@ Private Sub ParserNameGlobalVariableFromAddVar(ByVal sNameVBC As String, ByRef o
 867       End If
 End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : AddNewDictionary -—Ñ—É–Ω–∫—Ü–∏—è –∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏–∏ —Å–ª–æ–≤–∞—Ä—è
+'* Function   : AddNewDictionary -ÙÛÌÍˆËˇ ËÌËˆË‡ÎËÁ‡ˆËË ÒÎÓ‚‡ˇ
 '* Created    : 27-03-2020 13:21
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -1407,36 +1435,36 @@ Private Function AddNewDictionary(ByRef objDict As Scripting.Dictionary) As Scri
 End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : DeleteCommentString - —É–¥–∞–ª–µ–Ω–∏–µ –≤ —Å—Ç—Ä–æ–∫–µ –∫–æ–º–º–µ–Ω—Ç–∞—Ä–∏—è
+'* Function   : DeleteCommentString - Û‰‡ÎÂÌËÂ ‚ ÒÚÓÍÂ ÍÓÏÏÂÌÚ‡Ëˇ
 '* Created    : 20-04-2020 18:18
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
-'* ByVal sWord As String : —Å—Ç—Ä–æ–∫–∞
+'* ByVal sWord As String : ÒÚÓÍ‡
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Public Function DeleteCommentString(ByVal sWord As String) As String
-          '–µ—Å—Ç—å '
+          'ÂÒÚ¸ '
           Dim sTemp       As String
 871       sTemp = sWord
 872       If VBA.InStr(1, sTemp, "'") <> 0 Then
 873           If VBA.InStr(1, sTemp, VBA.Chr(34)) <> 0 Then
-                  '–µ—Å—Ç—å "
+                  'ÂÒÚ¸ "
 874               If VBA.InStr(1, sTemp, "'") < VBA.InStr(1, sTemp, VBA.Chr(34)) Then
-                      '–µ—Å–ª–∏ —Ç–∞–∫ -> '"
+                      'ÂÒÎË Ú‡Í -> '"
 875                   sTemp = VBA.Trim$(VBA.Left$(sTemp, VBA.InStr(1, sTemp, "'") - 1))
 876               End If
 877           Else
-                  '–Ω–µ—Ç " -> '
+                  'ÌÂÚ " -> '
 878               sTemp = VBA.Trim$(VBA.Left$(sTemp, VBA.InStr(1, sTemp, "'") - 1))
 879           End If
 880       End If
 881       DeleteCommentString = sTemp
 End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : AddEncodeName - Die Funktion der zuf–¥lligen Zuweisung eines zuf–¥llig vergebenen Namens
+'* Function   : AddEncodeName - Die Funktion der zuf‰lligen Zuweisung eines zuf‰llig vergebenen Namens
 '* Created    : 27-03-2020 13:22
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
@@ -1503,7 +1531,7 @@ Private Function GenerateKey() As String
 
 End Function
 
-'–≤–∑—è—Ç–æ
+'‚ÁˇÚÓ
 Private Function TypeOfAccessModifier(ByRef StrDeclarationProcedure As String) As String
 905       If StrDeclarationProcedure Like "*Private *(*)*" Then
 906           TypeOfAccessModifier = "Private"
@@ -1540,7 +1568,7 @@ End Function
 Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE.vbext_ComponentType) As Boolean
           Dim Flag        As Boolean
 930       Flag = False
-          'nur f—år Sheets, Workbooks und Klassenmodule
+          'nur f¸r Sheets, Workbooks und Klassenmodule
 931       If TypeModule = vbext_ct_Document Or TypeModule = vbext_ct_ClassModule Then
 932           Select Case True
                   Case sTxt Like "*_Activate(*": Flag = True
@@ -1625,7 +1653,7 @@ End Function
 Private Function UserFormsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE.vbext_ComponentType) As Boolean
           Dim Flag        As Boolean
 1009      Flag = False
-          'Nur f—år Events, der Forms und Klassen
+          'Nur f¸r Events, der Forms und Klassen
 1010      If TypeModule = vbext_ct_MSForm Or TypeModule = vbext_ct_ClassModule Then
 1011          Select Case True
                   Case sTxt Like "*_AfterUpdate(*": Flag = True
@@ -1658,4 +1686,6 @@ Private Function UserFormsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE
 1038      End If
 1039      UserFormsEvents = Flag
 End Function
+
+
 

@@ -88,11 +88,11 @@ next_i:
     End With
 End Sub
 'Сколько раз встречается символ char в строке str:
-Private Function CountChrInString(sSTR As String, char As String) As Long
+Private Function CountChrInString(sSTR As String, Char As String) As Long
     Dim iResult     As Long
     Dim sParts()    As String
 
-    sParts = Split(sSTR, char)
+    sParts = Split(sSTR, Char)
     iResult = UBound(sParts, 1): If (iResult = -1) Then iResult = 0
     CountChrInString = iResult
 End Function
@@ -119,7 +119,7 @@ Public Sub RemoveBreaksLineInCode(ByRef CurCodeModule As VBIDE.CodeModule)
         If .CountOfLines = 0 Then Exit Sub
         strVar = .Lines(1, .CountOfLines)
         strVar = Replace(strVar, " _" & vbNewLine, " ")
-        .DeleteLines StartLine:=1, Count:=.CountOfLines
+        .DeleteLines startLine:=1, Count:=.CountOfLines
         .InsertLines Line:=1, String:=strVar
     End With
 End Sub
