@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 17-09-2020 14:06
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 

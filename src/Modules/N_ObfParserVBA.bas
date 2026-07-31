@@ -2,9 +2,9 @@ Attribute VB_Name = "N_ObfParserVBA"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : N_ObfParserVBA - VBA-Code-Parser
 '* Created    : 08-10-2020 14:12
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 25-04-2023 10:20    CalDymos
@@ -109,9 +109,9 @@ End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserProjectVBA - The main code parser, collects module names and assigns ciphers to them
 '* Created    : 27-03-2020 13:21
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):             Description
 '*
 '* ByRef objWB As Workbook : selected / active Workbook
@@ -600,9 +600,9 @@ End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserVariebleSubFunc - Sammlung von Variablen aus VBA-Code
 '* Created    : 22-03-2023 16:16
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                             Description
 '*
 '* ByRef objVBC As VBIDE.VBComponent             :
@@ -797,9 +797,9 @@ End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : GetNameSubFromString - Get the procedure name from the string
 '* Created    : 20-04-2020 18:19
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                 Description
 '*
 '* ByVal sStrCode As String : строка
@@ -829,9 +829,9 @@ End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserStringInCode - Sammlung von String-Konstanten aus dem Code
 '* Created    : 22-03-2023 16:18
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                             Description
 '*
 '* ByVal sSTR As String                    :
@@ -970,9 +970,9 @@ End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserNameSubFunc - сбор названий процедур и функций
 '* Created    : 27-03-2020 13:20
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                             Description
 '*
 '* ByRef objCodeModule As VBIDE.CodeModule : объект модуль
@@ -1236,9 +1236,9 @@ End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserNameGlobalVariable - сбор глобальных переменных
 '* Created    : 27-03-2020 15:38
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                         Description
 '*
 '* ByVal sDeclarationLines As String :

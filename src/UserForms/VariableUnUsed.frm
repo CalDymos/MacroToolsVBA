@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 23-01-2020 12:23
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 'словарь глобальных переменных
@@ -110,7 +110,7 @@ Private m_clsAnchors As CAnchors
 '* Created    : 28-01-2020 14:34
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub lbLoad_Click()
 103:    Debug.Print AddListImmediate()
@@ -121,7 +121,7 @@ Private m_clsAnchors As CAnchors
 '* Created    : 28-01-2020 14:35
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub btnCopyCode_Click()
 114:    Dim strVar      As String
@@ -136,7 +136,7 @@ Private m_clsAnchors As CAnchors
 '* Created    : 28-01-2020 14:34
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Function AddListImmediate() As String
 129:    Dim strData     As String
@@ -175,7 +175,7 @@ Private m_clsAnchors As CAnchors
 '* Created    : 28-01-2020 14:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
 '* ByVal Cancel As MSForms.ReturnBoolean :
@@ -216,7 +216,7 @@ ErrorHandler:
 '* Created    : 28-01-2020 14:49
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub lbAnaliz_Click()
 209:    If cmbMain.Value = vbNullString Then Exit Sub
@@ -228,7 +228,7 @@ ErrorHandler:
 '* Created    : 28-01-2020 14:50
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub MainSubAddUnUsed()
 221:    Dim WBName      As String
@@ -270,7 +270,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:24
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal WBName As String : имя файла Excel
@@ -366,7 +366,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:26
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* FunctionBody As String        : код процедуры
@@ -454,7 +454,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:27
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByVal strVrName As String     : имя переменой
@@ -501,7 +501,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:28
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal WBName As String : имя файла Excel
@@ -612,7 +612,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:30
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal WBName As String : имя файла Excel
@@ -710,7 +710,7 @@ ErrorHandler:
 '* Created    : 28-01-2020 11:38
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
 '* ByVal strLine As String    : текстовая строка для анализа
@@ -763,7 +763,7 @@ ErrorHandler:
 '* Created    : 28-01-2020 11:33
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub AddListUnUsedEnumAndType()
 756:    Dim intCounter  As Integer
@@ -798,7 +798,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 10:53
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sTxt As String : исходная строка
@@ -829,7 +829,7 @@ ErrorHandler:
 '* Created    : 23-01-2020 12:28
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal strLine As String : строка входная
@@ -968,7 +968,7 @@ ErrorHandler:
 '* Created    : 29-01-2020 13:15
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sTxt As String : - анализируемая строка

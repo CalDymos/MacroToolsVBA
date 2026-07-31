@@ -4,7 +4,7 @@ Attribute VB_Name = "E_AddEnum"
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -15,7 +15,7 @@ Option Explicit
 '* Created    : 08-10-2020 14:01
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub AddSnippetEnumModule()
 12:    Call AddModuleToProject(C_Const.MOD_ENUM_NAME, vbext_ct_StdModule, AddEnumCode, Application.VBE.ActiveVBProject)
@@ -26,7 +26,7 @@ Option Explicit
 '* Created    : 08-10-2020 14:01
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub DeleteSnippetEnumModule()
 15:    Call DeleteModuleToProject(C_Const.MOD_ENUM_NAME)
@@ -37,7 +37,7 @@ Option Explicit
 '* Created    : 08-10-2020 14:01
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub AddLogRecorderClass()
 18:    Dim LogCode     As String
@@ -50,7 +50,7 @@ Option Explicit
 '* Created    : 08-10-2020 14:04
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByVal VBName As String          :
@@ -260,7 +260,7 @@ ErrorHandler:
 '* Created    : 08-10-2020 14:00
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Public Sub SerchVariableUnUsedInSelectedWorkBook()
 218:    Call VariableUnUsed.Show

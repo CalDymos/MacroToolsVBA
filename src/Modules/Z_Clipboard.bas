@@ -4,7 +4,7 @@ Attribute VB_Name = "Z_Clipboard"
 '* Created    : 24-09-2020 14:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Explicit
@@ -42,7 +42,7 @@ Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpString1 As
 '* Created    : 24-09-2020 14:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub SetInCipBoard()
 47:    Dim sTxt        As String
@@ -56,7 +56,7 @@ Declare Function lstrcpy Lib "kernel32.dll" Alias "lstrcpyW" (ByVal lpString1 As
 '* Created    : 24-09-2020 14:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Public Sub GetFromCipBoard()
 61:
@@ -105,7 +105,7 @@ ErrorHandler:
 '* Created    : 24-09-2020 14:13
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Function GetSelectedLineColumnInProcedure() As String
 110:    Dim lStartLine  As Long
@@ -134,7 +134,7 @@ ErrorHandler:
 '* Created    : 24-09-2020 14:13
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):         Description
 '*
 '* sUniText As String :
@@ -161,7 +161,7 @@ ErrorHandler:
 '* Created    : 24-09-2020 14:14
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Function GetClipboard() As String
 166:    Dim iStrPtr, iLen, iLock

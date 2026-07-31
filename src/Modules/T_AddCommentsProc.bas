@@ -4,7 +4,7 @@ Attribute VB_Name = "T_AddCommentsProc"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -20,7 +20,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub sysAddHeaderTop()
 25:    Call sysAddHeader(Application.VBE.ActiveCodePane)
@@ -31,7 +31,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub sysAddModifiedTop()
 36:    Call sysAddModified(Application.VBE.ActiveCodePane)
@@ -42,7 +42,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub sysAddTODOTop()
 47:    Call sysAddTODO(Application.VBE.ActiveCodePane)
@@ -53,7 +53,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub ShowTODOList()
 58:    Call ModuleTODO.Show(0)
@@ -64,7 +64,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                         Description
 '*
 '* ByRef CurentCodePane As CodePane : активная код нанель VBE
@@ -144,7 +144,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                         Description
 '*
 '* ByRef CurentCodePane As CodePane : активная код нанель VBE
@@ -184,7 +184,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                         Description
 '*
 '* ByRef CurentCodePane As CodePane : активная код нанель VBE
@@ -219,7 +219,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                         Description
 '*
 '* ByRef nLine As Long              : номер строки
@@ -254,7 +254,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByVal sPocDeclartion As String : строка декларирования функции или процедуры
@@ -293,7 +293,7 @@ Private Const ctFormat = "dd-mm-yyyy hh:nn"
 '* Created    : 20-01-2020 15:56
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
 '* ByRef StrDeclarationProcedure As String : строка декларирования функции или процедуры

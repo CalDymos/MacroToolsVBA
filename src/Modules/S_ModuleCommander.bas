@@ -4,7 +4,7 @@ Attribute VB_Name = "S_ModuleCommander"
 '* Created    : 25-12-2019 14:22
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module

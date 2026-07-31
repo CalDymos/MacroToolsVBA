@@ -4,7 +4,7 @@ Attribute VB_Name = "J_EditCode"
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -15,7 +15,7 @@ Option Explicit
 '* Created    : 08-10-2020 14:08
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub CutTab()
 10:    Dim cmb_txt As String
@@ -45,7 +45,7 @@ ErrorHandler:
 '* Created    : 01-20-2020 14:32
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub CloseAllWindowsVBE()
 40:    Dim vbWin  As VBIDE.Window

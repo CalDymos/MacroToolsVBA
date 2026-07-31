@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 01-20-2020 12:34
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Private m_clsAnchors As CAnchors

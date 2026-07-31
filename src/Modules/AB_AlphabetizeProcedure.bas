@@ -6,7 +6,7 @@ Option Private Module
 '* Created    : 05-10-2020 14:01
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Const ProcUnderscore = "2"

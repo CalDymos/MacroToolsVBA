@@ -83,7 +83,7 @@ End Sub
 '* Created    : 30-03-2021 11:27
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByRef WB As Workbook :
@@ -174,7 +174,7 @@ End Function
 '* Created    : 30-03-2021 11:28
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                         Description
 '*
 '* ByRef objCont As MSForms.Control :
@@ -201,7 +201,7 @@ End Function
 '* Created    : 30-03-2021 15:39
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByRef WB As Workbook    :
@@ -265,7 +265,7 @@ End Sub
 '* Created    : 30-03-2021 11:35
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sPathUI As String : путь к файлу xml рибон панели
@@ -312,7 +312,7 @@ End Sub
 '* Created    : 30-03-2021 11:36
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Sub LookXML(ByRef arrStr() As String, ByRef oXMLElem As MSXML2.IXMLDOMElement)
     Dim i           As Long
@@ -337,7 +337,7 @@ End Sub
 '* Created    : 30-03-2021 11:37
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Sub ReadAtributeValue(ByRef arrStr() As String, ByRef oXMLElem As MSXML2.IXMLDOMElement, ByVal arrNameAtributes As Variant)
     Dim i           As Long
@@ -365,7 +365,7 @@ End Sub
 '* Created    : 30-03-2021 11:37
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
 '* ByRef oXMLElem As MSXML2.IXMLDOMElement :
@@ -444,7 +444,7 @@ End Function
 '* Created    : 30-03-2021 16:07
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByRef WB As Workbook    :
@@ -535,7 +535,7 @@ End Function
 '* Created    : 30-03-2021 15:42
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByRef WBNew As Workbook :
@@ -579,7 +579,7 @@ End Sub
 '* Created    : 30-03-2021 15:44
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                                     Description
 '*
 '* ByRef oNodeMap As MSXML2.IXMLDOMNamedNodeMap :

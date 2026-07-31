@@ -4,7 +4,7 @@ Attribute VB_Name = "P_UnProtected"
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 01-10-2019 15:51    VBATools   add module delete Sheets Password
 '* Updated    : 30-10-2019 13:32    VBATools   add new function delete and set unviewable Word

@@ -2,9 +2,9 @@ Attribute VB_Name = "N_Obfuscation"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : N_Obfuscation - удаление форматирования кода
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -87,7 +87,8 @@ next_i:
         Next i
     End With
 End Sub
-'Сколько раз встречается символ char в строке str:
+
+'Function to count occurrences of Char in string sSTR:
 Private Function CountChrInString(sSTR As String, Char As String) As Long
     Dim iResult     As Long
     Dim sParts()    As String
@@ -96,7 +97,8 @@ Private Function CountChrInString(sSTR As String, Char As String) As Long
     iResult = UBound(sParts, 1): If (iResult = -1) Then iResult = 0
     CountChrInString = iResult
 End Function
-'Удаляем крайние табуляции и пробелы (все строки прижимаются к левому краю):
+
+'Removes leading/trailing spaces and tabs from lines (may break formatting of multi-line strings):
 Public Sub TrimLinesTabAndSpase(ByRef CurCodeModule As VBIDE.CodeModule)
     Dim i           As Long
     Dim strLine     As String
@@ -112,7 +114,8 @@ Public Sub TrimLinesTabAndSpase(ByRef CurCodeModule As VBIDE.CodeModule)
         End If
     Next i
 End Sub
-'удаление строку переноса кода
+
+'Merges multi-line statements (line continuations) back into a single line
 Public Sub RemoveBreaksLineInCode(ByRef CurCodeModule As VBIDE.CodeModule)
     Dim strVar      As String
     With CurCodeModule
@@ -124,3 +127,129 @@ Public Sub RemoveBreaksLineInCode(ByRef CurCodeModule As VBIDE.CodeModule)
     End With
 End Sub
 
+'Removes Debug.Print statements from the code.
+'MatchAnywhereInLine:
+'   True  - matches "Debug.Print" anywhere in the statement (e.g. "If x Then Debug.Print ...")
+'   False - matches only statements that start with "Debug.Print" (after trimming)
+'
+'Behaviour:
+'   - If a physical line contains a single statement, the whole line is removed.
+'   - If a physical line contains several statements separated by ":" (colons inside
+'     string literals are ignored), only the statement(s) containing Debug.Print are
+'     removed; the remaining statements are kept and rejoined with ":".
+'   - Multi-line statements (continued with " _") are removed as a whole block if they
+'     contain Debug.Print; they are NOT split by ":" (see caveat below).
+'
+'(!) Caveat: for a single-line "If x Then Debug.Print y: z = 2" construct, "z = 2" is
+'    part of the conditional Then-block, not an independent statement. Splitting on ":"
+'    would incorrectly make "z = 2" unconditional. This edge case is not detected -
+'    review the result if such constructs are expected in the target code.
+Public Sub Remove_DebugPrint(ByRef CurCodeModule As VBIDE.CodeModule, Optional ByVal MatchAnywhereInLine As Boolean = True)
+    Dim i           As Long
+    Dim strLine     As String
+    Dim startLine   As Long
+    Dim endLine     As Long
+    Dim prevLine    As String
+    Dim fullBlock   As String
+    Dim segments()  As String
+    Dim keepParts() As String
+    Dim nKeep       As Long
+    Dim j           As Long
+    Dim bLineHasMatch As Boolean
+    Dim newLine     As String
+
+    With CurCodeModule
+        For i = .CountOfLines To 1 Step -1
+            'skip lines that are themselves a continuation of the previous line;
+            'they are handled together with their statement's first line below
+            If i > 1 Then
+                prevLine = RTrim(.Lines(i - 1, 1))
+                If Right(prevLine, 2) = " _" Then GoTo next_i
+            End If
+
+            strLine = .Lines(i, 1)
+
+            'find the end of this (possibly multi-line) statement
+            endLine = i
+            Do While Right(RTrim(.Lines(endLine, 1)), 2) = " _" And endLine < .CountOfLines
+                endLine = endLine + 1
+            Loop
+
+            If endLine > i Then
+                'multi-line statement: remove the whole block if it contains Debug.Print
+                fullBlock = .Lines(i, endLine - i + 1)
+                If ContainsDebugPrint(fullBlock, MatchAnywhereInLine) Then
+                    .DeleteLines startLine:=i, Count:=endLine - i + 1
+                End If
+            Else
+                'single physical line: split into ":"-separated statements
+                segments = SplitStatements(strLine)
+                ReDim keepParts(0 To UBound(segments))
+                nKeep = -1
+                bLineHasMatch = False
+                For j = 0 To UBound(segments)
+                    If ContainsDebugPrint(segments(j), MatchAnywhereInLine) Then
+                        bLineHasMatch = True
+                    Else
+                        nKeep = nKeep + 1
+                        keepParts(nKeep) = segments(j)
+                    End If
+                Next j
+
+                If bLineHasMatch Then
+                    If nKeep = -1 Then
+                        'no statements left - remove the whole line
+                        .DeleteLines i
+                    Else
+                        newLine = keepParts(0)
+                        For j = 1 To nKeep
+                            newLine = newLine & ":" & keepParts(j)
+                        Next j
+                        .ReplaceLine i, Trim(newLine)
+                    End If
+                End If
+            End If
+next_i:
+        Next i
+    End With
+End Sub
+'Checks whether a single statement (segment) contains a Debug.Print call
+Private Function ContainsDebugPrint(ByVal strSegment As String, ByVal MatchAnywhereInLine As Boolean) As Boolean
+    Dim s As String
+    s = Trim(strSegment)
+    If MatchAnywhereInLine Then
+        ContainsDebugPrint = (InStr(1, s, "Debug.Print", vbTextCompare) > 0)
+    Else
+        ContainsDebugPrint = (InStr(1, s, "Debug.Print", vbTextCompare) = 1)
+    End If
+End Function
+'Splits a line into ":"-separated statements, ignoring colons inside string literals
+Private Function SplitStatements(ByVal strLine As String) As String()
+    Dim result()    As String
+    Dim segStart    As Long
+    Dim pos         As Long
+    Dim inString    As Boolean
+    Dim n           As Long
+    Dim ch          As String
+
+    ReDim result(0 To 0)
+    n = 0
+    segStart = 1
+    inString = False
+
+    For pos = 1 To Len(strLine)
+        ch = Mid(strLine, pos, 1)
+        If ch = """" Then
+            inString = Not inString
+        ElseIf ch = ":" And Not inString Then
+            ReDim Preserve result(0 To n)
+            result(n) = Mid(strLine, segStart, pos - segStart)
+            n = n + 1
+            segStart = pos + 1
+        End If
+    Next pos
+    ReDim Preserve result(0 To n)
+    result(n) = Mid(strLine, segStart, Len(strLine) - segStart + 1)
+
+    SplitStatements = result
+End Function

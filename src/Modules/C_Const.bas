@@ -2,9 +2,9 @@ Attribute VB_Name = "C_Const"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : C_Const - Global constants and variables
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 05-03-2023 08:34    CalDymos            Added const for release path of OBF-file

@@ -4,7 +4,7 @@ Attribute VB_Name = "F_AddInInstall"
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Private Module
 Option Explicit

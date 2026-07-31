@@ -18,9 +18,10 @@ Attribute VB_Exposed = False
 '* Created    : 15-09-2019 15:57
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
+
     Private Sub cmbCancel_Click()
 11:    Unload Me
 12: End Sub
@@ -101,6 +102,7 @@ ErrorHandler:
 87:        CheckDelFormat.Value = True
 88:        CheckDelNomerLine.Value = True
 89:        CheckDelBreaksLines.Value = True
+           CheckDelDebugPrint.Value = True
 90:    Else
 91:        CheckAllParam.Value = False
 92:        CheckDelComment.Value = False
@@ -109,6 +111,7 @@ ErrorHandler:
 95:        CheckDelFormat.Value = False
 96:        CheckDelNomerLine.Value = False
 97:        CheckDelBreaksLines.Value = False
+           CheckDelDebugPrint.Value = False
 98:    End If
 99: End Sub
 
@@ -249,6 +252,9 @@ Private Sub lbOK_Click()
 235:                    Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelColon)
 236:                    Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelTab)
 237:                End If
+                    If CheckDelDebugPrint Then
+                        Call N_Obfuscation.Remove_DebugPrint(vbComp.CodeModule)
+                    End If
 238:                If CheckDelComment Then
 239:                    Call N_Obfuscation.Remove_Comments(vbComp.CodeModule)
 240:                End If

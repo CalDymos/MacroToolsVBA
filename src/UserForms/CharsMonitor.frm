@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 23-04-2020 14:27
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 
@@ -86,12 +86,12 @@ Private m_clsAnchors As CAnchors
 
     Private Function funParseChars(ByVal sTxt As String) As Variant
 73:
-74:    Dim N           As Long
+74:    Dim n           As Long
 75:    Dim i           As Long
 76:    Dim sChar       As String
 77:
 78:    On Error Resume Next
-79:    N = Len(sTxt): ReDim arr(1 To N, 1 To 5)
+79:    n = Len(sTxt): ReDim arr(1 To n, 1 To 5)
 80:    For i = LBound(arr) To UBound(arr)
 81:        arr(i, 1) = i
 82:        sChar = VBA.Mid$(sTxt, i, 1)

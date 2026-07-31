@@ -2,9 +2,9 @@ Attribute VB_Name = "A_RibbonCallbacks"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : A_RibbonCallbacks - модуль обратных вызовов ленты управления Excel
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 30-09-2024 08:34    CalDymos
@@ -17,7 +17,7 @@ Option Explicit
 '* Created    : 08-10-2020 13:45
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
 '* ByRef ribbon As IRibbonUI :

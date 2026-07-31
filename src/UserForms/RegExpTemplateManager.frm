@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 08-10-2020 14:24
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Private Const sADD  As String = "To create"

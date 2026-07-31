@@ -4,7 +4,7 @@ Attribute VB_Name = "ZC_HotKey"
 '* Created    : 23-06-2022 16:21
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module

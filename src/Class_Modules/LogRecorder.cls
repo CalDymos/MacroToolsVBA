@@ -10,9 +10,9 @@ Attribute VB_Exposed = False
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : LogRecorder - Störungslogger-Modul
 '* Created    : 01-20-2022 15:55
-'* Author     : Byte Ranger
+'* Author     : VBATools / Byte Ranger
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Explicit

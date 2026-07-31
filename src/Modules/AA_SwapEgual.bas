@@ -7,7 +7,7 @@ Option Private Module
 '* Created    : 05-10-2020 14:00
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub SwapEgual()
 11:    Dim nStartLine  As Long

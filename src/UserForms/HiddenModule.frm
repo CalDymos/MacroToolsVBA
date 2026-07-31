@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 12-02-2020 10:19
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 
@@ -320,7 +320,7 @@ ErrorHandler:
 '* Created    : 15-02-2020 14:00
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByRef arrByte() As Byte        : - исходный массив байт
@@ -357,7 +357,7 @@ ErrorHandler:
 '* Created    : 15-02-2020 12:45
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal strTxt As String : - стрка
@@ -372,7 +372,7 @@ ErrorHandler:
 '* Created    : 14-02-2020 08:43
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal strTxt As String : - строка
@@ -394,7 +394,7 @@ ErrorHandler:
 '* Created    : 14-02-2020 08:43
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):         Description
 '*
 '* arrByte() : - массив байтов
@@ -413,7 +413,7 @@ ErrorHandler:
 '* Created    : 14-02-2020 08:42
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):         Description
 '*
 '* FilePath As String : - директория файла
@@ -437,7 +437,7 @@ eByteArrayToFile:
 '* Created    : 14-02-2020 08:42
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):         Description
 '*
 '* FilePath As String : - директория файла
@@ -475,7 +475,7 @@ ErrorHandler:
 '* Created    : 14-02-2020 08:42
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):         Description
 '*
 '* FilePath As String : - директория файла

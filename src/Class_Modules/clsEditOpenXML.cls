@@ -12,7 +12,7 @@ Attribute VB_Exposed = False
 '* Created    : 15-09-2019 15:53
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 07-10-2019 12:43    VBATools  add module delete XML Node
 '* Updated    : 30-10-2019 13:13    VBATools  add project is uniwable for Word

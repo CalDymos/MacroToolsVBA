@@ -4,7 +4,7 @@ Attribute VB_Name = "Y_Options"
 '* Created    : 17-09-2020 14:35
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Explicit
@@ -72,7 +72,7 @@ End Sub
 '* Created    : 23-06-2022 11:20
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Public Sub insertOptionsExplicitAndPrivateModule()
     Dim moCM        As CodeModule

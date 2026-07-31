@@ -2,9 +2,9 @@ Attribute VB_Name = "N_ObfMainNew"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : N_ObfMainNew - Modul zur Code-Verschleierung
 '* Created    : 08-10-2020 14:11
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 07-09-2023 11:26    CalDymos
@@ -623,9 +623,9 @@ End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : Obfuscation - главная процедура шифрования
 '* Created    : 20-04-2020 18:26
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                             Description
 '*
 '* ByRef objWB As Workbook               : книга
@@ -872,9 +872,9 @@ End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : EncodedStringCode - шифрование строковый значений кода
 '* Created    : 29-07-2020 10:00
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):             Description
 '*
 '* ByRef objWB As Workbook :

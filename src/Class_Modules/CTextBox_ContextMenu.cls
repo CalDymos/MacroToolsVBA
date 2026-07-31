@@ -12,7 +12,7 @@ Attribute VB_Exposed = False
 '* Created    : 15-09-2020 15:55
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Explicit

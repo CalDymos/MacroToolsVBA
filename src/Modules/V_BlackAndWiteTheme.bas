@@ -4,7 +4,7 @@ Attribute VB_Name = "V_BlackAndWiteTheme"
 '* Created    : 19-02-2020 12:57
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -30,7 +30,7 @@ Private Const FORE_COLOR_WHITE_THEME As String = "0 0 5 0 1 10 14 0 0 0 0 0 0 0 
 '* Created    : 19-02-2020 19:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByVal sBackColorTheme As String : фон темы
@@ -64,7 +64,7 @@ ErrorHandler:
 '* Created    : 19-02-2020 19:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Function GetVersionVBE() As String
 69:    Dim sVersion As String

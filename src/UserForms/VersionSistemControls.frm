@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 10-03-2020 09:30
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 
@@ -36,7 +36,7 @@ Private Const CONFIG As String = "Config.cvs"
 '* Created    : 10-03-2020 09:30
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
 '* ByVal iItem As VersionList : перечисление
@@ -56,7 +56,7 @@ End Enum
 '* Created    : 10-03-2020 09:33
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
 '* ByVal iItem As VersionList :
@@ -78,7 +78,7 @@ End Enum
 '* Created    : 10-03-2020 09:34
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                     Description
 '*
 '* ByVal lSelectedVersion As Long : номер версии
@@ -338,7 +338,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:18
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub CheckSourcePath()
 329:    Dim sPath  As String
@@ -388,7 +388,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:17
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sPATH As String : директория хранилища
@@ -428,7 +428,7 @@ ErrorHandler:
 '* Created    : 10-03-2020 09:27
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Function GetNomerItemSelectedList() As Long
 419:    Dim i      As Long
@@ -454,7 +454,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:09
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Function GetCodeFromModule(ByVal sWBName As String) As String
 445:    Dim nLine  As Long
@@ -480,7 +480,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sCode As String : строковая переменая, содержащия код модуля
@@ -519,7 +519,7 @@ errMsg:
 '* Created    : 06-03-2020 10:13
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Function AddListModuleName(ByVal sWBName As String) As String
 510:    Dim objVBComp As VBIDE.VBComponent
@@ -542,7 +542,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:14
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
 '* ByVal sPATH As String : путь к файлу
@@ -578,7 +578,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:11
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* Argument(s):                 Description
 '*
 '* ByVal sComment As String : строковая переменая, помещаемая в код
@@ -624,7 +624,7 @@ ErrorHandler:
 '* Created    : 06-03-2020 10:08
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Function addString() As String
 615:    Dim strTemp As String

@@ -6,7 +6,7 @@ Option Private Module
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Public sTagNameConrol As String
@@ -39,7 +39,7 @@ End Type
 '* Created    : 08-10-2020 14:10
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Private Sub MoveControl()
 44:    If Application.VBE.ActiveWindow.Type <> vbext_wt_Designer Then Exit Sub
@@ -125,7 +125,7 @@ End Type
 '* Created    : 08-10-2020 14:11
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Private Sub RenameControl()
 130:    Dim cnt         As control
@@ -278,7 +278,7 @@ ErrorHandler:
 '* Created    : 01-07-2022 11:12
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Public Sub UperTextInControl()
 283:    Call LowerAndUperTextInControl(True)
@@ -330,7 +330,7 @@ ErrorHandler:
 '* Created    : 04-07-2022 14:39
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Public Sub vbaCntAlingHoriz()
 335:    If Application.VBE.ActiveWindow.Type <> vbext_wt_Designer Then Exit Sub
@@ -389,7 +389,7 @@ ErrorHandler:
 '* Created    : 04-07-2022 14:39
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      Public Sub vbaCntAlingVert()
 394:    If Application.VBE.ActiveWindow.Type <> vbext_wt_Designer Then Exit Sub

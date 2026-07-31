@@ -4,7 +4,7 @@ Attribute VB_Name = "H_AddLegend"
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -42,6 +42,6 @@ Option Explicit
 41:    Debug.Print str_legend
 42: End Sub
 
-Private Function addString(ByVal st As String, ByVal MaxLen As Byte) As String
-45:    addString = st & Space(MaxLen - Len(st))
+Private Function addString(ByVal st As String, ByVal maxLen As Byte) As String
+45:    addString = st & Space(maxLen - Len(st))
 End Function

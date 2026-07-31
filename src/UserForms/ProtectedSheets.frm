@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 15-09-2019 15:57
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 
@@ -52,32 +52,32 @@ Public sPassword As String
 38:    Call RefreshListBoxSheets
 39: End Sub
     Private Sub RefreshListBoxSheets()
-41:    Dim N      As Integer
+41:    Dim n      As Integer
 42:    Dim SH     As Worksheet
-43:    N = 0
+43:    n = 0
 44:    With ListBox1
 45:        .Clear
 46:        .AddItem 0
-47:        .List(N, 2) = "Book"
-48:        .List(N, 1) = ActiveWorkbook.Name
-49:        .List(N, 3) = "there is no protection"
+47:        .List(n, 2) = "Book"
+48:        .List(n, 1) = ActiveWorkbook.Name
+49:        .List(n, 3) = "there is no protection"
 50:        If ActiveWorkbook.ProtectStructure Or ActiveWorkbook.ProtectWindows Then
-51:            .List(N, 3) = "there is protection"
+51:            .List(n, 3) = "there is protection"
 52:        End If
-53:        N = N + 1
+53:        n = n + 1
 54:        For Each SH In ActiveWorkbook.Worksheets
 55:            .AddItem SH.Index
-56:            .List(N, 2) = "Sheet"
-57:            .List(N, 1) = SH.Name
+56:            .List(n, 2) = "Sheet"
+57:            .List(n, 1) = SH.Name
 58:            Select Case SH.ProtectContents
                 Case True
-60:                    .Selected(N) = True
-61:                    .List(N, 3) = "there is protection"
-62:                    .List(N, 4) = "***********"
+60:                    .Selected(n) = True
+61:                    .List(n, 3) = "there is protection"
+62:                    .List(n, 4) = "***********"
 63:                Case False
-64:                    .List(N, 3) = "there is no protection"
+64:                    .List(n, 3) = "there is no protection"
 65:            End Select
-66:            N = N + 1
+66:            n = n + 1
 67:        Next
 68:    End With
 69: End Sub
@@ -127,7 +127,7 @@ Public sPassword As String
 113: End Sub
 Private Sub UnlockSheetsWorkbooks(ByVal X As Integer)
 115:    Dim i As Integer, j As Integer, k As Integer
-116:    Dim l As Integer, m As Integer, N As Integer
+116:    Dim l As Integer, m As Integer, n As Integer
 117:    Dim i1 As Integer, i2 As Integer, i3 As Integer
 118:    Dim i4 As Integer, i5 As Integer, i6 As Integer
 119:
@@ -142,8 +142,8 @@ TryNewPasword:
 128:            For i = 65 To 66: For j = 65 To 66: For k = 65 To 66
 129:                        For l = 65 To 66: For m = 65 To 66: For i1 = 65 To 66
 130:                                    For i2 = 65 To 66: For i3 = 65 To 66: For i4 = 65 To 66
-131:                                                For i5 = 65 To 66: For i6 = 65 To 66: For N = 32 To 126
-132:                                                            kennwort = Chr(i) & Chr(j) & Chr(k) & Chr(l) & Chr(m) & Chr(i1) & Chr(i2) & Chr(i3) & Chr(i4) & Chr(i5) & Chr(i6) & Chr(N)
+131:                                                For i5 = 65 To 66: For i6 = 65 To 66: For n = 32 To 126
+132:                                                            kennwort = Chr(i) & Chr(j) & Chr(k) & Chr(l) & Chr(m) & Chr(i1) & Chr(i2) & Chr(i3) & Chr(i4) & Chr(i5) & Chr(i6) & Chr(n)
 133:                                                            With ListBox1
 134:                                                                If .List(X, 2) = "Book" Then
 135:                                                                    ActiveWorkbook.Unprotect kennwort

@@ -2,9 +2,9 @@ Attribute VB_Name = "B_CreateMenus"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : B_CreateMenus - Creating menu in VBE
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : -
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Updated    : 04-12-2025 8:25    CalDymos            Auto_Open made more robust against “Circular dependencies between modules” errors
 Option Private Module

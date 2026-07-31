@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 15-09-2019 15:57
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Private m_colContextMenus As Collection

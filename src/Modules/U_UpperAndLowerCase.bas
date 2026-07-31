@@ -4,7 +4,7 @@ Attribute VB_Name = "U_UpperAndLowerCase"
 '* Created    : 18-02-2020 09:05
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -13,7 +13,7 @@ Option Private Module
 '* Created    : 18-02-2020 09:05
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     Public Sub toUpperCase()
 18:    On Error GoTo ErrorHandler
@@ -60,7 +60,7 @@ ErrorHandler:
 '* Created    : 18-02-2020 09:06
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Public Sub toLowerCase()
 65:    On Error GoTo ErrorHandler

@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} InfoFile2 
    Caption         =   "File Properties:"
-   ClientHeight    =   2265
+   ClientHeight    =   2268
    ClientLeft      =   48
    ClientTop       =   372
    ClientWidth     =   9132.001
@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 '* Created    : 20-07-2020 15:34
 '* Author     : VBATools
 '* Contacts   : -
-'* Copyright  : Byte Ranger Software
+'* Copyright  : VBATools.ru
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 

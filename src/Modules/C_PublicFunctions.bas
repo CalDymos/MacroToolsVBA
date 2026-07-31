@@ -2,9 +2,9 @@ Attribute VB_Name = "C_PublicFunctions"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : C_PublicFunctions - global adjustment functions
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 07-09-2023 11:17    CalDymos

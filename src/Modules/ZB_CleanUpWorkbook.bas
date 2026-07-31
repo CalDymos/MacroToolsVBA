@@ -2,9 +2,9 @@ Attribute VB_Name = "ZB_CleanUpWorkbook"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Module     : ZB_CleanUpWorkbook - Functions to reduce the size of the workbook / clean up the workbook
 '* Created    : 15-09-2019 15:48
-'* Author     : VBATools
+'* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
-'* Copyright  : VBATools.ru
+'* Copyright  : VBATools.ru / Byte Ranger Software
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 30-09-2024 08:34    CalDymos            Rename Module
@@ -368,7 +368,7 @@ errMsg:
 End Sub
 
 Public Sub DellAllCustomFormats()
-          Dim N As Long, i As Long
+          Dim n As Long, i As Long
           Dim errMsg As String
           Dim inSc, ninSc As Boolean
           Dim Response
@@ -379,17 +379,17 @@ Public Sub DellAllCustomFormats()
 223       If Response = vbYes Then
 224           C_PublicFunctions.ShowProgressBar True
 225           With ActiveWorkbook
-226               N = .Styles.Count
+226               n = .Styles.Count
 227               inSc = True
 
-228               For i = N To 1 Step -1
+228               For i = n To 1 Step -1
 229                   inSc = .Styles(i).BuiltIn
 230                   ninSc = Not inSc
 231                   If ninSc Then
 232                       .Styles(i).Locked = False
 233                       .Styles(i).Delete
                           lCount = lCount + 1
-                          If lCount Mod (N / 100) = 0 Then C_PublicFunctions.UpdateProgressBar lCount, N ' update alle 1%
+                          If lCount Mod (n / 100) = 0 Then C_PublicFunctions.UpdateProgressBar lCount, n ' update alle 1%
 234                   End If
 235               Next i
 236           End With
