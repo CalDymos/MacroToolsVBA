@@ -1,10 +1,15 @@
-# MacroToolsVBA https://vbatools.ru/
+# In this fork the source code was extended with the following features:
+
+## - Improved strings encryption (real encryption)
+## - additional obfuscation of the forms.
+
+--------------------------------------------------------------------------
+
+# MacroToolsVBA
 **Macro Tools VBA** - a tool for automating the development of macros in the Visual Basic Editor (VBE) MS Excel and Word
 Add-in 
 
-**DONUT:** https://www.donationalerts.com/r/vbatools
-
-**Home page add-in:** https://vbatools.ru/macro-tools-vba-addin-excel/
+**Home page of original add-in:** https://vbatools.ru/macro-tools-vba-addin-excel/
 
 ![alt tag](https://vbatools.ru/wp-content/uploads/2019/10/main-macro-tools-vba2.gif "Use Macro Tools VBA Example")
 
@@ -27,13 +32,10 @@ Add-in
  - changing the theme of the VBE code editor - dark and light
  - hot keys module https://github.com/vbatools/MacroToolsVBAHotKeys
 
-## Zen Macro Tools VBA:
+## LICENSE AGREEMENT:
 - do not use third-party dlls,
 - the add-in should only use VBA MS Office
 - installation that does not require the user to have administrator rights
 - open source
 - work in all versions of Excel and Word-32 and 64-bit
 
-## YouTube - use tools add-in
-https://www.youtube.com/playlist?list=PLYcZpZtN5HUMpReyXlF2Au2BV1Hk0l_hd
-[![Use Tools Macro Tools VBA](https://vbatools.ru/wp-content/uploads/2020/01/macrotoolsvbadocument.gif)](https://www.youtube.com/playlist?list=PLYcZpZtN5HUMpReyXlF2Au2BV1Hk0l_hd)
