@@ -18,12 +18,17 @@ Attribute VB_Name = "T_TransformChainTest"
 '*              INCONCLUSIVE = the VBA editor changed the test input when it was inserted
 '*                             (e.g. indentation of Option lines, tabs); adapt the test data
 '*              ERROR = runtime error during the test
+'*              Diagnostic cases (X35g, X35h, D0 to D10) isolate editor behaviour: they use the text
+'*              as the editor stores it, so INCONCLUSIVE there means the precondition is missing.
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
 
 'Keep transformed modules of compilable fixtures in the test workbook for Debug > Compile
 Private Const KEEP_COMPILABLE_MODULES As Boolean = True
+
+'Module text of the label-or-call diagnostics (@ = case tag, @LINE = the numbered line, | = line break)
+Private Const LC_TEMPLATE As String = "Private cnt@ As Long|Function P@() As Long|    cnt@ = 0|@LINE|End Function|Sub Mark@()|    cnt@ = cnt@ + 1|End Sub"
 
 Private m_wb As Workbook
 Private m_ws As Worksheet
@@ -50,6 +55,10 @@ Public Sub RunTransformChainTests()
     Case_T42_Attributes
     Case_X26_EditorLimit
     Case_X35g_NameAfterNumber
+    Case_X35h_NameAfterNumberColon
+    Case_X37_InsertBlankPosition
+    Case_X38_ReplaceWithContinuation
+    RunAttributeDiagnostics
 
     m_ws.Columns("A:G").AutoFit
     m_ws.Columns("H:J").ColumnWidth = 80
@@ -69,6 +78,37 @@ Private Sub AddLine(ByRef s As String, ByRef n As Long, ByVal sLine As String)
     If n > 0 Then s = s & vbCrLf
     s = s & sLine
     n = n + 1
+End Sub
+
+'Fills an empty code module with the given text. Excel 2019 appends an empty line when the inserted
+'text contains a line continuation; that line is removed again, so the module holds exactly the text.
+Private Sub FillModule(ByVal vbc As VBIDE.VBComponent, ByVal sText As String, ByVal nLines As Long)
+    With vbc.CodeModule
+        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
+        If nLines > 0 Then .InsertLines 1, sText
+        If .CountOfLines = nLines + 1 Then
+            If Len(Trim$(.Lines(.CountOfLines, 1))) = 0 Then .DeleteLines .CountOfLines, 1
+        End If
+    End With
+End Sub
+
+Private Function ReadTextFile(ByVal sPath As String) As String
+    Dim f As Integer
+    Dim sLine As String
+    Dim s As String
+
+    f = FreeFile
+    Open sPath For Input As #f
+    Do While Not EOF(f)
+        Line Input #f, sLine
+        s = s & sLine & vbCrLf
+    Loop
+    Close #f
+    ReadTextFile = s
+End Function
+
+Private Sub DeleteIfExists(ByVal sPath As String)
+    If Len(Dir$(sPath)) > 0 Then Kill sPath
 End Sub
 
 'Same order as ObfuscationCode.lbOK_Click with all options selected.
@@ -175,10 +215,7 @@ Private Sub RunCase(ByVal sId As String, ByVal sMethod As String, ByVal sPurpose
     On Error GoTo EH
     Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
     vbc.Name = "T_" & sId
-    With vbc.CodeModule
-        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
-        If nIn > 0 Then .InsertLines 1, sIn
-    End With
+    FillModule vbc, sIn, nIn
     sStored = ModuleText(vbc.CodeModule)
     If sStored <> sIn Or vbc.CodeModule.CountOfLines <> nIn Then
         sStatus = "INCONCLUSIVE"
@@ -311,10 +348,7 @@ Private Sub Case_X26_EditorLimit()
     Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
     vbc.Name = "T_X26"
     sOrig = "Sub PX26()" & vbCrLf & "    x = 1 + _" & vbCrLf & "        2" & vbCrLf & "End Sub"
-    With vbc.CodeModule
-        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
-        .InsertLines 1, sOrig
-    End With
+    FillModule vbc, sOrig, 4
     If ModuleText(vbc.CodeModule) <> sOrig Then
         WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei mehr als 1023 Zeichen", "INCONCLUSIVE", "", _
                     "Editor changed the input when inserting it; adapt the test data.", "", sOrig, sOrig, ModuleText(vbc.CodeModule)
@@ -357,70 +391,54 @@ AfterError:
     If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
 End Sub
 
-'X35g: RemoveLineNumbers inserts "Call" in "10 Name: ..." because it assumes that VBA reads
-'Name after a line number as a call (only one label per line). This test proves it in Excel:
-'the function is executed before and after the transformation and must call Mark35g both times.
-Private Sub Case_X35g_NameAfterNumber()
+'Diagnostic: does VBA read "Name:" after a line number as a LABEL or as a CALL?
+'The function is executed before and after RemoveLineNumbers. The text is used as the editor stores it,
+'so the editor's own normalization does not matter. PASS = the number stays (one notice) and the
+'result of the run does not change. The note names the reading: result 1 = call, result 0 = label.
+Private Sub RunLabelOrCallCase(ByVal sId As String, ByVal sPurpose As String, ByVal sNumberLine As String)
     Dim vbc As VBIDE.VBComponent
+    Dim sTag As String
     Dim sIn As String
-    Dim nIn As Long
-    Dim sExp As String
-    Dim nExp As Long
+    Dim sStored As String
     Dim sAct As String
     Dim sNote As String
     Dim sStatus As String
     Dim sRun As String
     Dim vBefore As Variant
     Dim vAfter As Variant
+    Dim lNot As Long
     Dim bWritten As Boolean
 
     On Error GoTo EH
-    AddLine sIn, nIn, "Private cnt35g As Long"
-    AddLine sIn, nIn, "Function PX35g() As Long"
-    AddLine sIn, nIn, "    cnt35g = 0"
-    AddLine sIn, nIn, "10  Mark35g: PX35g = cnt35g"
-    AddLine sIn, nIn, "End Function"
-    AddLine sIn, nIn, "Sub Mark35g()"
-    AddLine sIn, nIn, "    cnt35g = cnt35g + 1"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Private cnt35g As Long"
-    AddLine sExp, nExp, "Function PX35g() As Long"
-    AddLine sExp, nExp, "    cnt35g = 0"
-    AddLine sExp, nExp, "    Call Mark35g: PX35g = cnt35g"
-    AddLine sExp, nExp, "End Function"
-    AddLine sExp, nExp, "Sub Mark35g()"
-    AddLine sExp, nExp, "    cnt35g = cnt35g + 1"
-    AddLine sExp, nExp, "End Sub"
-
+    sTag = Mid$(sId, 2)
+    sIn = Replace(Replace(LC_TEMPLATE, "@LINE", sNumberLine), "@", sTag)
+    sIn = Replace(sIn, "|", vbCrLf)
     Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
-    vbc.Name = "T_X35g"
-    With vbc.CodeModule
-        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
-        .InsertLines 1, sIn
-    End With
-    If ModuleText(vbc.CodeModule) <> sIn Then
-        WriteResult "X35g", "RLN + Application.Run", "Name nach Zeilennummer: Aufruf oder Label?", "INCONCLUSIVE", "", _
-                    "Editor changed the input when inserting it; adapt the test data.", "", sIn, sExp, ModuleText(vbc.CodeModule)
-        bWritten = True
-        m_wb.VBProject.VBComponents.Remove vbc
-        Exit Sub
-    End If
-    sRun = "'" & m_wb.Name & "'!T_X35g.PX35g"
+    vbc.Name = "T_" & sId
+    FillModule vbc, sIn, 8
+    sStored = ModuleText(vbc.CodeModule)
+    sRun = "'" & m_wb.Name & "'!T_" & sId & ".P" & sTag
     vBefore = Application.Run(sRun)
     N_Obfuscation.TrfClearNotices
     K_AddNumbersLine.RemoveLineNumbers vbc, vbLineNumbers_LabelTypes.vbLabelColon
     K_AddNumbersLine.RemoveLineNumbers vbc, vbLineNumbers_LabelTypes.vbLabelTab
+    lNot = N_Obfuscation.TrfNoticeCount
     sAct = ModuleText(vbc.CodeModule)
     vAfter = Application.Run(sRun)
-    If vBefore <> 1 Then sNote = sNote & "Original returned " & vBefore & ": VBA reads Mark35g after the number as a LABEL, " & _
-                                 "so RemoveLineNumbers must keep the number instead of inserting Call. "
-    If vAfter <> 1 Then sNote = sNote & "Transformed code returned " & vAfter & " instead of 1. "
-    If sAct <> sExp Then sNote = sNote & "Output differs. "
-    If N_Obfuscation.TrfNoticeCount <> 1 Then sNote = sNote & "Notice count differs. "
-    If Len(sNote) = 0 Then sStatus = "PASS" Else sStatus = "FAIL"
-    WriteResult "X35g", "RLN + Application.Run", "Name nach Zeilennummer: Aufruf oder Label?", sStatus, _
-                N_Obfuscation.TrfNoticeCount & "/1", sNote & "Run before/after: " & vBefore & "/" & vAfter, _
-                "Belegt die Annahme hinter dem eingefuegten Call durch Ausfuehrung in Excel.", sIn, sExp, sAct
+    If sStored <> sIn Then sNote = sNote & "Editor stored the line differently (see Input/Actual). "
+    If vBefore = 1 Then
+        sNote = sNote & "Reading: CALL (Mark was called). "
+    ElseIf vBefore = 0 Then
+        sNote = sNote & "Reading: LABEL (Mark was not called). "
+    Else
+        sNote = sNote & "Unexpected result " & vBefore & ". "
+    End If
+    If vBefore <> vAfter Then sNote = sNote & "Behaviour changed (before " & vBefore & ", after " & vAfter & "). "
+    If sAct <> sStored Then sNote = sNote & "Output differs from the stored text. "
+    If lNot <> 1 Then sNote = sNote & "Notice count differs. "
+    If vBefore = vAfter And sAct = sStored And lNot = 1 Then sStatus = "PASS" Else sStatus = "FAIL"
+    WriteResult sId, "RLN + Application.Run", sPurpose, sStatus, lNot & "/1", sNote & "Run before/after: " & vBefore & "/" & vAfter, _
+                "Belegt die Lesart von 'Name:' nach einer Zeilennummer durch Ausfuehrung in Excel.", sIn, sStored, sAct
     bWritten = True
     m_wb.VBProject.VBComponents.Remove vbc
     Exit Sub
@@ -429,9 +447,222 @@ EH:
     Resume AfterError
 AfterError:
     On Error Resume Next
-    If Not bWritten Then WriteResult "X35g", "RLN + Application.Run", "Name nach Zeilennummer: Aufruf oder Label?", "ERROR", "", _
-                                     sNote, "", sIn, sExp, sAct
+    If Not bWritten Then WriteResult sId, "RLN + Application.Run", sPurpose, "ERROR", "", sNote, "", sIn, sStored, sAct
     If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
+End Sub
+
+Private Sub Case_X35g_NameAfterNumber()
+    RunLabelOrCallCase "X35g", "Name nach Zeilennummer ohne Doppelpunkt: Aufruf oder Label?", "10 Mark35g:  P35g = cnt35g"
+End Sub
+
+Private Sub Case_X35h_NameAfterNumberColon()
+    RunLabelOrCallCase "X35h", "Name nach Zeilennummer mit Doppelpunkt: Aufruf oder Label?", "10: Mark35h: P35h = cnt35h"
+End Sub
+
+'X37: diagnostic. Where does Excel 2019 put the empty line that it appends when inserted text contains
+'a line continuation: directly after the inserted text or at the end of the module?
+Private Sub Case_X37_InsertBlankPosition()
+    Dim vbc As VBIDE.VBComponent
+    Dim sBefore As String
+    Dim sAfter As String
+    Dim sNote As String
+    Dim lBefore As Long
+    Dim lAfter As Long
+    Dim i As Long
+    Dim lBlank As Long
+    Dim bWritten As Boolean
+
+    On Error GoTo EH
+    Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
+    vbc.Name = "T_X37"
+    With vbc.CodeModule
+        If .CountOfLines > 0 Then .DeleteLines 1, .CountOfLines
+        .InsertLines 1, "Sub A()" & vbCrLf & "End Sub" & vbCrLf & "Sub B()" & vbCrLf & "End Sub"
+        sBefore = ModuleText(vbc.CodeModule)
+        lBefore = .CountOfLines
+        .InsertLines 2, "    x = 1 + _" & vbCrLf & "        2"
+        lAfter = .CountOfLines
+    End With
+    sAfter = ModuleText(vbc.CodeModule)
+    For i = 1 To lAfter
+        If Len(Trim$(vbc.CodeModule.Lines(i, 1))) = 0 Then lBlank = i
+    Next i
+    If lAfter = lBefore + 2 Then
+        sNote = "No empty line appended."
+    ElseIf lBlank = lAfter Then
+        sNote = "Empty line appended at the END of the module (line " & lBlank & " of " & lAfter & ")."
+    ElseIf lBlank > 0 Then
+        sNote = "Empty line appended INSIDE the module at line " & lBlank & " of " & lAfter & " (inserted text: lines 2 to 3)."
+    Else
+        sNote = "Line count " & lBefore & " -> " & lAfter & ", no empty line found."
+    End If
+    WriteResult "X37", "InsertLines", "Position der angehaengten Leerzeile (Fortsetzungszeichen im eingefuegten Text)", "PASS", "", sNote, _
+                "Diagnose: bestimmt, wie TrfReplaceLine die Leerzeile nach der Wiederherstellung finden muss.", sBefore, "(diagnostic)", sAfter
+    bWritten = True
+    m_wb.VBProject.VBComponents.Remove vbc
+    Exit Sub
+EH:
+    sNote = "Error " & Err.Number & ": " & Err.Description
+    Resume AfterError
+AfterError:
+    On Error Resume Next
+    If Not bWritten Then WriteResult "X37", "InsertLines", "Position der angehaengten Leerzeile", "ERROR", "", sNote, "", sBefore, "", sAfter
+    If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
+End Sub
+
+'X38: diagnostic. ReplaceLine with a line that ends with a continuation character: does the editor keep
+'the line count and the text? (TrimLinesTabAndSpase and Remove_Comments write such lines.)
+Private Sub Case_X38_ReplaceWithContinuation()
+    Dim vbc As VBIDE.VBComponent
+    Dim sBefore As String
+    Dim sAfter As String
+    Dim sNote As String
+    Dim sStatus As String
+    Dim lBefore As Long
+    Dim lAfter As Long
+    Dim bWritten As Boolean
+
+    On Error GoTo EH
+    Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
+    vbc.Name = "T_X38"
+    FillModule vbc, "Sub A()" & vbCrLf & "      x = 1 + _" & vbCrLf & "        2" & vbCrLf & "End Sub", 4
+    sBefore = ModuleText(vbc.CodeModule)
+    lBefore = vbc.CodeModule.CountOfLines
+    vbc.CodeModule.ReplaceLine 2, "x = 1 + _"
+    lAfter = vbc.CodeModule.CountOfLines
+    sAfter = ModuleText(vbc.CodeModule)
+    If lAfter = lBefore And vbc.CodeModule.Lines(2, 1) = "x = 1 + _" And vbc.CodeModule.Lines(3, 1) = "        2" Then
+        sStatus = "PASS"
+        sNote = "ReplaceLine keeps line count and text."
+    Else
+        sStatus = "FAIL"
+        sNote = "Line count " & lBefore & " -> " & lAfter & "; ReplaceLine with a continuation character changes the module."
+    End If
+    WriteResult "X38", "ReplaceLine", "ReplaceLine mit Fortsetzungszeichen am Zeilenende", sStatus, "", sNote, _
+                "Diagnose: belegt, dass Trim und Kommentarentfernung fortgesetzte Zeilen ohne Nebenwirkung ersetzen.", sBefore, _
+                "Sub A()" & vbCrLf & "x = 1 + _" & vbCrLf & "        2" & vbCrLf & "End Sub", sAfter
+    bWritten = True
+    m_wb.VBProject.VBComponents.Remove vbc
+    Exit Sub
+EH:
+    sNote = "Error " & Err.Number & ": " & Err.Description
+    Resume AfterError
+AfterError:
+    On Error Resume Next
+    If Not bWritten Then WriteResult "X38", "ReplaceLine", "ReplaceLine mit Fortsetzungszeichen am Zeilenende", "ERROR", "", sNote, "", sBefore, "", sAfter
+    If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
+End Sub
+
+'Writes a class file (header attributes plus the given body, lines separated by "|") for the import.
+Private Sub WriteClassFile(ByVal sPath As String, ByVal sName As String, ByVal sBody As String)
+    Dim f As Integer
+
+    DeleteIfExists sPath
+    f = FreeFile
+    Open sPath For Output As #f
+    Print #f, "VERSION 1.0 CLASS"
+    Print #f, "BEGIN"
+    Print #f, "  MultiUse = -1  'True"
+    Print #f, "END"
+    Print #f, "Attribute VB_Name = """ & sName & """"
+    Print #f, "Attribute VB_GlobalNameSpace = False"
+    Print #f, "Attribute VB_Creatable = False"
+    Print #f, "Attribute VB_PredeclaredId = False"
+    Print #f, "Attribute VB_Exposed = False"
+    Print #f, Replace(sBody, "|", vbCrLf)
+    Close #f
+End Sub
+
+'Diagnostic: imports a class with a hidden attribute, applies ONE method, exports the class again and
+'checks whether the attribute is still there. Which method and which kind of edit loses it?
+Private Sub RunAttributeCase(ByVal sId As String, ByVal sPurpose As String, ByVal sMethod As String, _
+                             ByVal sBody As String, ByVal sAttr As String)
+    Dim vbc As VBIDE.VBComponent
+    Dim sName As String
+    Dim sPath As String
+    Dim sOut As String
+    Dim sImported As String
+    Dim sText As String
+    Dim sNote As String
+    Dim sStatus As String
+    Dim lNot As Long
+    Dim bWritten As Boolean
+
+    On Error GoTo EH
+    sName = "T" & sId & "Cls"
+    sPath = Environ$("TEMP") & "\MT_" & sName & ".cls"
+    sOut = Environ$("TEMP") & "\MT_" & sName & "_out.cls"
+    WriteClassFile sPath, sName, sBody
+    Set vbc = m_wb.VBProject.VBComponents.Import(sPath)
+    DeleteIfExists sOut
+    vbc.Export sOut
+    sImported = ReadTextFile(sOut)
+    If InStr(1, sImported, sAttr, vbBinaryCompare) = 0 Then
+        sStatus = "INCONCLUSIVE"
+        sNote = "Attribute is missing right after the import; nothing to protect."
+        sText = sImported
+    Else
+        N_Obfuscation.TrfClearNotices
+        RunMethod vbc, sMethod
+        lNot = N_Obfuscation.TrfNoticeCount
+        DeleteIfExists sOut
+        vbc.Export sOut
+        sText = ReadTextFile(sOut)
+        If InStr(1, sText, sAttr, vbBinaryCompare) = 0 Then
+            sStatus = "FAIL"
+            sNote = "Attribute lost by " & sMethod & "."
+        Else
+            sStatus = "PASS"
+        End If
+    End If
+    WriteResult sId, sMethod, sPurpose, sStatus, lNot & "/-", sNote, "Diagnose: welche Bearbeitung entfernt das versteckte Attribut?", _
+                sImported, sAttr, sText
+    bWritten = True
+    m_wb.VBProject.VBComponents.Remove vbc
+    DeleteIfExists sPath
+    DeleteIfExists sOut
+    Exit Sub
+EH:
+    sNote = "Error " & Err.Number & ": " & Err.Description
+    Resume AfterError
+AfterError:
+    On Error Resume Next
+    If Not bWritten Then WriteResult sId, sMethod, sPurpose, "ERROR", "", sNote, "", sImported, sAttr, sText
+    Close
+    If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
+    DeleteIfExists sPath
+    DeleteIfExists sOut
+End Sub
+
+Private Sub RunAttributeDiagnostics()
+    Dim sAttr As String
+    Dim sHdr As String
+    Dim sEnd As String
+
+    sAttr = "Attribute Amount.VB_UserMemId = 0"
+    sHdr = "Public Property Get Amount() As Long|" & sAttr & "|"
+    sEnd = "Amount = m_amount|End Property"
+    RunAttributeCase "D0", "Kontrolle: Kette ohne jede Aenderung", "CHAIN", "Private m_amount As Long|" & sHdr & sEnd, sAttr
+    RunAttributeCase "D1", "TRIM: nur die Kopfzeile (Einrueckung) wird geaendert", "TRIM", _
+                     "Private m_amount As Long|    " & sHdr & sEnd, sAttr
+    RunAttributeCase "D2", "CMT: nur die Kopfzeile (Kommentar am Ende) wird geaendert", "CMT", _
+                     "Private m_amount As Long|Public Property Get Amount() As Long ' header|" & sAttr & "|" & sEnd, sAttr
+    RunAttributeCase "D3", "BREAK: fortgesetzte Kopfzeile wird zusammengefuehrt", "BREAK", _
+                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr
+    RunAttributeCase "D4", "CMT: nur eine Zeile im Rumpf wird geaendert", "CMT", _
+                     "Private m_amount As Long|" & sHdr & "Amount = m_amount ' value|End Property", sAttr
+    RunAttributeCase "D5", "TRIM: nur die Fortsetzungszeile der Kopfzeile wird geaendert", "TRIM", _
+                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr
+    RunAttributeCase "D6", "EMPTY: Leerzeile ueber der Kopfzeile wird geloescht", "EMPTY", _
+                     "Private m_amount As Long||" & sHdr & sEnd, sAttr
+    RunAttributeCase "D7", "CMT: Kommentarzeile ueber der Kopfzeile wird geloescht", "CMT", _
+                     "Private m_amount As Long|' default member|" & sHdr & sEnd, sAttr
+    RunAttributeCase "D8", "TRIM: eingerueckte Variablendeklaration mit Attribut", "TRIM", _
+                     "    Public Amount As Long|Attribute Amount.VB_VarDescription = ""Betrag""", "Attribute Amount.VB_VarDescription = ""Betrag"""
+    RunAttributeCase "D9", "DBG: Debug.Print im Rumpf wird geloescht", "DBG", _
+                     "Private m_amount As Long|" & sHdr & "Debug.Print ""x""|" & sEnd, sAttr
+    RunAttributeCase "D10", "EMPTY: Leerzeile im Rumpf unter dem Attribut wird geloescht", "EMPTY", _
+                     "Private m_amount As Long|" & sHdr & "Amount = m_amount||End Property", sAttr
 End Sub
 
 '===============================================================================
@@ -453,7 +684,6 @@ Private Sub RunAllCases()
     Case_T11
     Case_T11b
     Case_T12
-    Case_T12b
     Case_T13
     Case_T14
     Case_T15
@@ -478,8 +708,6 @@ Private Sub RunAllCases()
     Case_T33
     Case_T34
     Case_T35
-    Case_T36
-    Case_T37
     Case_T38
     Case_T39
     Case_T40
@@ -495,7 +723,6 @@ Private Sub RunAllCases()
     Case_X10
     Case_X11
     Case_X13
-    Case_X14
     Case_X15
     Case_X16
     Case_X17
@@ -504,7 +731,6 @@ Private Sub RunAllCases()
     Case_X21
     Case_X22
     Case_X23
-    Case_X24
     Case_X28
     Case_X29
     Case_X30
@@ -514,7 +740,6 @@ Private Sub RunAllCases()
     Case_X34
     Case_X34b
     Case_X35
-    Case_X35b
     Case_X36
     Case_X36b
     Case_X34c
@@ -675,26 +900,15 @@ Private Sub Case_T12()
     AddLine sIn, nIn, "10:     x = 1"
     AddLine sIn, nIn, "20      y = 2"
     AddLine sIn, nIn, "30"
-    AddLine sIn, nIn, "40: z = 3"
+    AddLine sIn, nIn, "40: q12 = 3"
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub P12()"
     AddLine sExp, nExp, "     x = 1"
     AddLine sExp, nExp, "        y = 2"
     AddLine sExp, nExp, ""
-    AddLine sExp, nExp, "z = 3"
+    AddLine sExp, nExp, "q12 = 3"
     AddLine sExp, nExp, "End Sub"
     RunCase "T12", "RLN", "Numerische Zeilennummern (beide Formate)", sIn, nIn, sExp, nExp, 0, "Doppelpunkt-Format: '10:' weg, genau ein folgendes Leerzeichen weg; Format ohne Doppelpunkt: Ziffern werden durch Leerzeichen ersetzt; reine Nummernzeile wird leer.", True
-End Sub
-
-Private Sub Case_T12b()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub P12b()"
-    AddLine sIn, nIn, "50" & vbTab & "    w = 4"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub P12b()"
-    AddLine sExp, nExp, "    w = 4"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "T12b", "RLN", "Zeilennummer mit Tabulator (Umkehr von AddLineNumbers vbLabelTab)", sIn, nIn, sExp, nExp, 0, "Nummer und Tabulator werden entfernt, die urspruengliche Zeile entsteht wieder.", True
 End Sub
 
 Private Sub Case_T13()
@@ -1069,36 +1283,10 @@ Private Sub Case_T35()
     RunCase "T35", "OPT", "'Option Explicit' innerhalb einer Zeichenkette", sIn, nIn, sExp, nExp, 0, "Frueher wurde die ganze Zeile geloescht.", True
 End Sub
 
-Private Sub Case_T36()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub P36()"
-    AddLine sIn, nIn, "" & vbTab & "  x = 1" & vbTab & " "
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub P36()"
-    AddLine sExp, nExp, "x = 1"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "T36", "TRIM", "Tabs und Leerzeichen", sIn, nIn, sExp, nExp, 0, "F4 ii: Tabs werden wie Leerzeichen behandelt.", True
-End Sub
-
-Private Sub Case_T37()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub P37()"
-    AddLine sIn, nIn, "  " & vbTab & "  If x Then"
-    AddLine sIn, nIn, "" & vbTab & "" & vbTab & "y = 1"
-    AddLine sIn, nIn, "  End If"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub P37()"
-    AddLine sExp, nExp, "If x Then"
-    AddLine sExp, nExp, "y = 1"
-    AddLine sExp, nExp, "End If"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "T37", "TRIM", "Gemischte Einrueckung", sIn, nIn, sExp, nExp, 0, "Jede Einrueckungsart verschwindet.", True
-End Sub
-
 Private Sub Case_T38()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub P38()"
-    AddLine sIn, nIn, "    s = ""  a  b  ""  "
+    AddLine sIn, nIn, "    s = ""  a  b  """
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub P38()"
     AddLine sExp, nExp, "s = ""  a  b  """
@@ -1154,7 +1342,7 @@ Private Sub Case_T43()
     AddLine sIn, nIn, "Sub P43()"
     AddLine sIn, nIn, "10: x = ""a'b"": Debug.Print ""c ' d"": y = 2 ' Kommentar"
     AddLine sIn, nIn, "    If x = """" Then GoTo 10"
-    AddLine sIn, nIn, "20  z = Foo43(1, _"
+    AddLine sIn, nIn, "20  w43 = Foo43(1, _"
     AddLine sIn, nIn, "        2) ' Ende"
     AddLine sIn, nIn, "    Debug.Print ""a""; _"
     AddLine sIn, nIn, "        ""b"""
@@ -1166,7 +1354,7 @@ Private Sub Case_T43()
     AddLine sExp, nExp, "Sub P43()"
     AddLine sExp, nExp, "10: x = ""a'b"": y = 2"
     AddLine sExp, nExp, "If x = """" Then GoTo 10"
-    AddLine sExp, nExp, "z = Foo43(1, 2)"
+    AddLine sExp, nExp, "w43 = Foo43(1, 2)"
     AddLine sExp, nExp, "End Sub"
     AddLine sExp, nExp, "Function Foo43(a, b)"
     AddLine sExp, nExp, "Foo43 = a + b"
@@ -1301,21 +1489,6 @@ Private Sub Case_X13()
     RunCase "X13", "RLN", "obj.GoTo ist keine Sprungreferenz", sIn, nIn, sExp, nExp, 0, "Memberaufruf nach '.' referenziert kein Label.", True
 End Sub
 
-Private Sub Case_X14()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub PX14()"
-    AddLine sIn, nIn, "    If x = 1 Then 20"
-    AddLine sIn, nIn, "10  x = 2"
-    AddLine sIn, nIn, "20  x = 3"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub PX14()"
-    AddLine sExp, nExp, "    If x = 1 Then 20"
-    AddLine sExp, nExp, "    x = 2"
-    AddLine sExp, nExp, "20  x = 3"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "X14", "RLN", "If ... Then <Zeilennummer> (impliziter Sprung)", sIn, nIn, sExp, nExp, 0, "Zahl nach Then ist ein Sprungziel.", True
-End Sub
-
 Private Sub Case_X15()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Option _"
@@ -1412,16 +1585,6 @@ Private Sub Case_X23()
     AddLine sExp, nExp, "    End Select"
     AddLine sExp, nExp, "End Sub"
     RunCase "X23", "CMT", "Case Else: Rem", sIn, nIn, sExp, nExp, 0, "Case Else ist kein If.", True
-End Sub
-
-Private Sub Case_X24()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub PX24()"
-    AddLine sIn, nIn, "" & vbTab & "" & vbTab & ""
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub PX24()"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "X24", "EMPTY", "Zeile nur aus Tabs (F4 ii)", sIn, nIn, sExp, nExp, 0, "Tab-Zeilen gelten als leer.", True
 End Sub
 
 Private Sub Case_X28()
@@ -1644,46 +1807,27 @@ End Sub
 Private Sub Case_X35()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub PX35()"
-    AddLine sIn, nIn, "10  Init35: Run35"
+    AddLine sIn, nIn, "10 Init35:  Run35"
     AddLine sIn, nIn, "End Sub"
     AddLine sIn, nIn, "Sub Init35()"
     AddLine sIn, nIn, "End Sub"
     AddLine sIn, nIn, "Sub Run35()"
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub PX35()"
-    AddLine sExp, nExp, "    Call Init35: Run35"
+    AddLine sExp, nExp, "10 Init35:  Run35"
     AddLine sExp, nExp, "End Sub"
     AddLine sExp, nExp, "Sub Init35()"
     AddLine sExp, nExp, "End Sub"
     AddLine sExp, nExp, "Sub Run35()"
     AddLine sExp, nExp, "End Sub"
-    RunCase "X35", "RLN", "Nummer vor 'Name:' wird entfernt, Call eingefuegt (ohne Doppelpunkt)", sIn, nIn, sExp, nExp, 1, "Ohne Call wuerde Init35 zum Label.", True
-End Sub
-
-Private Sub Case_X35b()
-    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
-    AddLine sIn, nIn, "Sub PX35b()"
-    AddLine sIn, nIn, "10: Init35b: Run35b"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sIn, nIn, "Sub Init35b()"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sIn, nIn, "Sub Run35b()"
-    AddLine sIn, nIn, "End Sub"
-    AddLine sExp, nExp, "Sub PX35b()"
-    AddLine sExp, nExp, "Call Init35b: Run35b"
-    AddLine sExp, nExp, "End Sub"
-    AddLine sExp, nExp, "Sub Init35b()"
-    AddLine sExp, nExp, "End Sub"
-    AddLine sExp, nExp, "Sub Run35b()"
-    AddLine sExp, nExp, "End Sub"
-    RunCase "X35b", "RLN", "Nummer vor 'Name:' wird entfernt, Call eingefuegt (mit Doppelpunkt)", sIn, nIn, sExp, nExp, 1, "Wie X35, Doppelpunkt-Format.", True
+    RunCase "X35", "RLN", "Nummer vor 'Name:' bleibt (ohne Doppelpunkt-Format)", sIn, nIn, sExp, nExp, 1, "Ob 'Init35:' nach der Nummer ein zweites Label oder ein Aufruf ist, ist nicht belegt (Schreibweise des Editors wie bei einem Label): Nummer bleibt, Notice. Die Eingabe steht in der vom Excel-Editor normalisierten Form.", True
 End Sub
 
 Private Sub Case_X36()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub PX36()"
     AddLine sIn, nIn, "    x = Foo36(1, _"
-    AddLine sIn, nIn, "        _"
+    AddLine sIn, nIn, " _"
     AddLine sIn, nIn, "        2)"
     AddLine sIn, nIn, "End Sub"
     AddLine sIn, nIn, "Function Foo36(a, b)"
@@ -1704,7 +1848,7 @@ Private Sub Case_X36b()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub PX36b()"
     AddLine sIn, nIn, "    x = Foo36b(1, _"
-    AddLine sIn, nIn, "        _"
+    AddLine sIn, nIn, " _"
     AddLine sIn, nIn, "        2)"
     AddLine sIn, nIn, "End Sub"
     AddLine sIn, nIn, "Function Foo36b(a, b)"

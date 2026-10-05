@@ -10,6 +10,8 @@ Attribute VB_Name = "N_Obfuscation"
 '* Updated    : 02-10-2026          CalDymos            Transformation chain corrected: shared
 '*                                                      lexer, line edit helpers, notices, fixes
 '*                                                      in all seven transformation methods
+'* Updated    : 05-10-2026          CalDymos            Restoring a split line also removes the empty
+'*                                                      line that Excel 2019 appends to inserted text
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -583,6 +585,17 @@ Private Function TrfReplaceLine(ByVal cm As VBIDE.CodeModule, ByVal lLine As Lon
     ElseIf lExtra > 0 Then
         cm.DeleteLines lLine, lExtra + 1
         cm.InsertLines lLine, sOld
+        'Excel 2019 appends an empty line when inserted text contains a line continuation
+        If cm.CountOfLines = lBefore + 1 Then
+            If TrfIsBlank(cm.Lines(lLine + 1, 1)) Then
+                cm.DeleteLines lLine + 1, 1
+            ElseIf TrfIsBlank(cm.Lines(cm.CountOfLines, 1)) Then
+                cm.DeleteLines cm.CountOfLines, 1
+            End If
+        End If
+        If cm.CountOfLines <> lBefore Then
+            Err.Raise vbObjectError + 2602, "TrfApplyLineEdits", "Restoring line " & lLine & " changed the line count."
+        End If
         TrfAddNotice sMethod, cm.Parent.Name, lLine, "editor split the edited line; original line restored"
     Else
         TrfReplaceLine = True

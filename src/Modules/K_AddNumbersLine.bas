@@ -6,9 +6,10 @@ Attribute VB_Name = "K_AddNumbersLine"
 '* Contacts   : -
 '* Copyright  : VBATools.ru
 '* Modified   : Date and Time       Author              Description
-'* Updated    : 03-10-2026          CalDymos            RemoveLineNumbers replaced: referenced numbers kept,
+'* Updated    : 05-10-2026          CalDymos            RemoveLineNumbers replaced: referenced numbers kept,
 '*                                                      all numbers kept in procedures with Erl,
-'*                                                      Call inserted where a name would become a label
+'*                                                      number kept before 'Name:' (label or call is not
+'*                                                      proven), notices instead of silent changes
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -173,7 +174,7 @@ ErrorHandler:
 NextLine:
 169:            Next i
 170:        ElseIf AddLineNumbersToEmptyLines And Scope = vbScopeThisProc Then
-171:            'TODO selected procedure
+171:            'TODO selected prosedure
 172:        End If
 173:
 174:    End With
@@ -257,10 +258,8 @@ NextLine:
 '   - A line that consists only of the removed label becomes empty.
 '   - Leading whitespace of procedure header lines is removed (undoes the
 '     header indentation of AddLineNumbers; also done when no number exists).
-'   - "Call " is inserted when the removal would turn a lone procedure name
-'     into a label ("10 Init: Run" -> "Call Init: Run").
-'   Writes notices for procedures with Erl (numbers kept), for inserted Call
-'   and for numbers kept before a keyword statement.
+'   Writes notices for procedures with Erl (numbers kept) and for numbers
+'   kept before "Name:" (see Postconditions).
 '
 ' Preconditions:
 '   Module code is syntactically valid VBA. Access to the VBA project object
@@ -272,11 +271,12 @@ NextLine:
 '   Resume, or the implicit GoTo of "If x Then 10" / "Else 10".
 '   Decision F2 b: in a procedure that uses Erl, every line number stays,
 '   so Erl keeps returning the same values.
-'   All other numeric labels of the given type are removed. If the
-'   statement after the number is a lone name followed by ":", that name
-'   would become a label without the number: a procedure name gets "Call "
-'   in front (released by the product owner), before a keyword statement
-'   (TrfIsStandaloneKeyword) the number stays. Alphanumeric labels, numbers
+'   All other numeric labels of the given type are removed. If a lone name
+'   followed by ":" comes right after the number ("10 Init: Run"), the
+'   number stays and a notice is written: the VBA editor renders such a
+'   line like a second label ("10 Init:  Run" in Excel 2019), so it is not
+'   proven whether Init is a label or a call; keeping the number preserves
+'   either meaning (test X35g/X35h decides). Alphanumeric labels, numbers
 '   in strings, comments, dates and expressions are unchanged.
 '
 ' Errors:
@@ -328,7 +328,6 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
     Dim abGuard() As Boolean
     Dim asGuardWord() As String
     Dim sNew As String
-    Dim lPos As Long
     Dim t As Long
 
     ReDim arrNew(1 To n)
@@ -353,7 +352,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
         bEnd = False
         If nTok > 0 And Not info.IsDirective Then
             'numeric label on the first physical line of the logical line
-            If toks(0).kind = TRF_TK_LABEL And IsDigitText(toks(0).Text) Then
+            If toks(0).Kind = TRF_TK_LABEL And IsDigitText(toks(0).Text) Then
                 nLabels = nLabels + 1
                 alLine(nLabels) = i
                 asNum(nLabels) = toks(0).Text
@@ -361,7 +360,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
                 alNumLen(nLabels) = toks(0).Length
                 alColonPos(nLabels) = 0
                 If nTok > 1 Then
-                    If toks(1).kind = TRF_TK_LABEL And toks(1).Text = ":" Then alColonPos(nLabels) = toks(1).StartPos
+                    If toks(1).Kind = TRF_TK_LABEL And toks(1).Text = ":" Then alColonPos(nLabels) = toks(1).StartPos
                 End If
                 'a name followed by ":" right after the number would become a label ("10 Init: Run")
                 t = 1
@@ -369,7 +368,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
                 abGuard(nLabels) = False
                 asGuardWord(nLabels) = ""
                 If t + 1 < nTok Then
-                    abGuard(nLabels) = (toks(t).kind = TRF_TK_WORD And toks(t + 1).kind = TRF_TK_SEPARATOR)
+                    abGuard(nLabels) = (toks(t).Kind = TRF_TK_WORD And toks(t + 1).Kind = TRF_TK_SEPARATOR)
                     If abGuard(nLabels) Then asGuardWord(nLabels) = toks(t).Text
                 End If
             End If
@@ -389,22 +388,11 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
                             'decision F2 b: Erl reads the numbers, all of them stay
                             nKeptErl = nKeptErl + 1
                         ElseIf abGuard(j) Then
-                            If N_Obfuscation.TrfIsStandaloneKeyword(asGuardWord(j)) Then
-                                N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
-                                    "line number kept: keyword statement " & asGuardWord(j) & " would become a line label"
-                            Else
-                                'the line starts with whitespace and the name: put "Call " in front of the name
-                                lPos = Len(sNew) - Len(N_Obfuscation.TrfLTrimWS(sNew)) + 1
-                                sNew = Left$(sNew, lPos - 1) & "Call " & Mid$(sNew, lPos)
-                                If Len(sNew) > TRF_MAX_LINE_LENGTH Then
-                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
-                                        "line number kept: line with Call would exceed " & TRF_MAX_LINE_LENGTH & " characters"
-                                Else
-                                    arrNew(alLine(j)) = sNew
-                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
-                                        "Call inserted before " & asGuardWord(j) & ", otherwise it would become a line label"
-                                End If
-                            End If
+                            'whether VBA reads "10 Name:" as number plus second label or as number plus call
+                            'is not proven (the editor renders it like a label): keep the number, then both
+                            'readings stay unchanged
+                            N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                "line number kept: " & asGuardWord(j) & ": after it may be a label or a call"
                         Else
                             arrNew(alLine(j)) = sNew
                         End If
@@ -429,14 +417,14 @@ Private Sub CollectLineReferences(ByRef toks() As TrfToken, ByVal nTok As Long, 
     Dim j As Long
 
     For t = 0 To nTok - 1
-        If toks(t).kind = TRF_TK_WORD Then
+        If toks(t).Kind = TRF_TK_WORD Then
             If Not IsMemberName(toks, t) Then
                 Select Case LCase$(toks(t).Text)
                     Case "goto", "gosub"
                         'GoTo 10 / On x GoTo 10, 20, 30
                         j = t + 1
                         Do While j < nTok
-                            If toks(j).kind <> TRF_TK_NUMBER Then Exit Do
+                            If toks(j).Kind <> TRF_TK_NUMBER Then Exit Do
                             AddLineReference sRefs, toks(j).Text
                             If j + 2 > nTok - 1 Then Exit Do
                             If toks(j + 1).Text <> "," Then Exit Do
@@ -445,7 +433,7 @@ Private Sub CollectLineReferences(ByRef toks() As TrfToken, ByVal nTok As Long, 
                     Case "resume", "then", "else"
                         'Resume 10 / If x Then 10 / Else 10
                         If t + 1 < nTok Then
-                            If toks(t + 1).kind = TRF_TK_NUMBER Then AddLineReference sRefs, toks(t + 1).Text
+                            If toks(t + 1).Kind = TRF_TK_NUMBER Then AddLineReference sRefs, toks(t + 1).Text
                         End If
                     Case "erl"
                         bErl = True
@@ -458,7 +446,7 @@ End Sub
 'True if token t follows "." or "!" (member access such as Application.Goto).
 Private Function IsMemberName(ByRef toks() As TrfToken, ByVal t As Long) As Boolean
     If t = 0 Then Exit Function
-    If toks(t - 1).kind = TRF_TK_PUNCT Then IsMemberName = (toks(t - 1).Text = "." Or toks(t - 1).Text = "!")
+    If toks(t - 1).Kind = TRF_TK_PUNCT Then IsMemberName = (toks(t - 1).Text = "." Or toks(t - 1).Text = "!")
 End Function
 
 Private Sub AddLineReference(ByRef sRefs As String, ByVal sNumber As String)
@@ -492,7 +480,7 @@ Private Function IsProcHeaderTokens(ByRef toks() As TrfToken, ByVal nTok As Long
     Dim sWord As String
 
     Do While t < nTok
-        If toks(t).kind <> TRF_TK_WORD Then Exit Function
+        If toks(t).Kind <> TRF_TK_WORD Then Exit Function
         sWord = LCase$(toks(t).Text)
         Select Case sWord
             Case "public", "private", "friend", "static"
@@ -502,7 +490,7 @@ Private Function IsProcHeaderTokens(ByRef toks() As TrfToken, ByVal nTok As Long
                 Exit Function
             Case "property"
                 If t + 1 < nTok Then
-                    If toks(t + 1).kind = TRF_TK_WORD Then
+                    If toks(t + 1).Kind = TRF_TK_WORD Then
                         Select Case LCase$(toks(t + 1).Text)
                             Case "get", "let", "set"
                                 IsProcHeaderTokens = True
@@ -521,11 +509,11 @@ Private Function IsProcEndTokens(ByRef toks() As TrfToken, ByVal nTok As Long) A
     Dim t As Long
 
     Do While t < nTok
-        If toks(t).kind <> TRF_TK_LABEL Then Exit Do
+        If toks(t).Kind <> TRF_TK_LABEL Then Exit Do
         t = t + 1
     Loop
     If nTok - t <> 2 Then Exit Function
-    If toks(t).kind <> TRF_TK_WORD Or toks(t + 1).kind <> TRF_TK_WORD Then Exit Function
+    If toks(t).Kind <> TRF_TK_WORD Or toks(t + 1).Kind <> TRF_TK_WORD Then Exit Function
     If LCase$(toks(t).Text) <> "end" Then Exit Function
     Select Case LCase$(toks(t + 1).Text)
         Case "sub", "function", "property"
