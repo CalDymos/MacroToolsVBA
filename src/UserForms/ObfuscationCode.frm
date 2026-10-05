@@ -14,7 +14,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Module     : ObfuscationCode - обфускация кода
+'* Module     : ObfuscationCode - Code Obfuscation
 '* Created    : 15-09-2019 15:57
 '* Author     : VBATools
 '* Contacts   : -
@@ -171,7 +171,7 @@ ErrorHandler:
 154:    End With
 155: End Sub
 
-'сортировка массива
+'Sorting an array
      Private Sub Sort2_asc(arr(), col As Long)
 159:    Dim temp()      As Variant
 160:    Dim lb2 As Long, ub2 As Long, lTop As Long, lBot As Long
@@ -216,6 +216,8 @@ Private Sub lbOK_Click()
 199:    Dim wb          As Object
 200:    Dim sPath       As String
 201:    Dim sNameWB     As String
+        Dim sMsg        As String
+        Dim lNotices    As Long
 202:    oldWbName = cmbMain.Value
 203:
 204:
@@ -231,6 +233,7 @@ Private Sub lbOK_Click()
 214:
 215:    Me.Hide
 216:    If MsgBox("Do you complete the removal of the formatting code ?", vbCritical + vbYesNo, "Removing code formatting:") = vbYes Then
+            On Error GoTo ErrHandler
 217:
 218:        If Not wb.Name Like "*_obf_*" Then
 219:            sPath = Left(wb.FullName, Len(wb.FullName) - Len(wb.Name))
@@ -242,6 +245,7 @@ Private Sub lbOK_Click()
 225:            wb.SaveAs Filename:=sPath & arrNameFile(0) & "_obf_" & Replace(Now(), ":", ".") & "." & arrNameFile(1)    ', FileFormat:=wb.FileFormat
 226:        End If
 227:        j = -1
+            N_Obfuscation.TrfClearNotices
 228:
 229:        Set vbProj = wb.VBProject
 230:        For i = 0 To ListCode.ListCount - 1
@@ -272,13 +276,34 @@ Private Sub lbOK_Click()
 252:                End If
 253:            End If
 254:        Next i
+            Set vbComp = Nothing
 255:
 256:        wb.Save
-257:        Call MsgBox("Removing formatting [" & oldWbName & "] completed!", vbInformation, "Removing Formatting:")
+            On Error GoTo 0
+            lNotices = N_Obfuscation.TrfNoticeCount
+            sMsg = "Removing formatting [" & oldWbName & "] completed!"
+            If lNotices > 0 Then
+                sMsg = sMsg & vbLf & vbLf & lNotices & " place(s) were intentionally left unchanged." & vbLf & _
+                       "Details: Immediate window of the VBA editor (Ctrl+G)."
+            End If
+257:        Call MsgBox(sMsg, vbInformation, "Removing Formatting:")
 258:        cmbMain.Value = wb.Name
 259:        Me.Show
 260:        Exit Sub
 261:    End If
 262:    cmbMain.Value = wb.Name
 263:    Me.Show
+        Exit Sub
+ErrHandler:
+        'errors of the transformation methods are no longer hidden: report them and show the form again
+        sMsg = "Error " & Err.Number & ": " & Err.Description & vbLf & "in the line " & Erl
+        If Not vbComp Is Nothing Then sMsg = sMsg & vbLf & "Module: " & vbComp.Name
+        sMsg = sMsg & vbLf & vbLf & "The workbook [" & wb.Name & "] was not saved and may be partly transformed."
+        Call MsgBox(sMsg, vbCritical, "Removing Formatting:")
+        Call WriteErrorLog("ObfuscationCode.lbOK_Click")
+        Resume ShowForm
+ShowForm:
+        On Error GoTo 0
+        Me.Show
 End Sub
+

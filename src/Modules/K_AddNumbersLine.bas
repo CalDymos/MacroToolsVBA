@@ -1,10 +1,14 @@
 Attribute VB_Name = "K_AddNumbersLine"
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Module     : K_AddNumbersLine - создание номерации строк кода VBA
+'* Module     : K_AddNumbersLine - Creating VBA code line numbering
 '* Created    : 15-09-2019 15:48
 '* Author     : VBATools
 '* Contacts   : -
 '* Copyright  : VBATools.ru
+'* Modified   : Date and Time       Author              Description
+'* Updated    : 03-10-2026          CalDymos            RemoveLineNumbers replaced: referenced numbers kept,
+'*                                                      all numbers kept in procedures with Erl,
+'*                                                      Call inserted where a name would become a label
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -169,7 +173,7 @@ ErrorHandler:
 NextLine:
 169:            Next i
 170:        ElseIf AddLineNumbersToEmptyLines And Scope = vbScopeThisProc Then
-171:            'TODO selected prosedure
+171:            'TODO selected procedure
 172:        End If
 173:
 174:    End With
@@ -227,45 +231,339 @@ NextLine:
 226:        Loop
 227:    End With
 228: End Sub
-     Public Sub RemoveLineNumbers(ByVal vbCompObj As VBIDE.VBComponent, ByVal LabelType As vbLineNumbers_LabelTypes)
-230:    Dim i      As Long
-231:    Dim RemovedChars_previous_i As Long
-232:    Dim ProcName As String
-233:    Dim InProcBodyLines As Boolean
-234:    Dim tupe_procedure As vbext_ProcKind
-235:    With vbCompObj.CodeModule
-236:        'Debug.Print ("nr of lines = " & .CountOfLines & vbNewLine & "Procname = " & procName)
-237:        'Debug.Print ("nr of lines REMEMBER MUST BE LARGER THAN 7! = " & .CountOfLines)
-238:        For i = 1 To .CountOfLines
-239:            ProcName = .ProcOfLine(i, tupe_procedure)
-240:            If ProcName <> vbNullString Then
-241:                If i > 1 Then
-242:                    'Debug.Print ("Line " & i & " is a body line " & .ProcBodyLine(procName, tupe_procedure))
-243:                    If i = .ProcBodyLine(ProcName, tupe_procedure) Then InProcBodyLines = True
-244:                    If Not .Lines(i - 1, 1) Like "* _" Then
-245:                        'Debug.Print (InProcBodyLines)
-246:                        InProcBodyLines = False
-247:                        'Debug.Print ("recoginized a line that should be substituted: " & i)
-248:                        'Debug.Print ("about to replace " & .Lines(i, 1) & vbNewLine & " with: " & RemoveOneLineNumber(.Lines(i, 1), LabelType) & vbNewLine & " with label type: " & LabelType)
-249:                        On Error Resume Next
-250:                        .ReplaceLine i, RemoveOneLineNumber(.Lines(i, 1), LabelType)
-251:                        On Error GoTo 0
-252:                    Else
-253:                        If InProcBodyLines Then
-254:                            ' do nothing
-255:                            'Debug.Print i
-256:                        Else
-257:                            On Error Resume Next
-258:                            .ReplaceLine i, Mid$(.Lines(i, 1), RemovedChars_previous_i + 1)
-259:                            On Error GoTo 0
-260:                        End If
-261:                    End If
-262:                End If
-263:            Else
-264:            End If
-265:        Next i
-266:    End With
-267: End Sub
+'===============================================================================
+' Procedure : RemoveLineNumbers
+' Purpose   : Removes numeric line number labels that no statement refers to.
+'
+' Parameters:
+'   vbCompObj - VBIDE.VBComponent, ByVal, component whose code is changed
+'   LabelType - vbLineNumbers_LabelTypes, ByVal:
+'               vbLabelColon (0): labels written as "10:" ("10: x = 1",
+'                                 also "10 : x = 1")
+'               vbLabelTab   (1): labels without colon ("10 x = 1",
+'                                 "10<Tab>x = 1", "10        x = 1")
+'               other values: no change
+'
+' Returns:
+'   Keiner
+'
+' Side Effects:
+'   Replaces lines of the code module (no line is inserted or deleted):
+'   - vbLabelColon: "10:" is removed; if exactly one space follows, it is
+'     removed too (inverse of AddLineNumbers).
+'   - vbLabelTab: a number followed by a tab is removed with the tab
+'     (inverse of AddLineNumbers with vbLabelTab); otherwise the digits are
+'     replaced by spaces, so the code keeps its column.
+'   - A line that consists only of the removed label becomes empty.
+'   - Leading whitespace of procedure header lines is removed (undoes the
+'     header indentation of AddLineNumbers; also done when no number exists).
+'   - "Call " is inserted when the removal would turn a lone procedure name
+'     into a label ("10 Init: Run" -> "Call Init: Run").
+'   Writes notices for procedures with Erl (numbers kept), for inserted Call
+'   and for numbers kept before a keyword statement.
+'
+' Preconditions:
+'   Module code is syntactically valid VBA. Access to the VBA project object
+'   model is trusted.
+'
+' Postconditions:
+'   A line number stays unchanged if a statement of the same procedure
+'   refers to it via GoTo, GoSub, On ... GoTo/GoSub (list), On Error GoTo,
+'   Resume, or the implicit GoTo of "If x Then 10" / "Else 10".
+'   Decision F2 b: in a procedure that uses Erl, every line number stays,
+'   so Erl keeps returning the same values.
+'   All other numeric labels of the given type are removed. If the
+'   statement after the number is a lone name followed by ":", that name
+'   would become a label without the number: a procedure name gets "Call "
+'   in front (released by the product owner), before a keyword statement
+'   (TrfIsStandaloneKeyword) the number stays. Alphanumeric labels, numbers
+'   in strings, comments, dates and expressions are unchanged.
+'
+' Errors:
+'   No local handler. Errors of the VBIDE object model are passed to the
+'   caller (the former On Error Resume Next hid failed replacements).
+'
+' Notes:
+'   Labels are scoped per procedure; procedures are delimited by the lines
+'   End Sub / End Function / End Property. References in inactive #If
+'   branches also protect a number (conservative). obj.GoTo / obj.Resume are
+'   member calls, not references.
+'   Erl returns the last numbered line executed before the error; code like
+'   "If Erl = 20 Then Resume 30" depends on it. Therefore numbers are kept
+'   in the whole procedure as soon as Erl appears in it (F2 b, replaces the
+'   former decision F2 a). Erl as a member name (obj.Erl) does not count.
+'   Numbers of any length are recognised (formerly 1 to 4 digits only).
+'===============================================================================
+Public Sub RemoveLineNumbers(ByVal vbCompObj As VBIDE.VBComponent, ByVal LabelType As vbLineNumbers_LabelTypes)
+    Dim arrLines() As String
+    Dim arrNew() As String
+    Dim abKeep() As Boolean
+    Dim n As Long
+
+    n = N_Obfuscation.TrfReadLines(vbCompObj.CodeModule, arrLines)
+    If n = 0 Then Exit Sub
+    RemoveLineNumberEdits arrLines, n, LabelType, vbCompObj.Name, arrNew, abKeep
+    N_Obfuscation.TrfApplyLineEdits vbCompObj.CodeModule, arrLines, arrNew, abKeep, n, "RemoveLineNumbers"
+End Sub
+
+'Computes the edits of RemoveLineNumbers (pure function, no module access).
+Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, ByVal LabelType As vbLineNumbers_LabelTypes, _
+                                  ByVal sModule As String, ByRef arrNew() As String, ByRef abKeep() As Boolean)
+    Dim i As Long
+    Dim l As Long
+    Dim j As Long
+    Dim toks() As TrfToken
+    Dim nTok As Long
+    Dim info As TrfLineInfo
+    Dim sRefs As String
+    Dim bErl As Boolean
+    Dim bEnd As Boolean
+    Dim nLabels As Long
+    Dim nKeptErl As Long
+    Dim alLine() As Long
+    Dim asNum() As String
+    Dim alNumPos() As Long
+    Dim alNumLen() As Long
+    Dim alColonPos() As Long
+    Dim abGuard() As Boolean
+    Dim asGuardWord() As String
+    Dim sNew As String
+    Dim lPos As Long
+    Dim t As Long
+
+    ReDim arrNew(1 To n)
+    ReDim abKeep(1 To n)
+    ReDim alLine(1 To n)
+    ReDim asNum(1 To n)
+    ReDim alNumPos(1 To n)
+    ReDim alNumLen(1 To n)
+    ReDim alColonPos(1 To n)
+    ReDim abGuard(1 To n)
+    ReDim asGuardWord(1 To n)
+    For i = 1 To n
+        arrNew(i) = arrLines(i)
+        abKeep(i) = True
+    Next i
+
+    sRefs = "|"
+    i = 1
+    Do While i <= n
+        l = N_Obfuscation.TrfLogicalLineEnd(arrLines, i, n)
+        N_Obfuscation.TrfScanLogicalLine arrLines, i, l, toks, nTok, info
+        bEnd = False
+        If nTok > 0 And Not info.IsDirective Then
+            'numeric label on the first physical line of the logical line
+            If toks(0).kind = TRF_TK_LABEL And IsDigitText(toks(0).Text) Then
+                nLabels = nLabels + 1
+                alLine(nLabels) = i
+                asNum(nLabels) = toks(0).Text
+                alNumPos(nLabels) = toks(0).StartPos
+                alNumLen(nLabels) = toks(0).Length
+                alColonPos(nLabels) = 0
+                If nTok > 1 Then
+                    If toks(1).kind = TRF_TK_LABEL And toks(1).Text = ":" Then alColonPos(nLabels) = toks(1).StartPos
+                End If
+                'a name followed by ":" right after the number would become a label ("10 Init: Run")
+                t = 1
+                If alColonPos(nLabels) > 0 Then t = 2
+                abGuard(nLabels) = False
+                asGuardWord(nLabels) = ""
+                If t + 1 < nTok Then
+                    abGuard(nLabels) = (toks(t).kind = TRF_TK_WORD And toks(t + 1).kind = TRF_TK_SEPARATOR)
+                    If abGuard(nLabels) Then asGuardWord(nLabels) = toks(t).Text
+                End If
+            End If
+            CollectLineReferences toks, nTok, sRefs, bErl
+            If IsProcHeaderTokens(toks, nTok) Then arrNew(i) = N_Obfuscation.TrfLTrimWS(arrLines(i))
+            bEnd = IsProcEndTokens(toks, nTok)
+        End If
+
+        If bEnd Or l = n Then
+            'end of a procedure (or of the module): labels of this scope are known
+            nKeptErl = 0
+            For j = 1 To nLabels
+                If InStr(1, sRefs, "|" & NormalizeLineNumber(asNum(j)) & "|") = 0 Then
+                    sNew = LineWithoutNumber(arrLines(alLine(j)), alNumPos(j), alNumLen(j), alColonPos(j), LabelType)
+                    If sNew <> arrLines(alLine(j)) Then
+                        If bErl Then
+                            'decision F2 b: Erl reads the numbers, all of them stay
+                            nKeptErl = nKeptErl + 1
+                        ElseIf abGuard(j) Then
+                            If N_Obfuscation.TrfIsStandaloneKeyword(asGuardWord(j)) Then
+                                N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                    "line number kept: keyword statement " & asGuardWord(j) & " would become a line label"
+                            Else
+                                'the line starts with whitespace and the name: put "Call " in front of the name
+                                lPos = Len(sNew) - Len(N_Obfuscation.TrfLTrimWS(sNew)) + 1
+                                sNew = Left$(sNew, lPos - 1) & "Call " & Mid$(sNew, lPos)
+                                If Len(sNew) > TRF_MAX_LINE_LENGTH Then
+                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                        "line number kept: line with Call would exceed " & TRF_MAX_LINE_LENGTH & " characters"
+                                Else
+                                    arrNew(alLine(j)) = sNew
+                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                        "Call inserted before " & asGuardWord(j) & ", otherwise it would become a line label"
+                                End If
+                            End If
+                        Else
+                            arrNew(alLine(j)) = sNew
+                        End If
+                    End If
+                End If
+            Next j
+            If nKeptErl > 0 Then
+                N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(1), _
+                    "procedure uses Erl; " & nKeptErl & " line number(s) kept (decision F2 b)"
+            End If
+            nLabels = 0
+            sRefs = "|"
+            bErl = False
+        End If
+        i = l + 1
+    Loop
+End Sub
+
+'Adds the line numbers that statements of one logical line refer to.
+Private Sub CollectLineReferences(ByRef toks() As TrfToken, ByVal nTok As Long, ByRef sRefs As String, ByRef bErl As Boolean)
+    Dim t As Long
+    Dim j As Long
+
+    For t = 0 To nTok - 1
+        If toks(t).kind = TRF_TK_WORD Then
+            If Not IsMemberName(toks, t) Then
+                Select Case LCase$(toks(t).Text)
+                    Case "goto", "gosub"
+                        'GoTo 10 / On x GoTo 10, 20, 30
+                        j = t + 1
+                        Do While j < nTok
+                            If toks(j).kind <> TRF_TK_NUMBER Then Exit Do
+                            AddLineReference sRefs, toks(j).Text
+                            If j + 2 > nTok - 1 Then Exit Do
+                            If toks(j + 1).Text <> "," Then Exit Do
+                            j = j + 2
+                        Loop
+                    Case "resume", "then", "else"
+                        'Resume 10 / If x Then 10 / Else 10
+                        If t + 1 < nTok Then
+                            If toks(t + 1).kind = TRF_TK_NUMBER Then AddLineReference sRefs, toks(t + 1).Text
+                        End If
+                    Case "erl"
+                        bErl = True
+                End Select
+            End If
+        End If
+    Next t
+End Sub
+
+'True if token t follows "." or "!" (member access such as Application.Goto).
+Private Function IsMemberName(ByRef toks() As TrfToken, ByVal t As Long) As Boolean
+    If t = 0 Then Exit Function
+    If toks(t - 1).kind = TRF_TK_PUNCT Then IsMemberName = (toks(t - 1).Text = "." Or toks(t - 1).Text = "!")
+End Function
+
+Private Sub AddLineReference(ByRef sRefs As String, ByVal sNumber As String)
+    Dim sKey As String
+
+    sKey = "|" & NormalizeLineNumber(sNumber) & "|"
+    If InStr(1, sRefs, sKey) = 0 Then sRefs = sRefs & Mid$(sKey, 2)
+End Sub
+
+'Line numbers compare as numbers: "010" and "10" are the same label.
+Private Function NormalizeLineNumber(ByVal sNumber As String) As String
+    Do While Len(sNumber) > 1 And Left$(sNumber, 1) = "0"
+        sNumber = Mid$(sNumber, 2)
+    Loop
+    NormalizeLineNumber = sNumber
+End Function
+
+Private Function IsDigitText(ByVal sText As String) As Boolean
+    Dim p As Long
+
+    If Len(sText) = 0 Then Exit Function
+    For p = 1 To Len(sText)
+        If AscW(Mid$(sText, p, 1)) < 48 Or AscW(Mid$(sText, p, 1)) > 57 Then Exit Function
+    Next p
+    IsDigitText = True
+End Function
+
+'True for [Public|Private|Friend] [Static] Sub|Function|Property Get|Let|Set (not Declare).
+Private Function IsProcHeaderTokens(ByRef toks() As TrfToken, ByVal nTok As Long) As Boolean
+    Dim t As Long
+    Dim sWord As String
+
+    Do While t < nTok
+        If toks(t).kind <> TRF_TK_WORD Then Exit Function
+        sWord = LCase$(toks(t).Text)
+        Select Case sWord
+            Case "public", "private", "friend", "static"
+                t = t + 1
+            Case "sub", "function"
+                IsProcHeaderTokens = True
+                Exit Function
+            Case "property"
+                If t + 1 < nTok Then
+                    If toks(t + 1).kind = TRF_TK_WORD Then
+                        Select Case LCase$(toks(t + 1).Text)
+                            Case "get", "let", "set"
+                                IsProcHeaderTokens = True
+                        End Select
+                    End If
+                End If
+                Exit Function
+            Case Else
+                Exit Function
+        End Select
+    Loop
+End Function
+
+'True for "End Sub", "End Function", "End Property" (a label before it is allowed).
+Private Function IsProcEndTokens(ByRef toks() As TrfToken, ByVal nTok As Long) As Boolean
+    Dim t As Long
+
+    Do While t < nTok
+        If toks(t).kind <> TRF_TK_LABEL Then Exit Do
+        t = t + 1
+    Loop
+    If nTok - t <> 2 Then Exit Function
+    If toks(t).kind <> TRF_TK_WORD Or toks(t + 1).kind <> TRF_TK_WORD Then Exit Function
+    If LCase$(toks(t).Text) <> "end" Then Exit Function
+    Select Case LCase$(toks(t + 1).Text)
+        Case "sub", "function", "property"
+            IsProcEndTokens = True
+    End Select
+End Function
+
+'Returns the line without its line number label of the given type (unchanged if the type does not match).
+Private Function LineWithoutNumber(ByVal sLine As String, ByVal lNumPos As Long, ByVal lNumLen As Long, _
+                                   ByVal lColonPos As Long, ByVal LabelType As vbLineNumbers_LabelTypes) As String
+    Dim sLead As String
+    Dim sRest As String
+
+    LineWithoutNumber = sLine
+    sLead = Left$(sLine, lNumPos - 1)
+    If LabelType = vbLabelColon Then
+        If lColonPos = 0 Then Exit Function
+        sRest = Mid$(sLine, lColonPos + 1)
+        If Len(sRest) >= 2 Then
+            If Left$(sRest, 1) = " " And Mid$(sRest, 2, 1) <> " " Then sRest = Mid$(sRest, 2)
+        End If
+    ElseIf LabelType = vbLabelTab Then
+        If lColonPos > 0 Then Exit Function
+        sRest = Mid$(sLine, lNumPos + lNumLen)
+        If Left$(sRest, 1) = vbTab Then
+            sRest = Mid$(sRest, 2)
+        Else
+            sRest = Space$(lNumLen) & sRest
+        End If
+    Else
+        Exit Function
+    End If
+    If N_Obfuscation.TrfIsBlank(sLead & sRest) Then
+        LineWithoutNumber = ""
+    Else
+        LineWithoutNumber = sLead & sRest
+    End If
+End Function
      Private Function RemoveOneLineNumber(ByVal aString As String, ByVal LabelType As vbLineNumbers_LabelTypes) As Variant
 269:    RemoveOneLineNumber = aString
 270:    If LabelType = vbLabelColon Then
@@ -288,11 +586,10 @@ NextLine:
 287:        HasLabel = Mid$(aString, 1, 4) Like "#   " Or Mid$(aString, 1, 4) Like "##  " Or Mid$(aString, 1, 4) Like "### " Or Mid$(aString, 1, 5) Like "#### "
 288:    End If
 289: End Function
-'удаляет все пробелы вначале строки
+'Removes all spaces at the beginning of the line
 Private Function RemoveLeadingSpaces(ByVal aString As String) As String
 292:    Do Until Left$(aString, 1) <> " "
 293:        aString = Mid$(aString, 2)
 294:    Loop
 295:    RemoveLeadingSpaces = aString
 End Function
-
