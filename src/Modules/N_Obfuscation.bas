@@ -10,8 +10,9 @@ Attribute VB_Name = "N_Obfuscation"
 '* Updated    : 02-10-2026          CalDymos            Transformation chain corrected: shared
 '*                                                      lexer, line edit helpers, notices, fixes
 '*                                                      in all seven transformation methods
-'* Updated    : 05-10-2026          CalDymos            Restoring a split line also removes the empty
-'*                                                      line that Excel 2019 appends to inserted text
+'* Updated    : 05-10-2026          CalDymos              Declarations with hidden attributes are kept
+'*                                                      (the editor drops attributes on ReplaceLine),
+'*                                                      line limit 1022, restore path hardened
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -26,12 +27,16 @@ Option Private Module
 '      deleted. All analysis therefore uses the unchanged original indices.
 '   3. TrfApplyLineEdits writes only the changed lines back, bottom-up, so
 '      that deletions never shift the index of a line that is still pending.
+'      Declarations of members with hidden attributes (VB_UserMemId,
+'      VB_Description, VB_ProcData, ...) are not changed: the VBA editor drops
+'      the attributes when a line of such a declaration is replaced (tests D1,
+'      D2, D5, D8 in Excel 2019).
 '===============================================================================
 
-'Longest physical line the VBA editor stores. A longer line is split by the
-'editor after exactly 1023 characters (verified with a merged statement of
-'1166 characters).
-Public Const TRF_MAX_LINE_LENGTH As Long = 1023
+'Longest physical line that the transformation writes. Excel 2019 splits a
+'line of 1023 characters written by ReplaceLine (test X01); test X39 reports
+'the exact limit. Longer statements keep their line continuations.
+Public Const TRF_MAX_LINE_LENGTH As Long = 1022
 
 'Token kinds produced by TrfScanLogicalLine
 Public Const TRF_TK_WORD As Long = 1        'identifier or keyword
@@ -513,59 +518,105 @@ End Function
 '
 ' Side Effects:
 '   DeleteLines for every run of deleted lines, ReplaceLine for every kept
-'   line whose text changed. Unchanged lines are not touched.
+'   line whose text changed. Unchanged lines are not touched. If a
+'   declaration line is edited, the component is exported once to a
+'   temporary file (deleted again) to read its hidden attributes.
 '
 ' Preconditions:
 '   The module was not changed since arrOld was read. No line is inserted.
 '
 ' Postconditions:
 '   The module consists of arrNew(i) for every i with abKeep(i) = True, in
-'   the original order.
+'   the original order, except for the logical lines that stay unchanged:
+'   - declarations of members with hidden attributes (see Notes),
+'   - lines that the editor would split (see Notes).
+'   Each such case writes a notice.
 '
 ' Errors:
 '   Errors of the VBIDE object model are passed to the caller. Raises an
-'   error if the line count shrinks after ReplaceLine (not expected).
+'   error if the line count shrinks after ReplaceLine (not expected), if a
+'   restore does not give the old line count, or if the export for the
+'   attribute check fails (nothing is changed then).
 '
 ' Notes:
-'   Works from the last line to the first, so a deletion never shifts the
-'   index of a line that is still to be processed. A changed line directly
-'   above a run of deleted lines is replaced before the run is deleted: the
-'   line is then complete (for example a joined procedure header) while its
-'   former continuation lines still exist, instead of absorbing the next
-'   line (for example End Property) for a moment. If the editor stores a
-'   replaced line as several lines (line too long), that line is restored,
-'   a run below it that continues it is kept, and a notice is written.
-'   The callers never produce lines longer than TRF_MAX_LINE_LENGTH, so this
-'   path only protects against unknown editor behaviour.
+'   Attributes: the VBA editor drops the hidden attributes of a member
+'   (Attribute Amount.VB_UserMemId = 0, macro shortcut keys, descriptions)
+'   when a line of its declaration is replaced (Excel 2019, tests D1, D2,
+'   D5, D8). Edits of a procedure header (all its physical lines) and of a
+'   line in the declarations section that names such a member are therefore
+'   undone as a whole logical line. Edits inside procedure bodies and
+'   deleting lines above a header keep the attributes (tests D4, D6, D7,
+'   D9, D10). Module attributes (VB_Name, VB_PredeclaredId) are not
+'   affected. "VB_VarHelpID = -1" (written for every WithEvents variable)
+'   is ignored. Option and Implements lines never need the export.
+'   Order: works from the last line to the first, so a deletion never
+'   shifts the index of a line that is still to be processed. A changed line
+'   directly above a run of deleted lines is replaced before the run is
+'   deleted: the line is then complete (for example a joined procedure
+'   header) while its former continuation lines still exist, instead of
+'   absorbing the next line (for example End Property) for a moment.
+'   Split lines: if the editor stores a replaced line as several lines (line
+'   too long), that line is restored, the lines of the run below it that
+'   continue it are kept and written back if the editor changed them
+'   meanwhile (a line that consists of a number only is rendered as a line
+'   number label, test X26), and a notice is written. The callers never produce lines longer
+'   than TRF_MAX_LINE_LENGTH, so this path only protects against unknown
+'   editor behaviour.
 '===============================================================================
 Public Sub TrfApplyLineEdits(ByVal cm As VBIDE.CodeModule, ByRef arrOld() As String, ByRef arrNew() As String, _
                              ByRef abKeep() As Boolean, ByVal lCount As Long, ByVal sMethod As String)
+    Dim asNew() As String
+    Dim abK() As Boolean
     Dim i As Long
     Dim j As Long
+    Dim k As Long
+    Dim lEnd As Long
     Dim bDelete As Boolean
+    Dim bAny As Boolean
+
+    If lCount < 1 Then Exit Sub
+    ReDim asNew(1 To lCount)
+    ReDim abK(1 To lCount)
+    For i = 1 To lCount
+        asNew(i) = arrNew(i)
+        abK(i) = abKeep(i)
+        If (Not abK(i)) Or asNew(i) <> arrOld(i) Then bAny = True
+    Next i
+    If Not bAny Then Exit Sub
+    TrfProtectAttributes cm, arrOld, asNew, abK, lCount, sMethod
 
     i = lCount
     Do While i >= 1
-        If Not abKeep(i) Then
+        If Not abK(i) Then
             'lines j..i are deleted
             j = i
             Do While j > 1
-                If abKeep(j - 1) Then Exit Do
+                If abK(j - 1) Then Exit Do
                 j = j - 1
             Loop
             bDelete = True
             If j > 1 Then
-                If arrNew(j - 1) <> arrOld(j - 1) Then
+                If asNew(j - 1) <> arrOld(j - 1) Then
                     'after a restore, a run that continues line j - 1 must stay with it
-                    If Not TrfReplaceLine(cm, j - 1, arrNew(j - 1), arrOld(j - 1), sMethod) Then
-                        bDelete = Not TrfIsContinuationLine(arrOld(j - 1))
+                    If Not TrfReplaceLine(cm, j - 1, asNew(j - 1), arrOld(j - 1), sMethod) Then
+                        'line j - 1 is original again: the lines that continue it stay, the rest of the run goes
+                        lEnd = TrfLogicalLineEnd(arrOld, j - 1, lCount)
+                        If lEnd > i Then lEnd = i
+                        If lEnd >= j Then
+                            If lEnd < i Then cm.DeleteLines lEnd + 1, i - lEnd
+                            'while line j - 1 ended the statement, the editor may have rendered these lines anew
+                            For k = j To lEnd
+                                If cm.Lines(k, 1) <> arrOld(k) Then cm.ReplaceLine k, arrOld(k)
+                            Next k
+                            bDelete = False
+                        End If
                     End If
                 End If
             End If
             If bDelete Then cm.DeleteLines j, i - j + 1
             i = j - 2   'line j - 1 is done as well
         Else
-            If arrNew(i) <> arrOld(i) Then TrfReplaceLine cm, i, arrNew(i), arrOld(i), sMethod
+            If asNew(i) <> arrOld(i) Then TrfReplaceLine cm, i, asNew(i), arrOld(i), sMethod
             i = i - 1
         End If
     Loop
@@ -585,13 +636,10 @@ Private Function TrfReplaceLine(ByVal cm As VBIDE.CodeModule, ByVal lLine As Lon
     ElseIf lExtra > 0 Then
         cm.DeleteLines lLine, lExtra + 1
         cm.InsertLines lLine, sOld
-        'Excel 2019 appends an empty line when inserted text contains a line continuation
-        If cm.CountOfLines = lBefore + 1 Then
-            If TrfIsBlank(cm.Lines(lLine + 1, 1)) Then
-                cm.DeleteLines lLine + 1, 1
-            ElseIf TrfIsBlank(cm.Lines(cm.CountOfLines, 1)) Then
-                cm.DeleteLines cm.CountOfLines, 1
-            End If
+        'Excel 2019 appends an empty line after inserted text with a line continuation at the END of a
+        'module (inside a module it does not, test X37). Only that case is undone here.
+        If cm.CountOfLines = lBefore + 1 And lLine = cm.CountOfLines - 1 Then
+            If TrfIsBlank(cm.Lines(cm.CountOfLines, 1)) Then cm.DeleteLines cm.CountOfLines, 1
         End If
         If cm.CountOfLines <> lBefore Then
             Err.Raise vbObjectError + 2602, "TrfApplyLineEdits", "Restoring line " & lLine & " changed the line count."
@@ -600,6 +648,219 @@ Private Function TrfReplaceLine(ByVal cm As VBIDE.CodeModule, ByVal lLine As Lon
     Else
         TrfReplaceLine = True
     End If
+End Function
+
+'Undoes the edits of declarations whose member has hidden attributes (see TrfApplyLineEdits).
+'Pass 1 only checks whether a declaration is edited at all, so the export is needed only then.
+Private Sub TrfProtectAttributes(ByVal cm As VBIDE.CodeModule, ByRef arrOld() As String, ByRef asNew() As String, _
+                                 ByRef abK() As Boolean, ByVal lCount As Long, ByVal sMethod As String)
+    Dim sNames As String
+    Dim lPass As Long
+    Dim i As Long
+    Dim l As Long
+    Dim k As Long
+    Dim toks() As TrfToken
+    Dim nTok As Long
+    Dim info As TrfLineInfo
+    Dim bSeenProc As Boolean
+    Dim bEdited As Boolean
+    Dim bDecl As Boolean
+    Dim bFound As Boolean
+    Dim sName As String
+
+    For lPass = 1 To 2
+        If lPass = 2 Then
+            sNames = TrfAttributedMembers(cm)
+            If sNames = "|" Then Exit Sub
+        End If
+        bSeenProc = False
+        bFound = False
+        i = 1
+        Do While i <= lCount
+            l = TrfLogicalLineEnd(arrOld, i, lCount)
+            bEdited = False
+            For k = i To l
+                If (Not abK(k)) Or asNew(k) <> arrOld(k) Then bEdited = True
+            Next k
+            bDecl = False
+            sName = ""
+            If bEdited Or Not bSeenProc Then
+                TrfScanLogicalLine arrOld, i, l, toks, nTok, info
+                If nTok > 0 And Not info.IsDirective Then
+                    sName = TrfProcHeaderName(toks, nTok)
+                    If Len(sName) > 0 Then
+                        bSeenProc = True
+                        bDecl = True
+                        If lPass = 2 Then bDecl = (InStr(1, sNames, "|" & LCase$(sName) & "|") > 0)
+                    ElseIf Not bSeenProc And Not TrfIsOptionLine(toks, nTok) Then
+                        'declarations section: a line that names a member with attributes
+                        bDecl = True
+                        If lPass = 2 Then
+                            sName = TrfNameTokenIn(toks, nTok, sNames)
+                            bDecl = (Len(sName) > 0)
+                        End If
+                    End If
+                End If
+            End If
+            If bEdited And bDecl Then
+                bFound = True
+                If lPass = 1 Then Exit Do
+                For k = i To l
+                    asNew(k) = arrOld(k)
+                    abK(k) = True
+                Next k
+                TrfAddNotice sMethod, cm.Parent.Name, i, "declaration of " & sName & _
+                    " has hidden attributes; not changed (the editor would drop them)"
+            End If
+            i = l + 1
+        Loop
+        If Not bFound Then Exit Sub
+    Next lPass
+End Sub
+
+'Returns "|name|name|" (lower case) of the members that carry hidden attributes, read from an export
+'of the component ("Attribute Amount.VB_UserMemId = 0"). Module attributes (VB_Name) are ignored.
+Private Function TrfAttributedMembers(ByVal cm As VBIDE.CodeModule) As String
+    Dim sPath As String
+    Dim sFrx As String
+    Dim f As Integer
+    Dim sLine As String
+    Dim sNames As String
+    Dim sName As String
+    Dim p As Long
+    Dim lErr As Long
+    Dim sErr As String
+
+    On Error GoTo EH
+    sNames = "|"
+    sPath = TrfTempFolder() & "MT_TrfAttr_" & cm.Parent.Name & ".txt"
+    sFrx = Left$(sPath, Len(sPath) - 4) & ".frx"
+    TrfKillFile sPath
+    TrfKillFile sFrx
+    cm.Parent.Export sPath
+    f = FreeFile
+    Open sPath For Input As #f
+    Do While Not EOF(f)
+        Line Input #f, sLine
+        'VB_VarHelpID = -1 is written for every WithEvents variable and has no effect: it does not count
+        If Left$(sLine, 10) = "Attribute " And InStr(1, sLine, ".VB_VarHelpID = -1") = 0 Then
+            p = InStr(11, sLine, ".VB_")
+            If p > 11 Then
+                sName = Mid$(sLine, 11, p - 11)
+                If Left$(sName, 1) = "[" And Right$(sName, 1) = "]" Then
+                    sName = Mid$(sName, 2, Len(sName) - 2)
+                ElseIf InStr(1, sName, " ") > 0 Or InStr(1, sName, "=") > 0 Or InStr(1, sName, Chr$(34)) > 0 Then
+                    sName = ""   'not a member attribute (for example a module description containing ".VB_")
+                End If
+                If Len(sName) > 0 Then
+                    If InStr(1, sNames, "|" & LCase$(sName) & "|") = 0 Then sNames = sNames & LCase$(sName) & "|"
+                End If
+            End If
+        End If
+    Loop
+    Close #f
+    f = 0
+CleanUp:
+    On Error Resume Next
+    If f <> 0 Then Close #f
+    TrfKillFile sPath
+    TrfKillFile sFrx
+    On Error GoTo 0
+    If lErr <> 0 Then
+        Err.Raise vbObjectError + 2603, "TrfApplyLineEdits", "Export for the attribute check failed (" & lErr & ": " & sErr & ")."
+    End If
+    TrfAttributedMembers = sNames
+    Exit Function
+EH:
+    lErr = Err.Number
+    sErr = Err.Description
+    Resume CleanUp
+End Function
+
+'Folder for temporary files, with a trailing path separator.
+Private Function TrfTempFolder() As String
+    Dim s As String
+
+    s = Environ$("TEMP")
+    If Len(s) = 0 Then s = Environ$("TMP")
+    If Len(s) = 0 Then s = CurDir$
+    If Right$(s, 1) <> "\" Then s = s & "\"
+    TrfTempFolder = s
+End Function
+
+Private Sub TrfKillFile(ByVal sPath As String)
+    If Len(Dir$(sPath)) > 0 Then Kill sPath
+End Sub
+
+'Name of the procedure declared by the logical line ("" if it is not a Sub, Function or Property header).
+Public Function TrfProcHeaderName(ByRef toks() As TrfToken, ByVal nTok As Long) As String
+    Dim t As Long
+
+    Do While t < nTok
+        If toks(t).Kind <> TRF_TK_WORD Then Exit Function
+        Select Case LCase$(toks(t).Text)
+            Case "public", "private", "friend", "static"
+                t = t + 1
+            Case "sub", "function"
+                If t + 1 < nTok Then TrfProcHeaderName = TrfTokenName(toks(t + 1))
+                Exit Function
+            Case "property"
+                If t + 2 < nTok Then
+                    If toks(t + 1).Kind = TRF_TK_WORD Then
+                        Select Case LCase$(toks(t + 1).Text)
+                            Case "get", "let", "set"
+                                TrfProcHeaderName = TrfTokenName(toks(t + 2))
+                        End Select
+                    End If
+                End If
+                Exit Function
+            Case Else
+                Exit Function
+        End Select
+    Loop
+End Function
+
+'True for a logical line with one statement that starts with Option or Implements (declares no member).
+Private Function TrfIsOptionLine(ByRef toks() As TrfToken, ByVal nTok As Long) As Boolean
+    Dim t As Long
+
+    If toks(0).Kind <> TRF_TK_WORD Then Exit Function
+    Select Case LCase$(toks(0).Text)
+        Case "option", "implements"
+            For t = 1 To nTok - 1
+                If toks(t).Kind = TRF_TK_SEPARATOR Then Exit Function
+            Next t
+            TrfIsOptionLine = True
+    End Select
+End Function
+
+'Identifier of a word or bracket token, "" for other tokens.
+Private Function TrfTokenName(ByRef tok As TrfToken) As String
+    Select Case tok.Kind
+        Case TRF_TK_WORD
+            TrfTokenName = tok.Text
+        Case TRF_TK_BRACKET
+            If Len(tok.Text) > 2 Then TrfTokenName = Mid$(tok.Text, 2, Len(tok.Text) - 2)
+    End Select
+End Function
+
+'First identifier of the logical line that is in the list sNames ("|name|"); member names after "." do not count.
+Private Function TrfNameTokenIn(ByRef toks() As TrfToken, ByVal nTok As Long, ByVal sNames As String) As String
+    Dim t As Long
+    Dim sName As String
+    Dim bMember As Boolean
+
+    For t = 0 To nTok - 1
+        sName = TrfTokenName(toks(t))
+        If Len(sName) > 0 Then
+            bMember = False
+            If t > 0 Then bMember = (toks(t - 1).Kind = TRF_TK_PUNCT And toks(t - 1).Text = ".")
+            If Not bMember And InStr(1, sNames, "|" & LCase$(sName) & "|") > 0 Then
+                TrfNameTokenIn = sName
+                Exit Function
+            End If
+        End If
+    Next t
 End Function
 
 'Copies the lines into arrNew and marks every line as kept.

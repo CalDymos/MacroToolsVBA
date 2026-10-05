@@ -18,8 +18,9 @@ Attribute VB_Name = "T_TransformChainTest"
 '*              INCONCLUSIVE = the VBA editor changed the test input when it was inserted
 '*                             (e.g. indentation of Option lines, tabs); adapt the test data
 '*              ERROR = runtime error during the test
-'*              Diagnostic cases (X35g, X35h, D0 to D10) isolate editor behaviour: they use the text
-'*              as the editor stores it, so INCONCLUSIVE there means the precondition is missing.
+'*              Cases X35g/X35h run the code before and after the transformation (Application.Run).
+'*              D0 to D13 import a module with hidden attributes, apply one method and export it.
+'*              X37 to X39 are diagnostics of the editor (always PASS unless noted).
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
 Option Private Module
@@ -58,6 +59,7 @@ Public Sub RunTransformChainTests()
     Case_X35h_NameAfterNumberColon
     Case_X37_InsertBlankPosition
     Case_X38_ReplaceWithContinuation
+    Case_X39_LineLengthLimit
     RunAttributeDiagnostics
 
     m_ws.Columns("A:G").AutoFit
@@ -307,13 +309,18 @@ Private Sub Case_T42_Attributes()
 
     If InStr(1, sText, "Attribute Amount.VB_UserMemId = 0") = 0 Then sNote = sNote & "VB_UserMemId lost. "
     If InStr(1, sText, "Attribute VB_PredeclaredId = True") = 0 Then sNote = sNote & "VB_PredeclaredId lost. "
-    If InStr(1, sText, "Public Property Get Amount() As Long") = 0 Then sNote = sNote & "Header not merged. "
+    If InStr(1, sText, "Public Property Get Amount( _" & vbCrLf & "    ) As Long" & vbCrLf & "Attribute Amount.VB_UserMemId = 0") = 0 Then
+        sNote = sNote & "Header with attribute was changed. "
+    End If
     If InStr(1, sText, "Total = 1 + 2" & vbCrLf & "End Property") = 0 Then sNote = sNote & "Statement before End Property not merged. "
     If InStr(1, sText, "' default member") > 0 Then sNote = sNote & "Comment not removed. "
+    If InStr(1, sText, vbCrLf & "Amount = m_amount" & vbCrLf) = 0 Then sNote = sNote & "Body of Amount not trimmed or comment kept. "
+    If N_Obfuscation.TrfNoticeCount <> 2 Then sNote = sNote & "Notice count differs. "
     If Len(sNote) = 0 Then sStatus = "PASS" Else sStatus = "FAIL"
-    WriteResult "T42", "CHAIN", "Attribute-Zeilen in exportierten Modulen", sStatus, N_Obfuscation.TrfNoticeCount & "/0", sNote, _
-                "Versteckte Attribute muessen erhalten bleiben, auch wenn die Prozedur davor mit einer fortgesetzten Anweisung endet.", _
-                "(import of " & sPath & ")", "Attribute Amount.VB_UserMemId = 0 / VB_PredeclaredId = True / merged header", sText
+    WriteResult "T42", "CHAIN", "Attribute-Zeilen in exportierten Modulen", sStatus, N_Obfuscation.TrfNoticeCount & "/2", sNote, _
+                "Versteckte Attribute bleiben erhalten: die Kopfzeile von Amount bleibt unveraendert (Trim und Zusammenfuehrung " & _
+                "unterbleiben, je eine Notice), der Rest des Moduls wird bearbeitet.", _
+                "(import of " & sPath & ")", "Attribute Amount.VB_UserMemId = 0 / VB_PredeclaredId = True / header unchanged", sText
     bWritten = True
     m_wb.VBProject.VBComponents.Remove vbc
     Kill sPath
@@ -331,8 +338,9 @@ AfterError:
     If Len(Dir$(sOut)) > 0 Then Kill sOut
 End Sub
 
-'X26: behaviour of the real VBA editor when ReplaceLine receives more than 1023 characters.
-'TrfApplyLineEdits must restore the original lines and write one notice.
+'X26: behaviour of the real VBA editor when ReplaceLine receives a line that is too long.
+'TrfApplyLineEdits must restore the original lines (including the continuation line "        2", which the editor
+'renders as line number "2" while the line above does not end with "_") and write one notice.
 Private Sub Case_X26_EditorLimit()
     Dim vbc As VBIDE.VBComponent
     Dim arrOld() As String
@@ -350,7 +358,7 @@ Private Sub Case_X26_EditorLimit()
     sOrig = "Sub PX26()" & vbCrLf & "    x = 1 + _" & vbCrLf & "        2" & vbCrLf & "End Sub"
     FillModule vbc, sOrig, 4
     If ModuleText(vbc.CodeModule) <> sOrig Then
-        WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei mehr als 1023 Zeichen", "INCONCLUSIVE", "", _
+        WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei zu langer Zeile", "INCONCLUSIVE", "", _
                     "Editor changed the input when inserting it; adapt the test data.", "", sOrig, sOrig, ModuleText(vbc.CodeModule)
         m_wb.VBProject.VBComponents.Remove vbc
         Exit Sub
@@ -374,7 +382,7 @@ Private Sub Case_X26_EditorLimit()
     N_Obfuscation.TrfApplyLineEdits vbc.CodeModule, arrOld, arrNew, abKeep, 4, "X26"
     sAct = ModuleText(vbc.CodeModule)
     If sAct = sOrig And N_Obfuscation.TrfNoticeCount = 1 Then sStatus = "PASS" Else sStatus = "FAIL"
-    WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei mehr als 1023 Zeichen", sStatus, _
+    WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei zu langer Zeile", sStatus, _
                 N_Obfuscation.TrfNoticeCount & "/1", "", _
                 "Belegt das tatsaechliche Editorverhalten (Teilung, Fehler oder Kuerzung) und die Wiederherstellung.", _
                 sOrig, sOrig, sAct
@@ -386,20 +394,21 @@ EH:
     Resume AfterError
 AfterError:
     On Error Resume Next
-    If Not bWritten Then WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei mehr als 1023 Zeichen", "ERROR", "", _
+    If Not bWritten Then WriteResult "X26", "TrfApplyLineEdits", "Verhalten des Editors bei zu langer Zeile", "ERROR", "", _
                                      sNote, "", sOrig, sOrig, ""
     If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
 End Sub
 
-'Diagnostic: does VBA read "Name:" after a line number as a LABEL or as a CALL?
-'The function is executed before and after RemoveLineNumbers. The text is used as the editor stores it,
-'so the editor's own normalization does not matter. PASS = the number stays (one notice) and the
-'result of the run does not change. The note names the reading: result 1 = call, result 0 = label.
-Private Sub RunLabelOrCallCase(ByVal sId As String, ByVal sPurpose As String, ByVal sNumberLine As String)
+'"Name:" after a line number: the function is executed before and after RemoveLineNumbers.
+'Result 1 = Mark was called (CALL reading), result 0 = Mark is a label (LABEL reading).
+'PASS = the result does not change, the output is as expected and the notice count matches.
+Private Sub RunLabelOrCallCase(ByVal sId As String, ByVal sPurpose As String, ByVal sNumberLine As String, _
+                               ByVal sExpLine As String, ByVal lNotExp As Long)
     Dim vbc As VBIDE.VBComponent
     Dim sTag As String
     Dim sIn As String
     Dim sStored As String
+    Dim sExp As String
     Dim sAct As String
     Dim sNote As String
     Dim sStatus As String
@@ -413,6 +422,7 @@ Private Sub RunLabelOrCallCase(ByVal sId As String, ByVal sPurpose As String, By
     sTag = Mid$(sId, 2)
     sIn = Replace(Replace(LC_TEMPLATE, "@LINE", sNumberLine), "@", sTag)
     sIn = Replace(sIn, "|", vbCrLf)
+    sExp = Replace(Replace(Replace(LC_TEMPLATE, "@LINE", sExpLine), "@", sTag), "|", vbCrLf)
     Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
     vbc.Name = "T_" & sId
     FillModule vbc, sIn, 8
@@ -434,11 +444,11 @@ Private Sub RunLabelOrCallCase(ByVal sId As String, ByVal sPurpose As String, By
         sNote = sNote & "Unexpected result " & vBefore & ". "
     End If
     If vBefore <> vAfter Then sNote = sNote & "Behaviour changed (before " & vBefore & ", after " & vAfter & "). "
-    If sAct <> sStored Then sNote = sNote & "Output differs from the stored text. "
-    If lNot <> 1 Then sNote = sNote & "Notice count differs. "
-    If vBefore = vAfter And sAct = sStored And lNot = 1 Then sStatus = "PASS" Else sStatus = "FAIL"
-    WriteResult sId, "RLN + Application.Run", sPurpose, sStatus, lNot & "/1", sNote & "Run before/after: " & vBefore & "/" & vAfter, _
-                "Belegt die Lesart von 'Name:' nach einer Zeilennummer durch Ausfuehrung in Excel.", sIn, sStored, sAct
+    If sAct <> sExp Then sNote = sNote & "Output differs. "
+    If lNot <> lNotExp Then sNote = sNote & "Notice count differs. "
+    If vBefore = vAfter And sAct = sExp And lNot = lNotExp Then sStatus = "PASS" Else sStatus = "FAIL"
+    WriteResult sId, "RLN + Application.Run", sPurpose, sStatus, lNot & "/" & lNotExp, sNote & "Run before/after: " & vBefore & "/" & vAfter, _
+                "Ausfuehrung vor und nach RemoveLineNumbers liefert dasselbe Ergebnis.", sIn, sExp, sAct
     bWritten = True
     m_wb.VBProject.VBComponents.Remove vbc
     Exit Sub
@@ -447,16 +457,18 @@ EH:
     Resume AfterError
 AfterError:
     On Error Resume Next
-    If Not bWritten Then WriteResult sId, "RLN + Application.Run", sPurpose, "ERROR", "", sNote, "", sIn, sStored, sAct
+    If Not bWritten Then WriteResult sId, "RLN + Application.Run", sPurpose, "ERROR", "", sNote, "", sIn, sExp, sAct
     If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
 End Sub
 
 Private Sub Case_X35g_NameAfterNumber()
-    RunLabelOrCallCase "X35g", "Name nach Zeilennummer ohne Doppelpunkt: Aufruf oder Label?", "10 Mark35g:  P35g = cnt35g"
+    RunLabelOrCallCase "X35g", "'10 Name:' ohne Doppelpunkt: Label bleibt Label", "10 Mark35g:  P35g = cnt35g", _
+                       "Mark35g:  P35g = cnt35g", 0
 End Sub
 
 Private Sub Case_X35h_NameAfterNumberColon()
-    RunLabelOrCallCase "X35h", "Name nach Zeilennummer mit Doppelpunkt: Aufruf oder Label?", "10: Mark35h: P35h = cnt35h"
+    RunLabelOrCallCase "X35h", "'10: Name:' mit Doppelpunkt: Aufruf bleibt Aufruf (Call)", "10: Mark35h: P35h = cnt35h", _
+                       "Call Mark35h: P35h = cnt35h", 1
 End Sub
 
 'X37: diagnostic. Where does Excel 2019 put the empty line that it appends when inserted text contains
@@ -553,30 +565,85 @@ AfterError:
     If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
 End Sub
 
-'Writes a class file (header attributes plus the given body, lines separated by "|") for the import.
-Private Sub WriteClassFile(ByVal sPath As String, ByVal sName As String, ByVal sBody As String)
+'X39: diagnostic. Longest line that ReplaceLine stores unchanged, and how a longer line is split.
+'PASS = a line of TRF_MAX_LINE_LENGTH characters is stored unchanged.
+Private Sub Case_X39_LineLengthLimit()
+    Dim vbc As VBIDE.VBComponent
+    Dim lLen As Long
+    Dim sLine As String
+    Dim sNote As String
+    Dim sStatus As String
+    Dim sParts As String
+    Dim lCount As Long
+    Dim i As Long
+    Dim bWritten As Boolean
+
+    On Error GoTo EH
+    sStatus = "FAIL"
+    Set vbc = m_wb.VBProject.VBComponents.Add(vbext_ct_StdModule)
+    vbc.Name = "T_X39"
+    For lLen = N_Obfuscation.TRF_MAX_LINE_LENGTH - 2 To N_Obfuscation.TRF_MAX_LINE_LENGTH + 2
+        FillModule vbc, "Sub A()" & vbCrLf & "    x = 1" & vbCrLf & "End Sub", 3
+        sLine = "    s = """ & String$(lLen - 10, "A") & """"
+        vbc.CodeModule.ReplaceLine 2, sLine
+        lCount = vbc.CodeModule.CountOfLines
+        If lCount = 3 And vbc.CodeModule.Lines(2, 1) = sLine Then
+            sNote = sNote & lLen & ": unchanged. "
+            If lLen = N_Obfuscation.TRF_MAX_LINE_LENGTH Then sStatus = "PASS"
+        Else
+            sParts = ""
+            For i = 2 To lCount - 1
+                If i > 2 Then sParts = sParts & " + "
+                sParts = sParts & Len(vbc.CodeModule.Lines(i, 1))
+                If Right$(vbc.CodeModule.Lines(i, 1), 2) = " _" Then sParts = sParts & " (ends with _)"
+            Next i
+            sNote = sNote & lLen & ": stored as " & (lCount - 2) & " line(s) of " & sParts & " characters. "
+        End If
+    Next lLen
+    WriteResult "X39", "ReplaceLine", "Laengste Zeile, die ReplaceLine unveraendert speichert", sStatus, "", sNote, _
+                "Diagnose: belegt TRF_MAX_LINE_LENGTH = " & N_Obfuscation.TRF_MAX_LINE_LENGTH & ".", "", "", ""
+    bWritten = True
+    m_wb.VBProject.VBComponents.Remove vbc
+    Exit Sub
+EH:
+    sNote = sNote & "Error " & Err.Number & ": " & Err.Description
+    Resume AfterError
+AfterError:
+    On Error Resume Next
+    If Not bWritten Then WriteResult "X39", "ReplaceLine", "Laengste Zeile, die ReplaceLine unveraendert speichert", "ERROR", "", sNote, "", "", "", ""
+    If Not vbc Is Nothing Then m_wb.VBProject.VBComponents.Remove vbc
+End Sub
+
+'Writes a module file for the import: a class (with its header attributes) or a standard module,
+'followed by the given body (lines separated by "|").
+Private Sub WriteModuleFile(ByVal sPath As String, ByVal sName As String, ByVal sBody As String, ByVal bStdModule As Boolean)
     Dim f As Integer
 
     DeleteIfExists sPath
     f = FreeFile
     Open sPath For Output As #f
-    Print #f, "VERSION 1.0 CLASS"
-    Print #f, "BEGIN"
-    Print #f, "  MultiUse = -1  'True"
-    Print #f, "END"
-    Print #f, "Attribute VB_Name = """ & sName & """"
-    Print #f, "Attribute VB_GlobalNameSpace = False"
-    Print #f, "Attribute VB_Creatable = False"
-    Print #f, "Attribute VB_PredeclaredId = False"
-    Print #f, "Attribute VB_Exposed = False"
+    If bStdModule Then
+        Print #f, "Attribute VB_Name = """ & sName & """"
+    Else
+        Print #f, "VERSION 1.0 CLASS"
+        Print #f, "BEGIN"
+        Print #f, "  MultiUse = -1  'True"
+        Print #f, "END"
+        Print #f, "Attribute VB_Name = """ & sName & """"
+        Print #f, "Attribute VB_GlobalNameSpace = False"
+        Print #f, "Attribute VB_Creatable = False"
+        Print #f, "Attribute VB_PredeclaredId = False"
+        Print #f, "Attribute VB_Exposed = False"
+    End If
     Print #f, Replace(sBody, "|", vbCrLf)
     Close #f
 End Sub
 
-'Diagnostic: imports a class with a hidden attribute, applies ONE method, exports the class again and
-'checks whether the attribute is still there. Which method and which kind of edit loses it?
+'Imports a module with a hidden attribute, applies ONE method, exports the module again and checks that
+'the attribute is still there and that the notice count matches (one notice per undone declaration edit).
 Private Sub RunAttributeCase(ByVal sId As String, ByVal sPurpose As String, ByVal sMethod As String, _
-                             ByVal sBody As String, ByVal sAttr As String)
+                             ByVal sBody As String, ByVal sAttr As String, ByVal lNotExp As Long, _
+                             Optional ByVal bStdModule As Boolean = False)
     Dim vbc As VBIDE.VBComponent
     Dim sName As String
     Dim sPath As String
@@ -589,10 +656,16 @@ Private Sub RunAttributeCase(ByVal sId As String, ByVal sPurpose As String, ByVa
     Dim bWritten As Boolean
 
     On Error GoTo EH
-    sName = "T" & sId & "Cls"
-    sPath = Environ$("TEMP") & "\MT_" & sName & ".cls"
-    sOut = Environ$("TEMP") & "\MT_" & sName & "_out.cls"
-    WriteClassFile sPath, sName, sBody
+    If bStdModule Then
+        sName = "T" & sId & "Mod"
+        sPath = Environ$("TEMP") & "\MT_" & sName & ".bas"
+        sOut = Environ$("TEMP") & "\MT_" & sName & "_out.bas"
+    Else
+        sName = "T" & sId & "Cls"
+        sPath = Environ$("TEMP") & "\MT_" & sName & ".cls"
+        sOut = Environ$("TEMP") & "\MT_" & sName & "_out.cls"
+    End If
+    WriteModuleFile sPath, sName, sBody, bStdModule
     Set vbc = m_wb.VBProject.VBComponents.Import(sPath)
     DeleteIfExists sOut
     vbc.Export sOut
@@ -608,15 +681,12 @@ Private Sub RunAttributeCase(ByVal sId As String, ByVal sPurpose As String, ByVa
         DeleteIfExists sOut
         vbc.Export sOut
         sText = ReadTextFile(sOut)
-        If InStr(1, sText, sAttr, vbBinaryCompare) = 0 Then
-            sStatus = "FAIL"
-            sNote = "Attribute lost by " & sMethod & "."
-        Else
-            sStatus = "PASS"
-        End If
+        If InStr(1, sText, sAttr, vbBinaryCompare) = 0 Then sNote = "Attribute lost by " & sMethod & ". "
+        If lNot <> lNotExp Then sNote = sNote & "Notice count differs. "
+        If Len(sNote) = 0 Then sStatus = "PASS" Else sStatus = "FAIL"
     End If
-    WriteResult sId, sMethod, sPurpose, sStatus, lNot & "/-", sNote, "Diagnose: welche Bearbeitung entfernt das versteckte Attribut?", _
-                sImported, sAttr, sText
+    WriteResult sId, sMethod, sPurpose, sStatus, lNot & "/" & lNotExp, sNote, _
+                "Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).", sImported, sAttr, sText
     bWritten = True
     m_wb.VBProject.VBComponents.Remove vbc
     DeleteIfExists sPath
@@ -642,27 +712,40 @@ Private Sub RunAttributeDiagnostics()
     sAttr = "Attribute Amount.VB_UserMemId = 0"
     sHdr = "Public Property Get Amount() As Long|" & sAttr & "|"
     sEnd = "Amount = m_amount|End Property"
-    RunAttributeCase "D0", "Kontrolle: Kette ohne jede Aenderung", "CHAIN", "Private m_amount As Long|" & sHdr & sEnd, sAttr
-    RunAttributeCase "D1", "TRIM: nur die Kopfzeile (Einrueckung) wird geaendert", "TRIM", _
-                     "Private m_amount As Long|    " & sHdr & sEnd, sAttr
-    RunAttributeCase "D2", "CMT: nur die Kopfzeile (Kommentar am Ende) wird geaendert", "CMT", _
-                     "Private m_amount As Long|Public Property Get Amount() As Long ' header|" & sAttr & "|" & sEnd, sAttr
-    RunAttributeCase "D3", "BREAK: fortgesetzte Kopfzeile wird zusammengefuehrt", "BREAK", _
-                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr
-    RunAttributeCase "D4", "CMT: nur eine Zeile im Rumpf wird geaendert", "CMT", _
-                     "Private m_amount As Long|" & sHdr & "Amount = m_amount ' value|End Property", sAttr
-    RunAttributeCase "D5", "TRIM: nur die Fortsetzungszeile der Kopfzeile wird geaendert", "TRIM", _
-                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr
+    RunAttributeCase "D0", "Kontrolle: Kette ohne jede Aenderung", "CHAIN", "Private m_amount As Long|" & sHdr & sEnd, sAttr, 0
+    RunAttributeCase "D1", "TRIM: eingerueckte Kopfzeile bleibt", "TRIM", _
+                     "Private m_amount As Long|    " & sHdr & sEnd, sAttr, 1
+    RunAttributeCase "D2", "CMT: Kommentar auf der Kopfzeile bleibt", "CMT", _
+                     "Private m_amount As Long|Public Property Get Amount() As Long ' header|" & sAttr & "|" & sEnd, sAttr, 1
+    RunAttributeCase "D3", "BREAK: fortgesetzte Kopfzeile bleibt mehrzeilig", "BREAK", _
+                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr, 1
+    RunAttributeCase "D4", "CMT: Zeile im Rumpf wird bearbeitet", "CMT", _
+                     "Private m_amount As Long|" & sHdr & "Amount = m_amount ' value|End Property", sAttr, 0
+    RunAttributeCase "D5", "TRIM: Fortsetzungszeile der Kopfzeile bleibt", "TRIM", _
+                     "Private m_amount As Long|Public Property Get Amount( _|    ) As Long|" & sAttr & "|" & sEnd, sAttr, 1
     RunAttributeCase "D6", "EMPTY: Leerzeile ueber der Kopfzeile wird geloescht", "EMPTY", _
-                     "Private m_amount As Long||" & sHdr & sEnd, sAttr
+                     "Private m_amount As Long||" & sHdr & sEnd, sAttr, 0
     RunAttributeCase "D7", "CMT: Kommentarzeile ueber der Kopfzeile wird geloescht", "CMT", _
-                     "Private m_amount As Long|' default member|" & sHdr & sEnd, sAttr
-    RunAttributeCase "D8", "TRIM: eingerueckte Variablendeklaration mit Attribut", "TRIM", _
-                     "    Public Amount As Long|Attribute Amount.VB_VarDescription = ""Betrag""", "Attribute Amount.VB_VarDescription = ""Betrag"""
+                     "Private m_amount As Long|' default member|" & sHdr & sEnd, sAttr, 0
+    RunAttributeCase "D8", "TRIM: eingerueckte Variablendeklaration mit Attribut bleibt", "TRIM", _
+                     "    Public Amount As Long|Attribute Amount.VB_VarDescription = ""Betrag""", _
+                     "Attribute Amount.VB_VarDescription = ""Betrag""", 1
     RunAttributeCase "D9", "DBG: Debug.Print im Rumpf wird geloescht", "DBG", _
-                     "Private m_amount As Long|" & sHdr & "Debug.Print ""x""|" & sEnd, sAttr
+                     "Private m_amount As Long|" & sHdr & "Debug.Print ""x""|" & sEnd, sAttr, 0
     RunAttributeCase "D10", "EMPTY: Leerzeile im Rumpf unter dem Attribut wird geloescht", "EMPTY", _
-                     "Private m_amount As Long|" & sHdr & "Amount = m_amount||End Property", sAttr
+                     "Private m_amount As Long|" & sHdr & "Amount = m_amount||End Property", sAttr, 0
+    'macro with shortcut key Ctrl+Shift+Q in a standard module: header protected in RLN (2 runs), CMT and TRIM
+    RunAttributeCase "D11", "CHAIN: Makro mit Tastenkuerzel im Standardmodul", "CHAIN", _
+                     "Option Explicit|    Public Sub Calc11() ' main|Attribute Calc11.VB_ProcData.VB_Invoke_Func = ""Q\n14""|" & _
+                     "    Debug.Print 1|End Sub", "Attribute Calc11.VB_ProcData.VB_Invoke_Func = ""Q\n14""", 4, True
+    'open question from the review: does replacing a comment line directly above the header keep the attribute?
+    RunAttributeCase "D12", "TRIM: eingerueckte Kommentarzeile direkt ueber der Kopfzeile", "TRIM", _
+                     "Private m_amount As Long|    ' note|" & sHdr & sEnd, sAttr, 0
+    'WithEvents: the editor writes VB_VarHelpID = -1; the chain ignores it (FAIL here would be harmless:
+    'it only shows that the editor does not write it again after ReplaceLine)
+    RunAttributeCase "D13", "CMT: WithEvents-Variable mit Kommentar (VB_VarHelpID = -1)", "CMT", _
+                     "Private WithEvents m_wb As Workbook ' sink|Attribute m_wb.VB_VarHelpID = -1", _
+                     "Attribute m_wb.VB_VarHelpID = -1", 0
 End Sub
 
 '===============================================================================
@@ -740,6 +823,7 @@ Private Sub RunAllCases()
     Case_X34
     Case_X34b
     Case_X35
+    Case_X35b
     Case_X36
     Case_X36b
     Case_X34c
@@ -1378,26 +1462,26 @@ End Sub
 Private Sub Case_X01()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub PX01()"
-    AddLine sIn, nIn, "    s = """ & String$(1007, "A") & """ & _"
+    AddLine sIn, nIn, "    s = """ & String$(1006, "A") & """ & _"
     AddLine sIn, nIn, "        ""B"""
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub PX01()"
-    AddLine sExp, nExp, "    s = """ & String$(1007, "A") & """ & ""B"""
+    AddLine sExp, nExp, "    s = """ & String$(1006, "A") & """ & ""B"""
     AddLine sExp, nExp, "End Sub"
-    RunCase "X01", "BREAK", "Grenzwert: zusammengefuehrt genau 1023 Zeichen", sIn, nIn, sExp, nExp, 0, "F6 a: 1023 Zeichen passen in eine physische Zeile.", True
+    RunCase "X01", "BREAK", "Grenzwert: zusammengefuehrt genau 1022 Zeichen (TRF_MAX_LINE_LENGTH)", sIn, nIn, sExp, nExp, 0, "F6 a: 1022 Zeichen werden als eine Zeile geschrieben. 1023 teilt Excel 2019 (Testlauf 2).", True
 End Sub
 
 Private Sub Case_X02()
     Dim sIn As String, nIn As Long, sExp As String, nExp As Long
     AddLine sIn, nIn, "Sub PX02()"
-    AddLine sIn, nIn, "    s = """ & String$(1008, "A") & """ & _"
+    AddLine sIn, nIn, "    s = """ & String$(1007, "A") & """ & _"
     AddLine sIn, nIn, "        ""B"""
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub PX02()"
-    AddLine sExp, nExp, "    s = """ & String$(1008, "A") & """ & _"
+    AddLine sExp, nExp, "    s = """ & String$(1007, "A") & """ & _"
     AddLine sExp, nExp, "        ""B"""
     AddLine sExp, nExp, "End Sub"
-    RunCase "X02", "BREAK", "Grenzwert: zusammengefuehrt 1024 Zeichen", sIn, nIn, sExp, nExp, 1, "F6 a: Anweisung bleibt mehrzeilig, Notice.", True
+    RunCase "X02", "BREAK", "Grenzwert: zusammengefuehrt 1023 Zeichen", sIn, nIn, sExp, nExp, 1, "F6 a: Anweisung bleibt mehrzeilig, Notice.", True
 End Sub
 
 Private Sub Case_X05()
@@ -1814,13 +1898,32 @@ Private Sub Case_X35()
     AddLine sIn, nIn, "Sub Run35()"
     AddLine sIn, nIn, "End Sub"
     AddLine sExp, nExp, "Sub PX35()"
-    AddLine sExp, nExp, "10 Init35:  Run35"
+    AddLine sExp, nExp, "Init35:  Run35"
     AddLine sExp, nExp, "End Sub"
     AddLine sExp, nExp, "Sub Init35()"
     AddLine sExp, nExp, "End Sub"
     AddLine sExp, nExp, "Sub Run35()"
     AddLine sExp, nExp, "End Sub"
-    RunCase "X35", "RLN", "Nummer vor 'Name:' bleibt (ohne Doppelpunkt-Format)", sIn, nIn, sExp, nExp, 1, "Ob 'Init35:' nach der Nummer ein zweites Label oder ein Aufruf ist, ist nicht belegt (Schreibweise des Editors wie bei einem Label): Nummer bleibt, Notice. Die Eingabe steht in der vom Excel-Editor normalisierten Form.", True
+    RunCase "X35", "RLN", "'10 Name:' ohne Doppelpunkt: Name ist ein Label und bleibt es", sIn, nIn, sExp, nExp, 0, "X35g belegt in Excel: Init35 nach der Nummer ist ein zweites Label. Ohne Nummer steht es als Label am Zeilenanfang. Eingabe in der vom Excel-Editor normalisierten Form.", True
+End Sub
+
+Private Sub Case_X35b()
+    Dim sIn As String, nIn As Long, sExp As String, nExp As Long
+    AddLine sIn, nIn, "Sub PX35b()"
+    AddLine sIn, nIn, "10: Init35b: Run35b"
+    AddLine sIn, nIn, "End Sub"
+    AddLine sIn, nIn, "Sub Init35b()"
+    AddLine sIn, nIn, "End Sub"
+    AddLine sIn, nIn, "Sub Run35b()"
+    AddLine sIn, nIn, "End Sub"
+    AddLine sExp, nExp, "Sub PX35b()"
+    AddLine sExp, nExp, "Call Init35b: Run35b"
+    AddLine sExp, nExp, "End Sub"
+    AddLine sExp, nExp, "Sub Init35b()"
+    AddLine sExp, nExp, "End Sub"
+    AddLine sExp, nExp, "Sub Run35b()"
+    AddLine sExp, nExp, "End Sub"
+    RunCase "X35b", "RLN", "'10: Name:' mit Doppelpunkt: Name ist ein Aufruf, Call wird eingefuegt", sIn, nIn, sExp, nExp, 1, "X35h belegt in Excel: Init35b nach '10:' ist ein Aufruf. Ohne Call waere es ein Label.", True
 End Sub
 
 Private Sub Case_X36()

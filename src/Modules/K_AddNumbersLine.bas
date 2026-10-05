@@ -6,10 +6,10 @@ Attribute VB_Name = "K_AddNumbersLine"
 '* Contacts   : -
 '* Copyright  : VBATools.ru
 '* Modified   : Date and Time       Author              Description
-'* Updated    : 05-10-2026          CalDymos            RemoveLineNumbers replaced: referenced numbers kept,
-'*                                                      all numbers kept in procedures with Erl,
-'*                                                      number kept before 'Name:' (label or call is not
-'*                                                      proven), notices instead of silent changes
+'* Updated    : 05-10-2026          CalDymos              RemoveLineNumbers replaced: referenced numbers kept,
+'*                                                      all numbers kept in procedures with Erl (F2 b),
+'*                                                      '10 Name:' -> label at column 1, '10: Name:' ->
+'*                                                      Call Name (both verified in Excel), notices
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 Option Private Module
@@ -258,8 +258,10 @@ NextLine:
 '   - A line that consists only of the removed label becomes empty.
 '   - Leading whitespace of procedure header lines is removed (undoes the
 '     header indentation of AddLineNumbers; also done when no number exists).
-'   Writes notices for procedures with Erl (numbers kept) and for numbers
-'   kept before "Name:" (see Postconditions).
+'   - "10 Name: ..." becomes "Name: ..." at column 1; "10: Name: ..." becomes
+'     "Call Name: ..." (see Postconditions).
+'   Writes notices for procedures with Erl (numbers kept), for inserted Call
+'   and for numbers kept before a keyword statement.
 '
 ' Preconditions:
 '   Module code is syntactically valid VBA. Access to the VBA project object
@@ -271,13 +273,18 @@ NextLine:
 '   Resume, or the implicit GoTo of "If x Then 10" / "Else 10".
 '   Decision F2 b: in a procedure that uses Erl, every line number stays,
 '   so Erl keeps returning the same values.
-'   All other numeric labels of the given type are removed. If a lone name
-'   followed by ":" comes right after the number ("10 Init: Run"), the
-'   number stays and a notice is written: the VBA editor renders such a
-'   line like a second label ("10 Init:  Run" in Excel 2019), so it is not
-'   proven whether Init is a label or a call; keeping the number preserves
-'   either meaning (test X35g/X35h decides). Alphanumeric labels, numbers
-'   in strings, comments, dates and expressions are unchanged.
+'   All other numeric labels of the given type are removed. A lone name
+'   followed by ":" right after the number keeps its meaning (verified by
+'   execution in Excel 2019):
+'   - without colon ("10 Init:  Run"), Init is a second LABEL (test X35g):
+'     the number and the blanks after it are removed, so "Init:" stays a
+'     label at the start of the line;
+'   - with colon ("10: Init: Run"), Init is a CALL (test X35h): without the
+'     number it would become a label, so "Call " is put in front of it. If
+'     that line would exceed TRF_MAX_LINE_LENGTH, the number stays.
+'   Before a keyword statement ("10 Stop: x = 1") the number stays.
+'   Alphanumeric labels, numbers in strings, comments, dates and
+'   expressions are unchanged.
 '
 ' Errors:
 '   No local handler. Errors of the VBIDE object model are passed to the
@@ -329,6 +336,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
     Dim asGuardWord() As String
     Dim sNew As String
     Dim t As Long
+    Dim lPos As Long
 
     ReDim arrNew(1 To n)
     ReDim abKeep(1 To n)
@@ -388,11 +396,25 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
                             'decision F2 b: Erl reads the numbers, all of them stay
                             nKeptErl = nKeptErl + 1
                         ElseIf abGuard(j) Then
-                            'whether VBA reads "10 Name:" as number plus second label or as number plus call
-                            'is not proven (the editor renders it like a label): keep the number, then both
-                            'readings stay unchanged
-                            N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
-                                "line number kept: " & asGuardWord(j) & ": after it may be a label or a call"
+                            If N_Obfuscation.TrfIsStandaloneKeyword(asGuardWord(j)) Then
+                                N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                    "line number kept: keyword statement " & asGuardWord(j) & " follows"
+                            ElseIf alColonPos(j) > 0 Then
+                                '"10: Name: ..." calls Name (test X35h); without the number it would be a label
+                                lPos = Len(sNew) - Len(N_Obfuscation.TrfLTrimWS(sNew)) + 1
+                                sNew = Left$(sNew, lPos - 1) & "Call " & Mid$(sNew, lPos)
+                                If Len(sNew) > TRF_MAX_LINE_LENGTH Then
+                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                        "line number kept: line with Call would exceed " & TRF_MAX_LINE_LENGTH & " characters"
+                                Else
+                                    arrNew(alLine(j)) = sNew
+                                    N_Obfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(j), _
+                                        "Call inserted before " & asGuardWord(j) & ", otherwise it would become a line label"
+                                End If
+                            Else
+                                '"10 Name: ..." is number plus label Name (test X35g): Name stays a label at column 1
+                                arrNew(alLine(j)) = N_Obfuscation.TrfLTrimWS(Mid$(arrLines(alLine(j)), alNumPos(j) + alNumLen(j)))
+                            End If
                         Else
                             arrNew(alLine(j)) = sNew
                         End If
@@ -476,32 +498,7 @@ End Function
 
 'True for [Public|Private|Friend] [Static] Sub|Function|Property Get|Let|Set (not Declare).
 Private Function IsProcHeaderTokens(ByRef toks() As TrfToken, ByVal nTok As Long) As Boolean
-    Dim t As Long
-    Dim sWord As String
-
-    Do While t < nTok
-        If toks(t).Kind <> TRF_TK_WORD Then Exit Function
-        sWord = LCase$(toks(t).Text)
-        Select Case sWord
-            Case "public", "private", "friend", "static"
-                t = t + 1
-            Case "sub", "function"
-                IsProcHeaderTokens = True
-                Exit Function
-            Case "property"
-                If t + 1 < nTok Then
-                    If toks(t + 1).Kind = TRF_TK_WORD Then
-                        Select Case LCase$(toks(t + 1).Text)
-                            Case "get", "let", "set"
-                                IsProcHeaderTokens = True
-                        End Select
-                    End If
-                End If
-                Exit Function
-            Case Else
-                Exit Function
-        End Select
-    Loop
+    IsProcHeaderTokens = (Len(N_Obfuscation.TrfProcHeaderName(toks, nTok)) > 0)
 End Function
 
 'True for "End Sub", "End Function", "End Property" (a label before it is allowed).
