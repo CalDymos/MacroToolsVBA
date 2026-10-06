@@ -51,15 +51,15 @@ Private Sub Sort2_asc(arr(), col As Long)
 
 13        Call QSort2_asc(arr(), col, lTop, lBot, temp(), lb2, ub2)
 End Sub
-Private Sub QSort2_asc(arr(), C As Long, ByVal Top As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
+Private Sub QSort2_asc(arr(), c As Long, ByVal Top As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
           Dim t As Long, LB As Long, MidItem, j As Long
 
-14        MidItem = arr((Top + bot) \ 2, C)
+14        MidItem = arr((Top + bot) \ 2, c)
 15        t = Top: LB = bot
 
 16        Do
-17            Do While arr(t, C) < MidItem: t = t + 1: Loop
-18            Do While arr(LB, C) > MidItem: LB = LB - 1: Loop
+17            Do While arr(t, c) < MidItem: t = t + 1: Loop
+18            Do While arr(LB, c) > MidItem: LB = LB - 1: Loop
 19            If t < LB Then
 20                For j = lb2 To ub2: temp(j) = arr(t, j): Next j
 21                For j = lb2 To ub2: arr(t, j) = arr(LB, j): Next j
@@ -70,8 +70,8 @@ Private Sub QSort2_asc(arr(), C As Long, ByVal Top As Long, ByVal bot As Long, t
 26            End If
 27        Loop While t <= LB
 
-28        If t < bot Then QSort2_asc arr(), C, t, bot, temp(), lb2, ub2
-29        If Top < LB Then QSort2_asc arr(), C, Top, LB, temp(), lb2, ub2
+28        If t < bot Then QSort2_asc arr(), c, t, bot, temp(), lb2, ub2
+29        If Top < LB Then QSort2_asc arr(), c, Top, LB, temp(), lb2, ub2
 
 End Sub
 
@@ -350,7 +350,7 @@ Private Function StringCrypt(ByVal Inp As String, Key As String, ByVal Mode As B
                   
 185           If Mode Then
                   
-                  'VerschlпїЅsseln
+                  'Verschlьsseln
 186               orgZahl = Asc(Mid(Inp, i, 1))
 187               cptZahl = orgZahl Xor keyZahl
 188               cptString = Hex(cptZahl)
@@ -359,7 +359,7 @@ Private Function StringCrypt(ByVal Inp As String, Key As String, ByVal Mode As B
                   
 191           Else
                   
-                  'EntschlпїЅsseln
+                  'Entschlьsseln
 192               If i > Len(Inp) \ 2 Then Exit For
 193               cptZahl = CByte("&H" & Mid$(Inp, i * 2 - 1, 2))
 194               orgZahl = cptZahl Xor keyZahl
@@ -648,7 +648,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
           Dim arrData     As Variant
           Dim i           As Long
           Dim j           As Long
-          Dim skey        As String
+          Dim sKey        As String
           Dim sCode       As String
           Dim sFinde      As String
           Dim sReplace    As String
@@ -727,10 +727,10 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 403           arrData = .Range(Cells(2, 1), Cells(i, 10)).Value2
 404       End With
 
-          'Sammlung verschlпїЅsselter Namen und Subs / Functions
+          'Sammlung verschlьsselter Namen und Subs / Functions
 405       For i = LBound(arrData) To UBound(arrData)
 406           If arrData(i, 9) = "yes" Then
-                  'Sammlung verschlпїЅsselter Namen
+                  'Sammlung verschlьsselter Namen
 407               If objDictName.Exists(arrData(i, 8)) = False Then objDictName.Add arrData(i, 8), arrData(i, 10)
                   'Sammlung der Subs und Functions
 408               If objDictFuncAndsub.Exists(arrData(i, 6)) = False Then objDictFuncAndsub.Add arrData(i, 6), arrData(i, 5)
@@ -741,7 +741,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 411       For Each objVBCitem In objWB.VBProject.VBComponents
 412           If objDictModule.Exists(objVBCitem.Name) = False Then
 413               sCode = GetCodeFromModule(objVBCitem)
-                  'Beseitigung von ZeilenumbrпїЅchen
+                  'Beseitigung von Zeilenumbrьchen
 414               sCode = VBA.Replace(sCode, " _" & vbNewLine, " XXXXX") 'changed : am 24.04 CalDymos
 415               objDictModule.Add objVBCitem.Name, sCode
 416               objDictModuleOld.Add objVBCitem.Name, sCode
@@ -759,8 +759,8 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 424               For j = 0 To objDictModule.Count - 1
 425                   sFinde = .Keys(i)
 426                   sReplace = .Items(i)
-427                   skey = objDictModule.Keys(j)
-428                   sCode = objDictModule.Item(skey)
+427                   sKey = objDictModule.Keys(j)
+428                   sCode = objDictModule.Item(sKey)
 429                   If sCode Like "*" & sFinde & "*" And VBA.Len(sFinde) > 1 Then
                           '------------------------------------------------ changed: 31.08 CalDymos
 430                       sPattern = "([\*\.\^\*\+\#\(\)\-\=\/\,\:\;\s])" & sFinde & "([\*\.\^\*\+\!\@\#\$\%\&\(\)\-\=\/\,\:\;\s]|$)"
@@ -774,7 +774,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 437                                   With objWB.Worksheets(NAME_SH_STR)
 438                                       .Activate
 439                                       For k = 2 To .Cells(Rows.Count, 1).End(xlUp).Row
-440                                           If .Cells(k, 2).Value2 = skey And .Cells(k, 5).Value = Chr$(34) & sFinde & Chr$(34) Then
+440                                           If .Cells(k, 2).Value2 = sKey And .Cells(k, 5).Value = Chr$(34) & sFinde & Chr$(34) Then
 441                                               .Cells(k, 5).Value = Chr$(34) & sReplace & Chr$(34)
 442                                           End If
 443                                       Next
@@ -783,16 +783,16 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 446                           End If
 447                       End If
                           '------------------------------------------------
-448                       If sCode <> vbNullString Then objDictModule.Item(skey) = sCode
+448                       If sCode <> vbNullString Then objDictModule.Item(sKey) = sCode
 449                   End If
-                      'Regulierungsrahmen fпїЅr Events, vor allem fпїЅr Formulare
+                      'Regulierungsrahmen fьr Events, vor allem fьr Formulare
 450                   If sCode Like "* " & Chr$(83) & "ub *" & sFinde & "_*(*)*" Then
-451                       sPattern = "([\s])(Sub)([\s])" & sFinde & "(\_{1}[A-Za-zпїЅ-пїЅпїЅ-пїЅпїЅпїЅ]{4,40}\([A-Za-zпїЅ-пїЅпїЅ-пїЅпїЅпїЅ\s\.\,]{0,100}\))"
+451                       sPattern = "([\s])(Sub)([\s])" & sFinde & "(\_{1}[A-Za-zА-Яа-яЁё]{4,40}\([A-Za-zА-Яа-яЁё\s\.\,]{0,100}\))"
 452                       sCode = RegExpFindReplace(sCode, sPattern, "$1$2$3" & sReplace & "$4", True, False, False)
-453                       If sCode <> vbNullString Then objDictModule.Item(skey) = sCode
-454                       sPattern = "([\s])" & sFinde & "(\_{1}[A-Za-zпїЅ-пїЅпїЅ-пїЅпїЅпїЅ]{4,40}(?:\:\s|\n|\r))"
+453                       If sCode <> vbNullString Then objDictModule.Item(sKey) = sCode
+454                       sPattern = "([\s])" & sFinde & "(\_{1}[A-Za-zА-Яа-яЁё]{4,40}(?:\:\s|\n|\r))"
 455                       sCode = RegExpFindReplace(sCode, sPattern, "$1" & sReplace & "$2", True, False, False)
-456                       If sCode <> vbNullString Then objDictModule.Item(skey) = sCode
+456                       If sCode <> vbNullString Then objDictModule.Item(sKey) = sCode
 457                   End If
 458                   sCode = vbNullString
 459               Next j
@@ -807,7 +807,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 468       Application.StatusBar = False
           'Ende
 
-          'пїЅbertragung
+          'Ьbertragung
 469       sCode = vbNullString
 
 470       For j = 0 To objDictModule.Count - 1
@@ -825,8 +825,8 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 479               sCode = sCode & sTemp & arrNew(i) & vbNewLine
 480               sTemp = vbNullString
 481           Next i
-482           skey = objDictModule.Keys(j)
-483           objDictModule.Item(skey) = sCode
+482           sKey = objDictModule.Keys(j)
+483           objDictModule.Item(sKey) = sCode
 484           sCode = vbNullString
 485       Next j
 486       Debug.Print "String alternation - completed:" & VBA.Format$(Now() - dTime, "Long Time")
@@ -837,7 +837,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 488       For j = 0 To objDictModule.Count - 1
 489           Set objVBCitem = objWB.VBProject.VBComponents(objDictModule.Keys(j))
 490           sCode = objDictModule.Items(j)
-              'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+              'возврат перенос строк
 491           sCode = VBA.Replace(sCode, " XXXXX", " _" & vbNewLine) 'changed : am 24.04 CalDymos
 492           Call SetCodeInModule(objVBCitem, sCode)
 493       Next j
@@ -856,7 +856,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 
 503       Debug.Print "Renaming of controls - completed:" & VBA.Format$(Now() - dTime, "Long Time")
 
-          'пїЅndern von Modulen
+          'Дndern von Modulen
 504       For i = LBound(arrData) To UBound(arrData)
 505           If arrData(i, 9) = "yes" And objDictName.Exists(arrData(i, 8)) Then
 506               If arrData(i, 1) = "Module" And VBA.CByte(arrData(i, 2)) <> 100 Then
@@ -869,7 +869,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 513           End If
 514       Next i
 
-          'пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+          'шифрование строк
 515       If bEncodeStr Then Call EncodedStringCode(objWB)
 
 516       Debug.Print "Renaming modules- completed:" & VBA.Format$(Now() - dTime, "Long Time")
@@ -879,7 +879,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : EncodedStringCode - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+'* Sub        : EncodedStringCode - шифрование строковый значений кода
 '* Created    : 29-07-2020 10:00
 '* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -983,14 +983,14 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 584       End If
 End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : GetCodeFromModule - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+'* Function   : GetCodeFromModule - получить код из модуля в строковую переменную
 '* Created    : 20-04-2020 18:20
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
-'* ByRef objVBComp As VBIDE.VBComponent : пїЅпїЅпїЅпїЅпїЅпїЅ VBA
+'* ByRef objVBComp As VBIDE.VBComponent : модуль VBA
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Function GetCodeFromModule(ByRef objVBComp As VBIDE.VBComponent) As String
@@ -1003,15 +1003,15 @@ Private Function GetCodeFromModule(ByRef objVBComp As VBIDE.VBComponent) As Stri
 End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : SetCodeInModule пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+'* Sub        : SetCodeInModule загрузить код из строковой переменой в модуль
 '* Created    : 20-04-2020 18:21
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
 '* Argument(s):                             Description
 '*
-'* ByRef objVBComp As VBIDE.VBComponent : пїЅпїЅпїЅпїЅпїЅпїЅ VBA
-'* ByVal SCode As String                : пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+'* ByRef objVBComp As VBIDE.VBComponent : модуль VBA
+'* ByVal SCode As String                : строковая переменная
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Sub SetCodeInModule(ByRef objVBComp As VBIDE.VBComponent, ByVal sCode As String)
@@ -1026,7 +1026,7 @@ Private Sub SetCodeInModule(ByRef objVBComp As VBIDE.VBComponent, ByVal sCode As
 End Sub
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : SortTabel - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+'* Sub        : SortTabel - сортировка диапазона данных
 '* Created    : 29-07-2020 10:03
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -1065,3 +1065,4 @@ errMsg:
 617           Call MsgBox(Err.Description, vbCritical, "Mistake:")
 618       End If
 End Sub
+

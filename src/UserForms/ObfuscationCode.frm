@@ -184,15 +184,15 @@ ErrorHandler:
 167:
 168:    Call QSort2_asc(arr(), col, lTop, lBot, temp(), lb2, ub2)
 169: End Sub
-     Private Sub QSort2_asc(arr(), C As Long, ByVal Top As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
+     Private Sub QSort2_asc(arr(), c As Long, ByVal Top As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
 171:    Dim t As Long, LB As Long, MidItem, j As Long
 172:
-173:    MidItem = arr((Top + bot) \ 2, C)
+173:    MidItem = arr((Top + bot) \ 2, c)
 174:    t = Top: LB = bot
 175:
 176:    Do
-177:        Do While arr(t, C) < MidItem: t = t + 1: Loop
-178:        Do While arr(LB, C) > MidItem: LB = LB - 1: Loop
+177:        Do While arr(t, c) < MidItem: t = t + 1: Loop
+178:        Do While arr(LB, c) > MidItem: LB = LB - 1: Loop
 179:        If t < LB Then
 180:            For j = lb2 To ub2: temp(j) = arr(t, j): Next j
 181:            For j = lb2 To ub2: arr(t, j) = arr(LB, j): Next j
@@ -203,8 +203,8 @@ ErrorHandler:
 186:        End If
 187:    Loop While t <= LB
 188:
-189:    If t < bot Then QSort2_asc arr(), C, t, bot, temp(), lb2, ub2
-190:    If Top < LB Then QSort2_asc arr(), C, Top, LB, temp(), lb2, ub2
+189:    If t < bot Then QSort2_asc arr(), c, t, bot, temp(), lb2, ub2
+190:    If Top < LB Then QSort2_asc arr(), c, Top, LB, temp(), lb2, ub2
 191:
 192: End Sub
 Private Sub lbOK_Click()
