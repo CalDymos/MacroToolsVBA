@@ -30,7 +30,7 @@ Option Explicit
 16: End Sub
 
     Private Sub lbHelp_Click()
-19:    Call URLLinks(C_Const.URL_STYLE_STYLE)
+19:    Call URLLinks(modConst.URL_STYLE_STYLE)
 20: End Sub
 
     Private Sub UserForm_Activate()
@@ -39,7 +39,7 @@ Option Explicit
 25:    Me.Top = Application.Top + (0.5 * Application.Height) - (0.5 * Me.Height)
 26:
 27:    Dim OptionsTb As ListObject
-28:    Set OptionsTb = SHSNIPPETS.ListObjects(C_Const.TB_OPTIONSIDEDENT)
+28:    Set OptionsTb = SHSNIPPETS.ListObjects(modConst.TB_OPTIONSIDEDENT)
 29:    Call UpdateCodeListBox
 30:    With OptionsTb.ListColumns(2)
 31:        SpinBtnTab.Value = .Range(2, 1)
@@ -179,8 +179,8 @@ Option Explicit
 165:    asCodeLines(1) = "' Example Procedure"
 154:    asCodeLines(2) = "Sub ExampleProc()"
 167:    asCodeLines(3) = ""
-168:    asCodeLines(4) = "'надстройка " & C_Const.NAME_ADDIN
-169:    asCodeLines(5) = "'© 2018-" & VBA.Year(Now()) & " by " & C_Const.NAME_ADDIN & " Ltd."
+168:    asCodeLines(4) = "'надстройка " & modConst.NAME_ADDIN
+169:    asCodeLines(5) = "'© 2018-" & VBA.Year(Now()) & " by " & modConst.NAME_ADDIN & " Ltd."
 170:    asCodeLines(6) = ""
 171:    asCodeLines(7) = "Dim iCount As Integer"
 172:    asCodeLines(8) = "Static sName As String"
@@ -225,7 +225,7 @@ Option Explicit
 
 Private Sub SetOptFromTable(ByVal iRow As Byte, ByVal iVal As Variant)
 213:    Dim OptionsTb As ListObject
-214:    Set OptionsTb = SHSNIPPETS.ListObjects(C_Const.TB_OPTIONSIDEDENT)
+214:    Set OptionsTb = SHSNIPPETS.ListObjects(modConst.TB_OPTIONSIDEDENT)
 215:    OptionsTb.ListColumns(2).Range(iRow, 1) = iVal
 216:    Call UpdateCodeListBox
 End Sub

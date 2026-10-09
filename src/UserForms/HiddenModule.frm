@@ -170,9 +170,9 @@ ErrorHandler:
 155:    wb.Save
 156:    wb.Close
 157:
-158:    strBinFile = O_XML.OpenAndCloseExcelFile(bOpenFile:=True, bBackUp:=False, bShowMsg:=False, sFilePath:=strFulPathWB)
+158:    strBinFile = modXML.OpenAndCloseExcelFile(bOpenFile:=True, bBackUp:=False, bShowMsg:=False, sFilePath:=strFulPathWB)
 159:    Call WriteBinFileHidden(strBinFile, strNameModules)
-160:    Call O_XML.OpenAndCloseExcelFile(bOpenFile:=False, bBackUp:=False, bShowMsg:=False, sFilePath:=strFulPathWB)
+160:    Call modXML.OpenAndCloseExcelFile(bOpenFile:=False, bBackUp:=False, bShowMsg:=False, sFilePath:=strFulPathWB)
 161:    Workbooks.Open strFulPathWB
 162:
 163:    Application.EnableEvents = True
@@ -254,7 +254,7 @@ ErrorHandler:
 239:    Dim ByteTemp() As Byte
 240:    Dim strByteName As String
 241:    Dim strByteNameAndChars As String
-242:    Const sMODULE = "10||77||111||100||117||108||101||61||"
+242:    Const sModule = "10||77||111||100||117||108||101||61||"
 243:    Const sMODULE1 = "124||124||"
 244:    Dim sName  As String
 245:    Dim sByteTemp As String
@@ -266,8 +266,8 @@ ErrorHandler:
 251:        ByteTemp = arrVarColum(i)
 252:        sByteTemp = GetStringFromByte(ByteTemp)
 253:
-254:        If sByteTemp Like sMODULE & "*" Then
-255:            sName = VBA.Right$(sByteTemp, Len(sByteTemp) - Len(sMODULE))
+254:        If sByteTemp Like sModule & "*" Then
+255:            sName = VBA.Right$(sByteTemp, Len(sByteTemp) - Len(sModule))
 256:            sName = sMODULE1 & VBA.Left$(sName, VBA.Len(sName) - 2) & sMODULE1
 257:            If strByteName Like "*" & sName & "*" Then
 258:                For k = 0 To UBound(ByteTemp)

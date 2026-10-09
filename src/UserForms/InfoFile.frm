@@ -24,10 +24,10 @@ Option Explicit
 
 Private Sub cmbMain_Change()
     On Error Resume Next
-    Call UpdateList(Me.ListCode, X_InfoFile.ShowProp(Workbooks(cmbMain.Value)))
-    Call UpdateList(Me.ListCustomDocProp, X_InfoFile.ShowCustomDocProp(Workbooks(cmbMain.Value)))
-    Call UpdateList(Me.ListCustomProp, X_InfoFile.ShowCustomSheetProp(Workbooks(cmbMain.Value)))
-    Call UpdateList(Me.ListNames, X_InfoFile.ShowDefinedNames(Workbooks(cmbMain.Value)))
+    Call UpdateList(Me.ListCode, modInfoFile.ShowProp(Workbooks(cmbMain.Value)))
+    Call UpdateList(Me.ListCustomDocProp, modInfoFile.ShowCustomDocProp(Workbooks(cmbMain.Value)))
+    Call UpdateList(Me.ListCustomProp, modInfoFile.ShowCustomSheetProp(Workbooks(cmbMain.Value)))
+    Call UpdateList(Me.ListNames, modInfoFile.ShowDefinedNames(Workbooks(cmbMain.Value)))
     On Error GoTo 0
 End Sub
 Private Sub UpdateList(ByRef objList As MSForms.ListBox, ByVal Txt As String)
@@ -86,7 +86,7 @@ End Sub
 Private Sub LbDelAllProper_Click()
     If MsgBox("Delete ALL properties ?", vbYesNo + vbQuestion, "Deleting Properties:") = vbYes Then
         Dim iCount  As Byte
-        iCount = X_InfoFile.DelAllProp(Workbooks(cmbMain.Value))
+        iCount = modInfoFile.DelAllProp(Workbooks(cmbMain.Value))
         Call cmbMain_Change
         Call MsgBox("Properties removed:" & iCount, vbInformation, "Deleting Properties:")
     End If
@@ -119,7 +119,7 @@ Private Sub EditProp()
             NameProp = .List(CInt(.BoundValue) - 1, 1)
             txtNew = InputBox("Edit the property [" & NameProp & " ] ?", "Editing a property:", txtOld)
             If txtNew <> txtOld Then
-                Call X_InfoFile.WriteOneProp(Workbooks(cmbMain.Value), NameProp, txtNew)
+                Call modInfoFile.WriteOneProp(Workbooks(cmbMain.Value), NameProp, txtNew)
                 Call cmbMain_Change
             End If
         End If
@@ -138,7 +138,7 @@ Private Sub lbEditCustDocProp_Click()
         If IsNumeric(.BoundValue) Then
             txtOld = VBA.Trim$(.List(CInt(.BoundValue) - 1, 2))
             NameProp = .List(CInt(.BoundValue) - 1, 1)
-            Call X_InfoFile.DelOneCustomDocProp(Workbooks(cmbMain.Value), NameProp)
+            Call modInfoFile.DelOneCustomDocProp(Workbooks(cmbMain.Value), NameProp)
             Call AddCustDocProp(NameProp, txtOld)
         End If
     End With
@@ -149,7 +149,7 @@ Private Sub lbDelOneCustDocProp_Click()
         If IsNumeric(.BoundValue) Then
             NameProp = .List(CInt(.BoundValue) - 1, 1)
             If MsgBox("Delete Property [" & NameProp & " ] ?", vbYesNo + vbQuestion, "Deleting a property:") = vbYes Then
-                Call X_InfoFile.DelOneCustomDocProp(Workbooks(cmbMain.Value), NameProp)
+                Call modInfoFile.DelOneCustomDocProp(Workbooks(cmbMain.Value), NameProp)
                 Call cmbMain_Change
             End If
         End If
@@ -160,7 +160,7 @@ Private Sub AddCustDocProp(ByVal txtPropName As String, ByVal txtPropValue As St
     If txtPropName <> vbNullString Then
         txtPropValue = InputBox("Wert der Eigenschaft", "Creating a property:", txtPropValue)
         If txtPropValue <> vbNullString Then
-            Call X_InfoFile.AddOneCustomDocProp(Workbooks(cmbMain.Value), txtPropName, txtPropValue)
+            Call modInfoFile.AddOneCustomDocProp(Workbooks(cmbMain.Value), txtPropName, txtPropValue)
             Call cmbMain_Change
         End If
     End If
@@ -170,7 +170,7 @@ End Sub
 Private Sub lbDelAllCustomDocProp_Click()
     If MsgBox("Delete ALL properties ?", vbYesNo + vbQuestion, "Deleting Properties:") = vbYes Then
         Dim iCount  As Byte
-        iCount = X_InfoFile.DelAllCustomDocProp(Workbooks(cmbMain.Value))
+        iCount = modInfoFile.DelAllCustomDocProp(Workbooks(cmbMain.Value))
         Call cmbMain_Change
         Call MsgBox("Properties removed:" & iCount, vbInformation, "Deleting Properties:")
     End If
@@ -188,7 +188,7 @@ Private Sub UserForm_Activate()
         .Clear
         On Error Resume Next
         For Each vbProj In Application.VBE.VBProjects
-            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
         Next
         On Error GoTo 0
         .Value = ActiveWorkbook.Name

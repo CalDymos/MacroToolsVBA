@@ -33,7 +33,7 @@ Private m_clsAnchorsEditAdd As CAnchors
 18: End Sub
 
     Private Sub lbHelp_Click()
-21:    Call URLLinks(C_Const.URL_STYLE_SNNIP)
+21:    Call URLLinks(modConst.URL_STYLE_SNNIP)
 22: End Sub
 
     Private Sub txtCode_Change()
@@ -50,7 +50,7 @@ Private m_clsAnchorsEditAdd As CAnchors
     Private Sub cmbENUM_Change()
 36:    Dim snippets    As ListObject
 37:    Dim i_row       As Long
-38:    Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_DESCRIPTION)
+38:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_DESCRIPTION)
 39:    lbPreView.Caption = cmbENUM.Text & txtSNIP.Text
 40:    On Error GoTo errMsg
 41:    i_row = snippets.ListColumns(1).DataBodyRange.Find(What:=cmbENUM.Text, LookIn:=xlValues, LookAt:=xlWhole).Row
@@ -91,7 +91,7 @@ errMsg:
 76:    Me.Top = Application.Top + (0.5 * Application.Height) - (0.5 * Me.Height)
 77:
 78:    Dim snippets    As ListObject
-79:    Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_DESCRIPTION)
+79:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_DESCRIPTION)
 80:    Me.cmbOBJ.AddItem "VBA"
 81:    Me.cmbOBJ.AddItem "EXCEL"
 82:    Me.cmbENUM.List = GetUniqueValueFromRange(snippets.ListColumns(1).Range)
@@ -136,7 +136,7 @@ errMsg:
      Private Sub lbOK_Click()
 122:    Dim snippets    As ListObject
 123:    Dim row_i       As Long
-124:    Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_SNIPPETS)
+124:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 125:    With snippets
 126:        row_i = CLng(txtRow.Text)
 127:        If MsgBox(lbOK.Caption & " SNIPPET: [ " & lbPreView.Caption & " ] ?", vbYesNo, lbOK.Caption & " SNIPPET:") = vbYes Then

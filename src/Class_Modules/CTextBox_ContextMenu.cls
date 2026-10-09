@@ -121,14 +121,14 @@ Private m_objParent As Object
 100:    ' check active textbox is this instance of CTextBox_ContextMenu
 101:    If m_ActiveTextbox() Then
 102:        With m_objDataObject
-103:            Call G_AddCodeViewForm.AddCode(m_txtTBox.ListCount)
+103:            Call modAddCodeViewForm.AddCode(m_txtTBox.ListCount)
 104:        End With
 105:    End If
 106: End Sub
      Private Sub m_cbtCut_Click(ByVal Ctrl As Office.CommandBarButton, CancelDefault As Boolean)
 108:    ' check active textbox is this instance of CTextBox_ContextMenu
 109:    If m_ActiveTextbox() Then
-110:        Call G_AddCodeViewForm.DeletRow(SelectedRow, m_txtTBox)
+110:        Call modAddCodeViewForm.DeletRow(SelectedRow, m_txtTBox)
 111:    End If
 112: End Sub
      Private Sub m_cbtPaste_Click(ByVal Ctrl As Office.CommandBarButton, CancelDefault As Boolean)
@@ -136,7 +136,7 @@ Private m_objParent As Object
 115:    On Error GoTo ErrPaste
 116:    If m_ActiveTextbox() Then
 117:        With m_objDataObject
-118:            Call G_AddCodeViewForm.EditCode(SelectedRow, m_txtTBox)
+118:            Call modAddCodeViewForm.EditCode(SelectedRow, m_txtTBox)
 119:        End With
 120:    End If
 ErrPaste:

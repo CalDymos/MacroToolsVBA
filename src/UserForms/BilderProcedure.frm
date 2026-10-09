@@ -29,7 +29,7 @@ Option Explicit
 15: End Sub
 
     Private Sub lbHelp_Click()
-18:    Call URLLinks(C_Const.URL_BILD_PROC)
+18:    Call URLLinks(modConst.URL_BILD_PROC)
 19: End Sub
 
     Private Sub UserForm_Initialize()
@@ -288,7 +288,7 @@ Option Explicit
 274:    If chbAddMainProceure Then
 275:        Dim snippets As ListObject
 276:        Dim i_row   As Long
-277:        Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_SNIPPETS)
+277:        Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 278:        i_row = snippets.ListColumns(3).DataBodyRange.Find(What:="cu.ScreenUpdatingCalculation", LookIn:=xlValues, LookAt:=xlWhole).Row
 279:        txtCode = txtCode & vbNewLine & snippets.Range(i_row, 4)
 280:    End If
@@ -300,7 +300,7 @@ Option Explicit
 286:    txtCode = AddMainProceure()
 287:
 288:    If opbCliboard Then
-289:        Call C_PublicFunctions.SetTextIntoClipboard(txtCode)
+289:        Call modPublicFunctions.SetTextIntoClipboard(txtCode)
 290:        sMsgBoxString = "The code has been copied to the clipboard!" & vbNewLine & "To insert the code, use" & Chr(34) & "Ctrl+V" & Chr(34)
 291:        Call MsgBox(sMsgBoxString, vbInformation, "Copying the code:")
 292:    Else
@@ -314,7 +314,7 @@ Option Explicit
 300:    'получение кода
 301:    txtCode = AddMainProceure()
 302:    If txtCode = vbNullString Then Exit Sub
-303:    txtLine = C_PublicFunctions.SelectedLineColumnProcedure
+303:    txtLine = modPublicFunctions.SelectedLineColumnProcedure
 304:    If txtLine = vbNullString Then
 305:        Me.Hide
 306:        Exit Sub

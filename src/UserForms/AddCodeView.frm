@@ -31,11 +31,11 @@ Private m_clsAnchors As CAnchors
 16: End Sub
 
     Private Sub lbHelp_Click()
-19:    Call URLLinks(C_Const.URL_STYLE_SNNIP)
+19:    Call URLLinks(modConst.URL_STYLE_SNNIP)
 20: End Sub
 
     Private Sub ListBoxMain_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
-23:    Call G_AddCodeViewForm.EditCode(ListBoxMain.ListIndex + 1, ListBoxMain)
+23:    Call modAddCodeViewForm.EditCode(ListBoxMain.ListIndex + 1, ListBoxMain)
 24: End Sub
     Private Sub UserForm_Terminate()
 26:    Do While m_colContextMenus.Count > 0
@@ -45,7 +45,7 @@ Private m_clsAnchors As CAnchors
 30:    Set m_clsAnchors = Nothing
 31: End Sub
     Private Sub UserForm_Activate()
-33:    Call G_AddCodeViewForm.TbAdd(ListBoxMain)
+33:    Call modAddCodeViewForm.TbAdd(ListBoxMain)
 34:    Me.lbHelp.Picture = Application.CommandBars.GetImageMso("Help", 18, 18)
 35: End Sub
     Private Sub UserForm_Initialize()
@@ -82,7 +82,7 @@ Private m_clsAnchors As CAnchors
     Private Sub ListBoxMain_Click()
 68:    Dim row_i       As Long
 69:    Dim snippets    As ListObject
-70:    Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_SNIPPETS)
+70:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 71:    With ListBoxMain
 72:        If .ListIndex > -1 Then
 73:            row_i = snippets.ListColumns(2).DataBodyRange.Find(What:=.List(.ListIndex, 2), LookIn:=xlValues, LookAt:=xlWhole).Row
@@ -101,7 +101,7 @@ Private m_clsAnchors As CAnchors
     Private Sub lbOK_Click()
 87:    Dim row_i       As Long
 88:    Dim snippets    As ListObject
-89:    Set snippets = SHSNIPPETS.ListObjects(C_Const.TB_SNIPPETS)
+89:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 90:    With ListBoxMain
 91:        If .ListIndex > -1 Then
 92:            row_i = snippets.ListColumns(2).DataBodyRange.Find(What:=.List(.ListIndex, 2), LookIn:=xlValues, LookAt:=xlWhole).Row
@@ -125,14 +125,14 @@ Private m_clsAnchors As CAnchors
 110:    Else
 111:        LB_ClearList.visible = False
 112:    End If
-113:    Call G_AddCodeViewForm.TbAdd(ListBoxMain)
+113:    Call modAddCodeViewForm.TbAdd(ListBoxMain)
 114:    Call SerchSnippet
 115: End Sub
      Private Sub LB_ClearList_Click()
 117:    LB_ClearList.visible = False
 118:    txtSerch.Text = vbNullString
 119:    TB_Result.visible = False
-120:    Call G_AddCodeViewForm.TbAdd(ListBoxMain)
+120:    Call modAddCodeViewForm.TbAdd(ListBoxMain)
 121: End Sub
 Private Sub SerchSnippet()
 123:    On Error GoTo MyBtnSerch_Err
@@ -142,11 +142,11 @@ Private Sub SerchSnippet()
 127:    strVar = txtSerch.Text
 128:    Flag = True
 129:    If strVar = vbNullString Then    'введено пусто
-130:        Call G_AddCodeViewForm.TbAdd(ListBoxMain)
+130:        Call modAddCodeViewForm.TbAdd(ListBoxMain)
 131:        Exit Sub
 132:    End If
 133:    If strVar = " " Then    'введено пусто
-134:        Call G_AddCodeViewForm.TbAdd(ListBoxMain)
+134:        Call modAddCodeViewForm.TbAdd(ListBoxMain)
 135:        TB_Result.visible = True
 136:        LB_ClearList.visible = True
 137:        Exit Sub

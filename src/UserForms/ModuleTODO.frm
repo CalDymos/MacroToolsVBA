@@ -46,7 +46,7 @@ Private m_clsAnchors As CAnchors
 31:        .Clear
 32:        On Error Resume Next
 33:        For Each vbProj In Application.VBE.VBProjects
-34:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+34:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 35:        Next
 36:        On Error GoTo 0
 37:        .Value = ActiveWorkbook.Name

@@ -1,7 +1,7 @@
 VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} InsertIconUserForm 
    Caption         =   "Icons:"
-   ClientHeight    =   9810.001
+   ClientHeight    =   9804.001
    ClientLeft      =   48
    ClientTop       =   396
    ClientWidth     =   20268
@@ -15,7 +15,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-Private WithEvents Emitter As EventListenerEmitter
+Private WithEvents Emitter As CEventListenerEmitter
 Attribute Emitter.VB_VarHelpID = -1
 Private Sub Emitter_DblClick(control As Object, Cancel As MSForms.ReturnBoolean)
     Unload Me
@@ -32,7 +32,7 @@ Private Sub Label821_Click()
     Debug.Print i - 6
 End Sub
 Private Sub UserForm_Initialize()
-    Set Emitter = New EventListenerEmitter
+    Set Emitter = New CEventListenerEmitter
     With Emitter
         .AddEventListenerAll Me
     End With

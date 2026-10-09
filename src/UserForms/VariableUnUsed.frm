@@ -60,7 +60,7 @@ Private m_clsAnchors As CAnchors
 47:        .Clear
 48:        On Error Resume Next
 49:        For Each vbProj In Application.VBE.VBProjects
-50:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+50:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 51:        Next
 52:        On Error GoTo 0
 53:        .Value = ActiveWorkbook.Name
@@ -127,7 +127,7 @@ Private m_clsAnchors As CAnchors
 114:    Dim strVar      As String
 115:    strVar = AddListImmediate()
 116:    If strVar = vbNullString Then Exit Sub
-117:    Call C_PublicFunctions.SetTextIntoClipboard(strVar)
+117:    Call modPublicFunctions.SetTextIntoClipboard(strVar)
 118:
 119:    Call MsgBox("The data has been copied to the clipboard!", vbInformation, "Copying data:")
 120: End Sub
@@ -334,7 +334,7 @@ ErrorHandler:
 321:                            Call dicCollSubsAndFunctions.Add(vbComp.Name & "." & _
                                         strProcName, _
                                         sTypeSubFun & "." & _
-                                        I_StatisticVBAProj.TypeProcedyre(strFunctionBody) & "." & _
+                                        modStatisticVBAProj.TypeProcedyre(strFunctionBody) & "." & _
                                         byTypeProc(strFerstStringSub) & "." & _
                                         strFunctionTypeAs)
 327:                        End If
@@ -468,7 +468,7 @@ ErrorHandler:
 455:    IsVariableUsed = False
 456:
 457:    ' Format Variablename
-458:    strVrName = C_PublicFunctions.TrimSpace(strVrName)
+458:    strVrName = modPublicFunctions.TrimSpace(strVrName)
 459:    strVrName = Replace(strVrName, "(", " ")
 460:    strVrName = Replace(strVrName, "%", vbNullString)     'Integer
 461:    strVrName = Replace(strVrName, "&", vbNullString)     'Long
@@ -478,7 +478,7 @@ ErrorHandler:
 465:    strVrName = Replace(strVrName, "@", vbNullString)     'Currency
 466:    If strVrName <> vbNullString Then strVrName = Split(strVrName, " ")(0)
 467:    For intLoop = 0 To UBound(strArrofLine)
-468:        strLine = C_PublicFunctions.TrimSpace(strArrofLine(intLoop))
+468:        strLine = modPublicFunctions.TrimSpace(strArrofLine(intLoop))
 469:        strLine = RemoveEnclosedStringAndComments(strLine)
 470:
 471:        If Not StrigLikeWord(strLine) Then
@@ -858,7 +858,7 @@ ErrorHandler:
 845:    If strLine <> vbNullString Then
 846:        strLine = Split(strLine, "'")(0)
 847:    End If
-848:    strLine = C_PublicFunctions.TrimSpace(strLine)
+848:    strLine = modPublicFunctions.TrimSpace(strLine)
 849:    RemoveEnclosedStringAndComments = strLine
 850:
 851: End Function

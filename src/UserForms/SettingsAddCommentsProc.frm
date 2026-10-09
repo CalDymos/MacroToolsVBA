@@ -33,7 +33,7 @@ Option Explicit
 18:    Me.Top = Application.Top + (0.5 * Application.Height) - (0.5 * Me.Height)
 19:
 20:    Dim TBComment As ListObject
-21:    Set TBComment = SHSNIPPETS.ListObjects(C_Const.TB_COMMENT)
+21:    Set TBComment = SHSNIPPETS.ListObjects(modConst.TB_COMMENT)
 22:    With TBComment.ListColumns(2)
 23:        txtName.Value = .Range(2, 1).Value
 24:        txtName1.Value = txtName.Value
@@ -68,7 +68,7 @@ Option Explicit
 53: End Sub
     Private Sub lbOK_Click()
 55:    Dim TBComment As ListObject
-56:    Set TBComment = SHSNIPPETS.ListObjects(C_Const.TB_COMMENT)
+56:    Set TBComment = SHSNIPPETS.ListObjects(modConst.TB_COMMENT)
 57:    With TBComment.ListColumns(2)
 58:        .Range(2, 1).Value = txtName.Value
 59:        txtName1.Value = txtName.Value

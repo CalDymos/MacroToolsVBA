@@ -42,7 +42,7 @@ Option Explicit
 28:    With cmbMain
 29:        .Clear
 30:        For Each vbProj In Application.VBE.VBProjects
-31:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+31:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 32:        Next
 33:        If lbWord.Caption = "1" Then Call getWord(cmbMain)
 34:        .Value = ActiveWorkbook.Name
@@ -57,7 +57,7 @@ Option Explicit
 43:    Dim sVal        As String
 44:    Set objW = GetObject(, "Word.Application")
 45:    For Each vbProj In objW.VBE.VBProjects
-46:        sVal = C_PublicFunctions.sGetFileName(vbProj.Filename)
+46:        sVal = modPublicFunctions.sGetFileName(vbProj.Filename)
 47:        If sVal Like "*.docm" Or sVal Like "*.DOCM" Then oList.AddItem sVal
 48:    Next
 49: End Sub

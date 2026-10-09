@@ -238,15 +238,15 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 117               CryptKey(0).ModuleName = objTmpModuleName.Keys(z2)
                               
 118           End If
-              Dim skey As String
+              Dim sKey As String
               If blnAddModule1 Then
-                  skey = vbext_ct_StdModule & CHR_TO & "Module1"
-                  If Not .objName.Exists(skey) Then .objName.Add skey, 0
+                  sKey = vbext_ct_StdModule & CHR_TO & "Module1"
+                  If Not .objName.Exists(sKey) Then .objName.Add sKey, 0
               End If
 119           For Each objVBComp In objWB.VBProject.VBComponents
                   'Collect module names
-120               skey = objVBComp.Type & CHR_TO & objVBComp.Name
-121               If Not .objName.Exists(skey) Then .objName.Add skey, 0
+120               sKey = objVBComp.Type & CHR_TO & objVBComp.Name
+121               If Not .objName.Exists(sKey) Then .objName.Add sKey, 0
                   
                   'Collecting all controls in the forms
 122               Call ParserNameControlsForm(objVBComp.Name, objVBComp, .objContr)
@@ -443,7 +443,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 
 279           .Cells(2, 1).Resize(UBound(arrRange), 10) = arrRange
 
-280           .Range(.Cells(2, 11), .Cells(k, 11)).FormulaR1C1 = "=IFERROR(VLOOKUP(RC[-3]," & SHSNIPPETS.ListObjects(C_Const.TB_SERVICEWORDS).DataBodyRange.Address(ReferenceStyle:=xlR1C1, External:=True) & ",1,0),"""")"
+280           .Range(.Cells(2, 11), .Cells(k, 11)).FormulaR1C1 = "=IFERROR(VLOOKUP(RC[-3]," & SHSNIPPETS.ListObjects(modConst.TB_SERVICEWORDS).DataBodyRange.Address(ReferenceStyle:=xlR1C1, External:=True) & ",1,0),"""")"
 281           .Range(.Cells(2, 9), .Cells(k, 9)).FormulaR1C1 = "=IF(RC[2]="""",""yes"",""no"")"
 282           .Columns("A:K").AutoFilter
 283           .Columns("A:K").EntireColumn.AutoFit
@@ -639,7 +639,7 @@ Private Sub ParserVariebleSubFunc(ByRef objVBC As VBIDE.VBComponent, ByRef objDi
 402                   sCode = VBA.Replace(sCode, " _" & vbNewLine, vbNullString)
 403                   arrStrCode = VBA.Split(sCode, vbNewLine)
 404                   For Each itemArr In arrStrCode
-405                       itemArr = C_PublicFunctions.TrimSpace(itemArr)
+405                       itemArr = modPublicFunctions.TrimSpace(itemArr)
 406                       If itemArr <> vbNullString And VBA.Left$(itemArr, 1) <> "'" Then
 407                           sVar = vbNullString
                               'If the code contains a comment, delete it.
@@ -733,7 +733,7 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 455               For i = 0 To UBound(AddProcs())
 456                   If AddProcs(i).ModuleName = .Name Then
 457                       For Each itemArr In AddProcs(i).CodeLines
-458                           itemArr = C_PublicFunctions.TrimSpace(itemArr)
+458                           itemArr = modPublicFunctions.TrimSpace(itemArr)
 459                           If itemArr <> vbNullString And VBA.Left$(itemArr, 1) <> "'" Then
 460                               sVar = vbNullString
                                   'If the code contains a comment, delete it.
@@ -916,7 +916,7 @@ Private Function ParserStrDimConst(ByVal sTxt As String, ByVal sNameSub As Strin
           Dim arrWord     As Variant
           Dim sType       As String
 
-552       sTemp = C_PublicFunctions.TrimSpace(sTxt)
+552       sTemp = modPublicFunctions.TrimSpace(sTxt)
 553       sType = "Dim"
 554       If sTemp <> vbNullString And VBA.Left$(sTemp, 1) <> "'" Then
               'If there is a comment in the code string, delete it.
@@ -988,7 +988,7 @@ Private Sub ParserNameSubFunc(ByVal sNameVBC As String, ByRef objVBC As VBIDE.VB
           Dim lineOld     As Long
           Dim sNameSub    As String
           Dim strFunctionBody As String
-          Dim skey As String
+          Dim sKey As String
           
 598       With objVBC.CodeModule
 599           If .CountOfLines > 0 Then
@@ -999,7 +999,7 @@ Private Sub ParserNameSubFunc(ByVal sNameVBC As String, ByRef objVBC As VBIDE.VB
                       'Sammeln von Namen von Prozeduren und Funktionen
 603                   sNameSub = .ProcOfLine(lLine, ProcKind)
 604                   If sNameSub <> vbNullString Then
-605                       strFunctionBody = C_PublicFunctions.TrimSpace(.Lines(lLine - 1, .ProcCountLines(sNameSub, ProcKind)))
+605                       strFunctionBody = modPublicFunctions.TrimSpace(.Lines(lLine - 1, .ProcCountLines(sNameSub, ProcKind)))
                           'Debug.Print strFunctionBody
                           'Debug.Print .Lines(lLine - 1, .ProcCountLines(sNameSub, ProcKind))
 606                       If (Not strFunctionBody Like "*As IRibbonControl*") And _
@@ -1007,10 +1007,10 @@ Private Sub ParserNameSubFunc(ByVal sNameVBC As String, ByRef objVBC As VBIDE.VB
                               (Not WorkBookAndSheetsEvents(strFunctionBody, objVBC.Type)) And _
                               (Not (strFunctionBody Like "* UserForm_*" And objVBC.Type = vbext_ct_MSForm)) And _
                               (Not UserFormsEvents(strFunctionBody, objVBC.Type)) Then
-607                           skey = sNameVBC & CHR_TO & TypeProcedure(strFunctionBody) & CHR_TO & TypeOfAccessModifier(strFunctionBody) & CHR_TO & sNameSub
+607                           sKey = sNameVBC & CHR_TO & TypeProcedure(strFunctionBody) & CHR_TO & TypeOfAccessModifier(strFunctionBody) & CHR_TO & sNameSub
                               'Debug.Print skey
-608                           If Not varSubFun.Exists(skey) Then
-609                               varSubFun.Add skey, objVBC.Type
+608                           If Not varSubFun.Exists(sKey) Then
+609                               varSubFun.Add sKey, objVBC.Type
 610                           End If
 611                       End If
 612                       lLine = .ProcStartLine(sNameSub, ProcKind) + .ProcCountLines(sNameSub, ProcKind) + 1
@@ -1039,7 +1039,7 @@ End Sub
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Private Sub ParserNameSubFuncFromAddProc(ByVal sNameVBC As String, ByRef objVBC As VBIDE.VBComponent, ByRef varSubFun As Scripting.Dictionary, AddProcs() As CAddProc)
-          Dim skey As String
+          Dim sKey As String
           Dim i As Long
           
              
@@ -1047,11 +1047,11 @@ Private Sub ParserNameSubFuncFromAddProc(ByVal sNameVBC As String, ByRef objVBC 
 622           For i = 0 To UBound(AddProcs())
 623               If AddProcs(i).ModuleName = sNameVBC Then
 624                   If Not UserFormsEvents(AddProcs(i).GetCodeLine(0), objVBC.Type) Then
-625                       skey = sNameVBC & CHR_TO & TypeProcedure(CStr(AddProcs(i).GetCodeLine(0))) & CHR_TO & _
+625                       sKey = sNameVBC & CHR_TO & TypeProcedure(CStr(AddProcs(i).GetCodeLine(0))) & CHR_TO & _
                               TypeOfAccessModifier(CStr(AddProcs(i).GetCodeLine(0))) & CHR_TO & AddProcs(i).Name
                           'Debug.Print skey
-626                       If Not varSubFun.Exists(skey) Then
-627                           varSubFun.Add skey, objVBC.Type
+626                       If Not varSubFun.Exists(sKey) Then
+627                           varSubFun.Add sKey, objVBC.Type
 628                       End If
 629                   End If
 630               End If
@@ -1268,7 +1268,7 @@ Private Sub ParserNameGlobalVariable(ByVal sNameVBC As String, ByRef objVBC As V
 756           If sTemp <> vbNullString Then
 757               varArr = VBA.Split(sTemp, vbNewLine)
 758               For i = 0 To UBound(varArr)
-759                   sTemp = C_PublicFunctions.TrimSpace(DeleteCommentString(varArr(i)))
+759                   sTemp = modPublicFunctions.TrimSpace(DeleteCommentString(varArr(i)))
 760                   If sTemp <> vbNullString And VBA.Left$(sTemp, 1) <> "'" Then
 761                       If sTemp Like "* Type *" Or sTemp Like "* Enum *" Or sTemp Like "Type *" Or sTemp Like "Enum *" Then
 762                           varArrWord = VBA.Split(sTemp, " ")
@@ -1507,7 +1507,7 @@ Private Function GenerateKey() As String
           Dim z2 As Integer
           Dim Z3 As Integer
           Dim i As Integer
-          Dim skey As String
+          Dim sKey As String
 
 893       Randomize Timer
 
@@ -1520,14 +1520,14 @@ Private Function GenerateKey() As String
               'Debug.Print Z3
 
 898           If Z3 = 1 Then
-899               skey = skey & Chr$(64 + z1)
+899               sKey = sKey & Chr$(64 + z1)
 900           Else
-901               skey = skey & CStr(z2)
+901               sKey = sKey & CStr(z2)
 902           End If
 
 903       Next i
           'Debug.Print skey
-904       GenerateKey = skey
+904       GenerateKey = sKey
 
 End Function
 

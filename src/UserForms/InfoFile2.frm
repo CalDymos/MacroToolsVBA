@@ -23,9 +23,9 @@ Attribute VB_Exposed = False
 Option Explicit
 
     Private Sub cmbMain_Change()
-13:    Me.txtLastAuthor = X_InfoFile.GetOneProp(Workbooks(cmbMain.Value), "Last author")
+13:    Me.txtLastAuthor = modInfoFile.GetOneProp(Workbooks(cmbMain.Value), "Last author")
 14:    Me.txtLastAuthorOld = Me.txtLastAuthor
-15:    Me.txtLastSaveTime = X_InfoFile.GetOneProp(Workbooks(cmbMain.Value), "Last save time")
+15:    Me.txtLastSaveTime = modInfoFile.GetOneProp(Workbooks(cmbMain.Value), "Last save time")
 16:    Me.txtLastSaveTimeOld = Me.txtLastSaveTime
 17: End Sub
 
@@ -48,14 +48,14 @@ Option Explicit
 35: End Sub
 
     Private Sub WriteXML(ByVal sfileName As String, ByVal LastAuthor As String, ByVal lastTime As Date, Optional bBackUp As Boolean = False)
-38:    Dim cEditOpenXML As clsEditOpenXML
+38:    Dim oEditOpenXML As CEditOpenXML
 39:    Dim sXML        As String
 40:    Dim oXMLDoc     As MSXML2.DOMDocument
 41:
 42:    Set oXMLDoc = New MSXML2.DOMDocument
 43:
-44:    Set cEditOpenXML = New clsEditOpenXML
-45:    With cEditOpenXML
+44:    Set oEditOpenXML = New CEditOpenXML
+45:    With oEditOpenXML
 46:        .CreateBackupXML = bBackUp
 47:        .SourceFile = sfileName
 48:        .UnzipFile
@@ -70,7 +70,7 @@ Option Explicit
 57:        .ZipAllFilesInFolder
 58:    End With
 59:
-60:    Set cEditOpenXML = Nothing
+60:    Set oEditOpenXML = Nothing
 61:    Set oXMLDoc = Nothing
 62:
 63: End Sub
@@ -86,7 +86,7 @@ Option Explicit
 73:        .Clear
 74:        On Error Resume Next
 75:        For Each vbProj In Application.VBE.VBProjects
-76:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+76:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 77:        Next
 78:        On Error GoTo 0
 79:        .Value = ActiveWorkbook.Name

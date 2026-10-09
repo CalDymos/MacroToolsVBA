@@ -25,7 +25,7 @@ Option Explicit
 4:    Unload Me
 5: End Sub
   Private Sub lbHelp_Click()
-8:    Call URLLinks(C_Const.URL_BILD_MSG)
+8:    Call URLLinks(modConst.URL_BILD_MSG)
 9: End Sub
     Private Sub UserForm_Activate()
 12:    Const W    As Integer = 20
@@ -180,7 +180,7 @@ Option Explicit
 161:    sSTR = AddCodeText()
 162:    If sSTR = vbNullString Then Exit Sub
 163:    If opbCliboard.Value = True Then
-164:        Call C_PublicFunctions.SetTextIntoClipboard(sSTR)
+164:        Call modPublicFunctions.SetTextIntoClipboard(sSTR)
 165:        sMsgBoxString = "The code has been copied to the clipboard!" & vbNewLine & "To insert the code, use" & Chr(34) & "Ctrl+V" & Chr(34)
 166:    Else
 167:        Debug.Print sSTR
@@ -197,7 +197,7 @@ Option Explicit
 178:
 179:    sSTR = AddCodeText()
 180:    If sSTR = vbNullString Then Exit Sub
-181:    txtLine = C_PublicFunctions.SelectedLineColumnProcedure
+181:    txtLine = modPublicFunctions.SelectedLineColumnProcedure
 182:    If txtLine = vbNullString Then
 183:        Me.Hide
 184:        Exit Sub

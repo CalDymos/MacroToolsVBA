@@ -130,7 +130,7 @@ End Enum
 115:    sPath = Me.txtPath.Text
 116:
 117:    'если нет директории то создаем
-118:    If Not C_PublicFunctions.FileHave(sPath, vbDirectory) Then
+118:    If Not modPublicFunctions.FileHave(sPath, vbDirectory) Then
 119:        MkDir (sPath)
 120:    End If
 121:
@@ -139,7 +139,7 @@ End Enum
 124:    sNewDirForFile = sBaseNameFile & "_" & sDate & "_" & sVersion & sExtensionFile
 125:    sOldVer = GetPathFormCode(GetCodeFromModule(Me.cmbFile.Value), 2, "Version    : ")
 126:    'Erstellen einer Version der Datei
-127:    Call C_PublicFunctions.CopyFileFSO(Workbooks(Me.cmbFile.Value).FullName, sPath & sNewDirForFile)
+127:    Call modPublicFunctions.CopyFileFSO(Workbooks(Me.cmbFile.Value).FullName, sPath & sNewDirForFile)
 128:    'формированияе комментария
 129:    sCommentariy = VBA.Replace(VBA.Trim(Me.txtCommentariy.Text), vbNewLine, " vbNewLine ")
 130:    sCongig = GetTypeCoomment(VersionList.verNameFileVer) & sNewDirForFile & ";" & _
@@ -149,8 +149,8 @@ End Enum
                                 GetTypeCoomment(VersionList.verModuleNames) & AddListModuleName(Me.cmbFile.Value) & ";" & _
                                 GetTypeCoomment(VersionList.verComment) & sCommentariy & vbNewLine
 136:    'Aktualisieren oder Erstellen der Datei Config.cvs
-137:    Call C_PublicFunctions.TXTAddIntoTXTFile(sPath & CONFIG, sCongig)
-138:    sVersionInfo = C_PublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
+137:    Call modPublicFunctions.TXTAddIntoTXTFile(sPath & CONFIG, sCongig)
+138:    sVersionInfo = modPublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
 139:
 140:    'Erneuerung oder Erstellung eines neuen Bestands
 141:    Call AddCommentVSC(AddCommentForModule(sPath, sVersion, sDate, sOldVer), Me.cmbFile.Value)
@@ -169,11 +169,11 @@ ErrorHandler:
      Private Sub lbChoseFile_Click()
 155:    Dim sCommentariy As String
 156:
-157:    Me.txtPath.Text = C_PublicFunctions.DirLoadFiles(Workbooks(Me.cmbFile.Value).Path)
-158:    If C_PublicFunctions.FileHave(Me.txtPath.Text, vbDirectory) Then
+157:    Me.txtPath.Text = modPublicFunctions.DirLoadFiles(Workbooks(Me.cmbFile.Value).Path)
+158:    If modPublicFunctions.FileHave(Me.txtPath.Text, vbDirectory) Then
 159:        Me.lbAddSource.Enabled = True
 160:    End If
-161:    sVersionInfo = C_PublicFunctions.TXTReadALLFile(Me.txtPath.Text & CONFIG, False)
+161:    sVersionInfo = modPublicFunctions.TXTReadALLFile(Me.txtPath.Text & CONFIG, False)
 162:        Call ChangeColor
 163: End Sub
      Private Sub lbOpenFileVersion_Click()
@@ -191,7 +191,7 @@ ErrorHandler:
 176:    End If
 177:
 178:    sfileName = Me.txtPath & Me.ListVersion.List(i, 1)
-179:    If C_PublicFunctions.FileHave(sfileName, Normal) Then
+179:    If modPublicFunctions.FileHave(sfileName, Normal) Then
 180:        Workbooks.Open Filename:=Me.txtPath & Me.ListVersion.List(i, 1)
 181:        Me.txtMsg.Text = "File: [" & Me.ListVersion.List(i, 1) & "] open!"
 182:        Me.txtMsg.ForeColor = myGreenColor
@@ -224,7 +224,7 @@ ErrorHandler:
 209:
 210:    SelectFileName = Me.ListVersion.List(i, 1)
 211:
-212:    If Not C_PublicFunctions.FileHave(Me.txtPath & SelectFileName, Normal) Then
+212:    If Not modPublicFunctions.FileHave(Me.txtPath & SelectFileName, Normal) Then
 213:
 214:        Me.txtMsg.Text = "File: [" & SelectFileName & "] not found, in storage!"
 215:        Me.txtMsg.ForeColor = myRedColor
@@ -238,7 +238,7 @@ ErrorHandler:
 223:        Application.DisplayAlerts = False
 224:        Workbooks(Me.cmbFile.Value).Close
 225:        Application.DisplayAlerts = True
-226:        Call C_PublicFunctions.CopyFileFSO(sLoadPath, sMainPath)
+226:        Call modPublicFunctions.CopyFileFSO(sLoadPath, sMainPath)
 227:        Workbooks.Open Filename:=sMainPath
 228:
 229:        Me.txtMsg.Text = "File upload: [" & SelectFileName & " ]" & vbNewLine & "Completed"
@@ -318,7 +318,7 @@ ErrorHandler:
 303:    With Me.cmbFile
 304:        On Error Resume Next
 305:        For Each vbProj In Application.VBE.VBProjects
-306:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+306:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 307:        Next
 308:        On Error GoTo 0
 309:        On Error GoTo ErrorHandler
@@ -354,13 +354,13 @@ ErrorHandler:
 339:        Me.lbAddSource.Enabled = True
 340:    End If
 341:
-342:    Me.txtBaseNameFile.Text = C_PublicFunctions.sGetBaseName(Me.cmbFile.Value)
-343:    Me.txtExtensionFile.Text = "." & C_PublicFunctions.sGetExtensionName(Me.cmbFile.Value)
+342:    Me.txtBaseNameFile.Text = modPublicFunctions.sGetBaseName(Me.cmbFile.Value)
+343:    Me.txtExtensionFile.Text = "." & modPublicFunctions.sGetExtensionName(Me.cmbFile.Value)
 344:    Me.txtMsg.ForeColor = myRedColor
 345:    Me.ListVersion.Clear
 346:    Me.txtPath.Text = vbNullString
 347:
-348:    If C_PublicFunctions.FileHave(sPath, vbDirectory) Then
+348:    If modPublicFunctions.FileHave(sPath, vbDirectory) Then
 349:        Me.txtPath.Text = sPath
 350:    Else
 351:        sMsg = "No storage has been created for the file:" & vbNewLine & "[ " & Me.cmbFile.Value & " ]"
@@ -369,13 +369,13 @@ ErrorHandler:
 354:        Exit Sub
 355:    End If
 356:
-357:    If Not C_PublicFunctions.FileHave(sPath & CONFIG, vbDirectory) Then
+357:    If Not modPublicFunctions.FileHave(sPath & CONFIG, vbDirectory) Then
 358:        sMsg = "File not found: Config.cvs"
 359:        Me.txtCommentariy.Text = "Creating the first version"
 360:    End If
 361:
 362:    Me.txtMsg.Text = sMsg
-363:    sVersionInfo = C_PublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
+363:    sVersionInfo = modPublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
 364:    Call RefrashListVersion(sPath)
 365:
 366:    Exit Sub
@@ -402,7 +402,7 @@ ErrorHandler:
 387:
 388:    On Error GoTo ErrorHandler
 389:
-390:    sConfigString = C_PublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
+390:    sConfigString = modPublicFunctions.TXTReadALLFile(sPath & Application.PathSeparator & CONFIG, False)
 391:    If sConfigString = vbNullString Then Exit Sub
 392:    vVar = VBA.Split(sConfigString, vbNewLine)
 393:    For i = 0 To UBound(vVar)

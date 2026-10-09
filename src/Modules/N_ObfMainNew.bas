@@ -161,7 +161,7 @@ Public Sub StartCompleteObfuscation()
 82            objWB.SaveAs Filename:=sPath & arrNameFile(0) & "_obf_" & Replace(Now(), ":", ".") & "." & arrNameFile(1)    ', FileFormat:=wb.FileFormat
 83        End If
 84        j = -1
-          N_Obfuscation.TrfClearNotices
+          modObfuscation.TrfClearNotices
 
 85        Set vbProj = objWB.VBProject
 86        For i = 0 To vbProj.VBComponents.Count - 1
@@ -169,23 +169,23 @@ Public Sub StartCompleteObfuscation()
 87            Set vbComp = vbProj.VBComponents(ListCode(i, 2))
 
 
-88            Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelColon)
-89            Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelTab)
+88            Call modAddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelColon)
+89            Call modAddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelTab)
 
 
-90            Call N_Obfuscation.Remove_Comments(vbComp.CodeModule)
+90            Call modObfuscation.Remove_Comments(vbComp.CodeModule)
 
 
-91            Call N_Obfuscation.TrimLinesTabAndSpase(vbComp.CodeModule)
+91            Call modObfuscation.TrimLinesTabAndSpase(vbComp.CodeModule)
 
 
-92            Call N_Obfuscation.Remove_OptionExplicit(vbComp.CodeModule)
+92            Call modObfuscation.Remove_OptionExplicit(vbComp.CodeModule)
 
 
-93            Call N_Obfuscation.Remove_EmptyLines(vbComp.CodeModule)
+93            Call modObfuscation.Remove_EmptyLines(vbComp.CodeModule)
 
         
-94            Call N_Obfuscation.RemoveBreaksLineInCode(vbComp.CodeModule)
+94            Call modObfuscation.RemoveBreaksLineInCode(vbComp.CodeModule)
           
 
 95        Next i
@@ -205,8 +205,8 @@ Public Sub StartCompleteObfuscation()
           
 
           sMsg = objWB.Name & " encrypted!"
-          If N_Obfuscation.TrfNoticeCount > 0 Then
-              sMsg = sMsg & vbLf & vbLf & N_Obfuscation.TrfNoticeCount & " place(s) were intentionally left unchanged." & vbLf & _
+          If modObfuscation.TrfNoticeCount > 0 Then
+              sMsg = sMsg & vbLf & vbLf & modObfuscation.TrfNoticeCount & " place(s) were intentionally left unchanged." & vbLf & _
                      "Details: Immediate window of the VBA editor (Ctrl+G)."
           End If
 107       Call MsgBox(sMsg, vbInformation, "Code encryption:")
@@ -699,7 +699,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
           
           'save and Load
 390       If Not sFolderHave(objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH) Then MkDir (objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH)
-391       objWB.SaveAs Filename:=objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH & Application.PathSeparator & C_PublicFunctions.sGetBaseName(objWB.FullName) & "_obf_" & Replace(Now(), ":", ".") & "." & C_PublicFunctions.sGetExtensionName(objWB.FullName)    ', FileFormat:=objWB.FileFormat
+391       objWB.SaveAs Filename:=objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH & Application.PathSeparator & modPublicFunctions.sGetBaseName(objWB.FullName) & "_obf_" & Replace(Now(), ":", ".") & "." & modPublicFunctions.sGetExtensionName(objWB.FullName)    ', FileFormat:=objWB.FileFormat
 
 392       Debug.Print "File saving - completed:" & VBA.Format$(Now() - dTime, "Long Time")
               

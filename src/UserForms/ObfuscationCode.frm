@@ -31,7 +31,7 @@ Option Explicit
 16: End Sub
 
     Private Sub lbHelp_Click()
-19:    Call URLLinks(C_Const.URL_FILE_OBFS)
+19:    Call URLLinks(modConst.URL_FILE_OBFS)
 20: End Sub
 
     Private Sub UserForm_Activate()
@@ -52,7 +52,7 @@ Option Explicit
 37:        .Clear
 38:        On Error Resume Next
 39:        For Each vbProj In Application.VBE.VBProjects
-40:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+40:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 41:        Next
 42:        On Error GoTo 0
 43:        On Error GoTo ErrorHandler
@@ -81,7 +81,7 @@ ErrorHandler:
 66:    Dim sVal        As String
 67:    Set objW = GetObject(, "Word.Application")
 68:    For Each vbProj In objW.VBE.VBProjects
-69:        sVal = C_PublicFunctions.sGetFileName(vbProj.Filename)
+69:        sVal = modPublicFunctions.sGetFileName(vbProj.Filename)
 70:        If sVal Like "*.docm" Or sVal Like "*.DOCM" Then oList.AddItem sVal
 71:    Next
 72: End Sub
@@ -245,7 +245,7 @@ Private Sub lbOK_Click()
 225:            wb.SaveAs Filename:=sPath & arrNameFile(0) & "_obf_" & Replace(Now(), ":", ".") & "." & arrNameFile(1)    ', FileFormat:=wb.FileFormat
 226:        End If
 227:        j = -1
-            N_Obfuscation.TrfClearNotices
+            modObfuscation.TrfClearNotices
 228:
 229:        Set vbProj = wb.VBProject
 230:        For i = 0 To ListCode.ListCount - 1
@@ -253,26 +253,26 @@ Private Sub lbOK_Click()
 232:                Set vbComp = vbProj.VBComponents(ListCode.List(i, 2))
 233:
 234:                If CheckDelNomerLine Then
-235:                    Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelColon)
-236:                    Call K_AddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelTab)
+235:                    Call modAddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelColon)
+236:                    Call modAddNumbersLine.RemoveLineNumbers(vbComp, vbLineNumbers_LabelTypes.vbLabelTab)
 237:                End If
                     If CheckDelDebugPrint Then
-                        Call N_Obfuscation.Remove_DebugPrint(vbComp.CodeModule)
+                        Call modObfuscation.Remove_DebugPrint(vbComp.CodeModule)
                     End If
 238:                If CheckDelComment Then
-239:                    Call N_Obfuscation.Remove_Comments(vbComp.CodeModule)
+239:                    Call modObfuscation.Remove_Comments(vbComp.CodeModule)
 240:                End If
 241:                If CheckDelFormat Then
-242:                    Call N_Obfuscation.TrimLinesTabAndSpase(vbComp.CodeModule)
+242:                    Call modObfuscation.TrimLinesTabAndSpase(vbComp.CodeModule)
 243:                End If
 244:                If CheckDelExplicit Then
-245:                    Call N_Obfuscation.Remove_OptionExplicit(vbComp.CodeModule)
+245:                    Call modObfuscation.Remove_OptionExplicit(vbComp.CodeModule)
 246:                End If
 247:                If CheckDelEmptyLines Then
-248:                    Call N_Obfuscation.Remove_EmptyLines(vbComp.CodeModule)
+248:                    Call modObfuscation.Remove_EmptyLines(vbComp.CodeModule)
 249:                End If
 250:                If CheckDelBreaksLines Then
-251:                    Call N_Obfuscation.RemoveBreaksLineInCode(vbComp.CodeModule)
+251:                    Call modObfuscation.RemoveBreaksLineInCode(vbComp.CodeModule)
 252:                End If
 253:            End If
 254:        Next i
@@ -280,7 +280,7 @@ Private Sub lbOK_Click()
 255:
 256:        wb.Save
             On Error GoTo 0
-            lNotices = N_Obfuscation.TrfNoticeCount
+            lNotices = modObfuscation.TrfNoticeCount
             sMsg = "Removing formatting [" & oldWbName & "] completed!"
             If lNotices > 0 Then
                 sMsg = sMsg & vbLf & vbLf & lNotices & " place(s) were intentionally left unchanged." & vbLf & _

@@ -50,7 +50,7 @@ Private arrFormatDateCustomDiscription As Variant
 29: End Function
 
     Private Sub lbHelp_Click()
-32:    Call URLLinks(C_Const.URL_BILD_FOFMAT)
+32:    Call URLLinks(modConst.URL_BILD_FOFMAT)
 33: End Sub
 
     Private Sub lbInsertCode_Click()
@@ -59,7 +59,7 @@ Private arrFormatDateCustomDiscription As Variant
 38:    'получение кода
 39:    txtCode = AddCode()
 40:    If txtCode = vbNullString Then Exit Sub
-41:    txtLine = C_PublicFunctions.SelectedLineColumnProcedure
+41:    txtLine = modPublicFunctions.SelectedLineColumnProcedure
 42:    If txtLine = vbNullString Then
 43:        Me.Hide
 44:        Exit Sub
@@ -76,7 +76,7 @@ Private arrFormatDateCustomDiscription As Variant
 55:
 56:    sSTR = AddCode()
 57:    If sSTR = vbNullString Then Exit Sub
-58:    Call C_PublicFunctions.SetTextIntoClipboard(sSTR)
+58:    Call modPublicFunctions.SetTextIntoClipboard(sSTR)
 59:
 60:    sMsgBoxString = "The code has been copied to the clipboard!" & vbNewLine & "To insert the code, use" & Chr(34) & "Ctrl+V" & Chr(34)
 61:    Call MsgBox(sMsgBoxString, vbInformation, "Copying the code:")

@@ -75,7 +75,7 @@ Private m_clsAnchors As CAnchors
 62:        cmbMainCopy.Clear
 63:        On Error Resume Next
 64:        For Each vbProj In Application.VBE.VBProjects
-65:            .AddItem C_PublicFunctions.sGetFileName(vbProj.Filename)
+65:            .AddItem modPublicFunctions.sGetFileName(vbProj.Filename)
 66:        Next
 67:        .Value = ActiveWorkbook.Name
 68:        On Error GoTo 0
@@ -100,7 +100,7 @@ ErrorHandler:
     Private Sub lbImportModule_Click()
 88:    Application.ScreenUpdating = False
 89:    If cmbMain.Value <> vbNullString Then
-90:        Call S_ModuleCommander.ImportAllModules(Workbooks(cmbMain.Value))
+90:        Call modModuleCommander.ImportAllModules(Workbooks(cmbMain.Value))
 91:    End If
 92:    Call AddListCode
 93:    Call FilterRun
@@ -109,7 +109,7 @@ ErrorHandler:
      Private Sub lbExportModule_Click()
 97:    Application.ScreenUpdating = False
 98:    If cmbMain.Value <> vbNullString And lbMsg.visible = False Then
-99:        Call S_ModuleCommander.ExportAllModules(Workbooks(cmbMain.Value), SelectedListItems)
+99:        Call modModuleCommander.ExportAllModules(Workbooks(cmbMain.Value), SelectedListItems)
 100:    Else
 101:        Call MsgBox("Nothing is selected!", vbInformation, "Exporting a project:")
 102:    End If
@@ -120,7 +120,7 @@ ErrorHandler:
      Private Sub lbRemoveModule_Click()
 108:    Application.ScreenUpdating = False
 109:    If cmbMain.Value <> vbNullString And lbMsg.visible = False Then
-110:        Call S_ModuleCommander.DeleteAllModulesInActiveProject(Workbooks(cmbMain.Value), SelectedListItems)
+110:        Call modModuleCommander.DeleteAllModulesInActiveProject(Workbooks(cmbMain.Value), SelectedListItems)
 111:    Else
 112:        Call MsgBox("Nothing is selected!", vbInformation, "Deleting a project:")
 113:    End If
@@ -139,9 +139,9 @@ ErrorHandler:
 126:                If .Selected(i) Then
 127:                    Set vbCompObj = Workbooks(cmbMain.Value).VBProject.VBComponents(.List(i, 2))
 128:                    If vbCompObj.CodeModule.CountOfLines <> 0 Then
-129:                        Call E_AddEnum.AddModuleToProject(.List(i, 2), vbCompObj.Type, vbCompObj.CodeModule.Lines(1, vbCompObj.CodeModule.CountOfLines), Workbooks(cmbMainCopy.Value).VBProject)
+129:                        Call modAddEnum.AddModuleToProject(.List(i, 2), vbCompObj.Type, vbCompObj.CodeModule.Lines(1, vbCompObj.CodeModule.CountOfLines), Workbooks(cmbMainCopy.Value).VBProject)
 130:                    Else
-131:                        Call E_AddEnum.AddModuleToProject(.List(i, 2), vbCompObj.Type, vbNullString, Workbooks(cmbMainCopy.Value).VBProject)
+131:                        Call modAddEnum.AddModuleToProject(.List(i, 2), vbCompObj.Type, vbNullString, Workbooks(cmbMainCopy.Value).VBProject)
 132:                    End If
 133:                End If
 134:            Next i
@@ -344,13 +344,13 @@ ErrorHandler:
 331:
 332:    Call QSort2_asc(arr(), col, lTop, bot, arrTemp(), lb2, ub2)
 333: End Sub
-Private Sub QSort2_asc(arr(), C As Long, ByVal lTop As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
+Private Sub QSort2_asc(arr(), c As Long, ByVal lTop As Long, ByVal bot As Long, temp(), lb2 As Long, ub2 As Long)
 335:    Dim t As Long, LB As Long, MidItem, j As Long
-336:    MidItem = arr((lTop + bot) \ 2, C)
+336:    MidItem = arr((lTop + bot) \ 2, c)
 337:    t = lTop: LB = bot
 338:    Do
-339:        Do While arr(t, C) < MidItem: t = t + 1: Loop
-340:        Do While arr(LB, C) > MidItem: LB = LB - 1: Loop
+339:        Do While arr(t, c) < MidItem: t = t + 1: Loop
+340:        Do While arr(LB, c) > MidItem: LB = LB - 1: Loop
 341:        If t < LB Then
 342:            For j = lb2 To ub2: temp(j) = arr(t, j): Next j
 343:            For j = lb2 To ub2: arr(t, j) = arr(LB, j): Next j
@@ -361,6 +361,6 @@ Private Sub QSort2_asc(arr(), C As Long, ByVal lTop As Long, ByVal bot As Long, 
 348:        End If
 349:    Loop While t <= LB
 350:
-351:    If t < bot Then QSort2_asc arr(), C, t, bot, temp(), lb2, ub2
-352:    If lTop < LB Then QSort2_asc arr(), C, lTop, LB, temp(), lb2, ub2
+351:    If t < bot Then QSort2_asc arr(), c, t, bot, temp(), lb2, ub2
+352:    If lTop < LB Then QSort2_asc arr(), c, lTop, LB, temp(), lb2, ub2
 End Sub

@@ -77,7 +77,7 @@ Private m_clsAnchors As CAnchors
 62:        If Me.txtStr.Text <> vbNullString Then
 63:            .List = funParseChars(Me.txtStr.Text)
 64:            lRows = UBound(VBA.Split(Me.txtStr.Text, vbNewLine)) + 1
-65:            lWords = UBound(VBA.Split(C_PublicFunctions.TrimSpace(VBA.Replace(Me.txtStr.Text, vbNewLine, VBA.Chr(32))), VBA.Chr(32))) + 1
+65:            lWords = UBound(VBA.Split(modPublicFunctions.TrimSpace(VBA.Replace(Me.txtStr.Text, vbNewLine, VBA.Chr(32))), VBA.Chr(32))) + 1
 66:            If lRows < 0 Then lRows = 0
 67:            Me.lbMsg.Caption = "String length:" & VBA.Len(Me.txtStr.Text) & "this. Lines:" & lRows & "Words:" & lWords
 68:        End If

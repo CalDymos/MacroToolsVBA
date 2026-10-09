@@ -37,7 +37,7 @@ Public sPassword As String
 23: End Function
 
     Private Sub lbHelp_Click()
-26:    Call URLLinks(C_Const.URL_FILE_PROTECT)
+26:    Call URLLinks(modConst.URL_FILE_PROTECT)
 27: End Sub
 
     Private Sub UserForm_Initialize()

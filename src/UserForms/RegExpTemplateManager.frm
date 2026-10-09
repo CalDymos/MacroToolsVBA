@@ -266,10 +266,10 @@ Canceled:
 245:    cmbItemGrupa.Clear
 246:    cmbItemGrupa.List = objListGrup.ListColumns(1).DataBodyRange.Value2
 247: End Sub
-     Private Sub SortTableListObject(ByRef objList As ListObject, ByVal skey As String)
+     Private Sub SortTableListObject(ByRef objList As ListObject, ByVal sKey As String)
 249:    With objList.Sort
 250:        .SortFields.Clear
-251:        .SortFields.Add Key:=Range(skey), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+251:        .SortFields.Add Key:=Range(sKey), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
 252:        .Orientation = xlTopToBottom
 253:        .SortMethod = xlPinYin
 254:        .Apply
