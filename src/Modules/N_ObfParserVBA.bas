@@ -32,9 +32,11 @@ Public Sub StartParser()
           Dim Form        As AddStatistic
           Dim sNameWB     As String
           Dim objWB       As Object
+          Dim lCalc       As XlCalculation
 
 1         On Error GoTo ErrStartParser
-2         Application.Calculation = xlCalculationManual
+          'Remember the caller's calculation mode; CleanUp restores it on the normal path and after an error
+          lCalc = Application.Calculation
 3         Set Form = New AddStatistic
 4         With Form
 5             .Caption = "Code base data collection:"
@@ -51,6 +53,7 @@ Public Sub StartParser()
 16            sNameWB = .cmbMain.Value
 17        End With
 18        If sNameWB = vbNullString Then Exit Sub
+          Application.Calculation = xlCalculationManual
 19        If sNameWB Like "*.docm" Or sNameWB Like "*.DOCM" Then
               Dim objWrdApp As Object
 20            Set objWrdApp = GetObject(, "Word.Application")
@@ -61,13 +64,17 @@ Public Sub StartParser()
 
 25        Call MainObfParser(objWB, Form.chQuestion.Value, Form.chQuestion2.Value)
 26        Set Form = Nothing
-27        Application.Calculation = xlCalculationAutomatic
+CleanUp:
+          'Restore the caller's settings; a failing restore must not re-enter the error handler
+          On Error Resume Next
+          Application.Calculation = lCalc
+          Application.StatusBar = False
 28        Exit Sub
 ErrStartParser:
-29        Application.Calculation = xlCalculationAutomatic
 30        Application.ScreenUpdating = True
 31        Call MsgBox("Error in N_ObfParserVBA.StartParser" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
 32        Call WriteErrorLog("N_ObfParserVBA.StartParser")
+          Resume CleanUp
 End Sub
 
 

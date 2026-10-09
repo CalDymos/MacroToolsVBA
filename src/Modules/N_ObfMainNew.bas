@@ -93,11 +93,16 @@ Public Sub StartCompleteObfuscation()
           Dim vbComp      As VBIDE.VBComponent
           Dim objWkSh As Worksheet
           Dim sMsg        As String
+          Dim lCalc       As XlCalculation
+          Dim bScreen     As Boolean
+          Dim bAlerts     As Boolean
 
 30        On Error GoTo ErrCompleteObfuscation
 
-31        Application.Calculation = xlCalculationManual
-32        Application.ScreenUpdating = False
+          'Remember the caller's settings; CleanUp restores them on the normal path and after an error
+          lCalc = Application.Calculation
+          bScreen = Application.ScreenUpdating
+          bAlerts = Application.DisplayAlerts
 33        Set Form = New AddStatistic
 34        With Form
 35            .Caption = "Komplett Code-Verschleierung"
@@ -128,6 +133,8 @@ Public Sub StartCompleteObfuscation()
 57            Call MsgBox("The VBA project is password protected, remove the password from the project!", vbCritical, "Removing Formatting:")
 58            Exit Sub
 59        End If
+          Application.Calculation = xlCalculationManual
+          Application.ScreenUpdating = False
           
 60        Call DelegateMainObfParser(objWB, Form.chQuestion.Value, Form.chQuestion2.Value, True)
 61        Call MainObfuscation(objWB, Form.chQuestion.Value, True)
@@ -155,7 +162,7 @@ Public Sub StartCompleteObfuscation()
 76            sPath = Left(objWB.FullName, Len(objWB.FullName) - Len(objWB.Name))
 77            If sPath = vbNullString Then
 78                Call MsgBox("The file is not saved, you need to save the file to continue: [" & objWB.Name & " ]", vbInformation, "Mistake:")
-79                Exit Sub
+                  GoTo CleanUp
 80            End If
 81            arrNameFile = Split(objWB.Name, ".")
 82            objWB.SaveAs Filename:=sPath & arrNameFile(0) & "_obf_" & Replace(Now(), ":", ".") & "." & arrNameFile(1)    ', FileFormat:=wb.FileFormat
@@ -212,20 +219,26 @@ Public Sub StartCompleteObfuscation()
 107       Call MsgBox(sMsg, vbInformation, "Code encryption:")
        
 108       Set Form = Nothing
-109       Application.Calculation = xlCalculationAutomatic
-110       Application.ScreenUpdating = True
+CleanUp:
+          'Restore the caller's settings; a failing restore must not re-enter the error handler
+          On Error Resume Next
+          Application.Calculation = lCalc
+          Application.ScreenUpdating = bScreen
+          Application.DisplayAlerts = bAlerts
+          Application.StatusBar = False
 111       Exit Sub
 ErrCompleteObfuscation:
-112       Application.Calculation = xlCalculationAutomatic
 113       Application.ScreenUpdating = True
 114       Call MsgBox("Error in N_ObfMainNew.StartCompleteObfuscation" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
 115       Call WriteErrorLog("StartCompleteObfuscation")
+          Resume CleanUp
 End Sub
 
 Public Sub StartObfuscation()
           Dim Form        As AddStatistic
           Dim sNameWB     As String
           Dim objWB       As Object
+          Dim lCalc       As XlCalculation
 
           'On Error GoTo ErrStartParser
 116       Set Form = New AddStatistic
@@ -248,7 +261,12 @@ Public Sub StartObfuscation()
 131           Set objWB = Workbooks(sNameWB)
 132       End If
 
+          'MainObfuscation ends with Automatic calculation; hand the caller's mode back afterwards
+          lCalc = Application.Calculation
 133       Call MainObfuscation(objWB, Form.chQuestion.Value)
+          On Error Resume Next
+          Application.Calculation = lCalc
+          On Error GoTo 0
 134       Set Form = Nothing
 135       Exit Sub
 ErrStartParser:
@@ -299,6 +317,7 @@ ErrStartParser:
 168       Application.EnableEvents = True
 169       Application.Calculation = xlCalculationAutomatic
 170       Application.ScreenUpdating = True
+          Application.StatusBar = False
 171       Call MsgBox("Error in MainObfuscation" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
 End Sub
 
