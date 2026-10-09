@@ -1,0 +1,105 @@
+<?xml version="1.0" standalone="yes"?>
+<customUI xmlns="http://schemas.microsoft.com/office/2006/01/customui" onLoad="MacroToolsLoadRibbon">
+	<ribbon startFromScratch="false">
+		<tabs>
+			<tab id="Tab" label="MACROTools">
+				<group id="Refrash" label="Update" imageMso="AccessRefreshAllLists">
+					<button id="RefrasBtn" label="Reboot" screentip="Neustart des Add-Ins" imageMso="AccessRefreshAllLists" size="large" onAction="RefrasBtn"/>
+				</group>
+				<group id="grOperFile" label="File Operations" imageMso="GroupCreateClient">
+					<button id="btnOpenFile" label="Unpack" screentip="Ein Werkzeug zum Entpacken einer Excel-Datei in einen Ordner" imageMso="FilesToolShowHideFolders" size="large" onAction="onOpenFileExcel"/>
+					<button id="btnCloseFile" label="Pack" screentip="Ein Tool zum Packen eines Ordners in eine Excel-Datei" imageMso="MicrosoftExcel" size="large" onAction="onCloseFileExcel"/>
+					<button id="btnInToFile" label="File Contents" screentip="Ein Tool zur Anzeige des Inhalts einer Excel-Datei" imageMso="AllModuleNameItems" size="large" onAction="onInToFile"/>
+				</group>
+				<group id="VBAProject" label="VBAProject and Excel passwords" imageMso="SheetProtect">
+					<splitButton id="splitButtonVBAProject" size="large">
+						<menu id="menMacroPasword" label="VBAProject Passwords" imageMso="SheetProtect">
+							<menuSeparator id="SeparHelpsPaswordVBA" title="VBA Passwords"/>
+							<button id="BtnUnProtectVBA" label="Remove the password from the VBA project" screentip="Ein Werkzeug zum Entfernen von Passwörtern aus VBA-Projekten" imageMso="ModuleInsert" onAction="onUnProtectVBA"/>
+							<menuSeparator id="SeparHelpsPasword" title="VBA Passwords are Unviewable"/>
+							<button id="BtnUnProtectVBAUnivableVBASet" label="Remove the Unviewable password" screentip="Ein Tool zum Entfernen von Passwörtern aus VBA-Projekten, die den Fehler Unviewable anzeigen" imageMso="FileDocumentEncrypt" onAction="onUnProtectVBAUnivable"/>
+							<button id="BtnProtectVBAUnivable" label="Set an Unwiewable Password" screentip="The password Setting tool is Unviewable" imageMso="ReviewProtectWorkbook" onAction="onProtectVBAUnivable"/>
+						</menu>
+					</splitButton>
+					<separator id="SeparatorPasword"/>
+					<menu id="menExcelPasword" label="MS Excel Passwords" size="large" imageMso="GroupProtect">
+						<menuSeparator id="SeparHelpsPaswordExcel" title="Excel passwords - remove"/>
+						<button id="BtnUnProtectSheets" label="Remove the password by brute force" screentip="A tool for removing passwords from sheets and Excel workbooks by brute force." supertip="Не работает с книгами Excel созданными в версиях 2013 и старше!" imageMso="SheetProtect" onAction="onUnProtectSheets"/>
+						<button id="BtnUnProtectSheetsXML" label="Remove password delete XML" screentip="A tool for removing passwords from Excel sheets and workbook by deleting XML" imageMso="GroupProtect" onAction="BtnUnProtectSheetsXML"/>
+					</menu>
+					<menu id="menObfuscator" label="Obfuscator" size="large" imageMso="GroupCreateClient">
+					    <menuSeparator id="SeparObfuscator1" title="Komplett (Stutefe 1-3):"/>
+						<button id="btnCompleteObf" label="Run Complete Obfuscation" screentip="Führt Schritte 1-3 zusammen aus" imageMso="FileViewDigitalSignatures" onAction="onCompleteObf"/>
+						<menuSeparator id="SeparObfuscator2" title="Stufe 1 Datenerhebung:"/>
+						<button id="btnParserVBA" label="VBA Code Parser" screentip="Werkzeug zum sammeln aller VBA-Code-Variablen" imageMso="FileViewDigitalSignatures" onAction="onParserVBA"/>
+						<menuSeparator id="SeparObfuscator3" title="Stufe 2 Verschlüsselung:"/>
+						<button id="btnObfuscator" label="Obfuscate" screentip="Werkzeug zur Code-Verschleierung" imageMso="GroupCreateClient" onAction="onObfuscator"/>
+						<menuSeparator id="SeparObfuscator4" title="Schritt 3 Entfernen der Code-Formatierungen:"/>
+						<button id="btnFormatsDel" label="Removing Formatting" screentip="Werkzeug zum Entfernen von Einzügen, Kommentaren usw." imageMso="GroupCreateClient" onAction="onFormatsDel"/>
+					</menu>
+					<separator id="SeparatorPasword1"/>
+					<button id="btnHiddenModule" label="Hide Modules" screentip="Hide VBA modules from the project" imageMso="CreateClassModule" size="large" onAction="btnHiddenModule"/>
+				</group>
+				<group id="grToolsOther" label="Other tools" imageMso="GroupTools">
+					<button id="idInfoFile" label="Information about the file" screentip="Information about the properties of the file custom and standard" imageMso="FunctionsInformationInsertGallery" size="large" onAction="BtnInfoFile"/>
+					<button id="BtnExportVBA" label="Export Import" screentip="Copying, exporting, importing and deleting modules of the VBA project, the selected book" imageMso="CreateModule" size="large" onAction="BtnExportVBA"/>
+					<button id="btnToolCharMonitor" label="Character code analysis" screentip="Analysis of character codes in the text" imageMso="CharacterCodeToggle" size="large" onAction="onToolCharMonitor"/>
+					<menu id="menVisualBasic" label="Other" imageMso="ControlToolboxOutlook" size="large">
+						<menuSeparator id="SepamenVisualBasic1" title="VBA Code Statistics"/>
+						<button id="btnAddStatistic" label="Create statistics on VBA code" imageMso="ColumnsDialog" onAction="AddStatBtn"/>
+						<button id="btnAddStatisticShape" label="Create statistics about objects related to macros" imageMso="CreateReport" onAction="onAddShapeStatistic"/>
+						<menuSeparator id="SepamenVisualBasic2" title="Excel File Version Control System"/>
+						<button id="BtnVSC" label="Excel File Version Control System" imageMso="GroupAdpDiagramShowHide" onAction="BtnVSC"/>
+						<menuSeparator id="SepamenVisualBasic3" title="Snippets"/>
+						<button id="btnImportCodeBaseBtn" label="Upload the snippet database" screentip="Unload the SNIPPETs database" imageMso="ImportExcel" onAction="ImportCodeBaseBtn"/>
+						<button id="btnAddCodeBaseBtn" label="Create a snippet" screentip="Create a new snippet" imageMso="AdpOutputOperationsAddToOutput" onAction="AddCodeBaseBtn"/>
+						<menuSeparator id="SepamenVisualBasic4" title="Parsing lines in a file"/>
+						<button id="btnParserStrings" label="Parser of lines in a file" screentip="Collecting string values from VBA, UserForms and Ribbon code hummed" imageMso="ExportExcel" onAction="ParserStrings"/>
+						<button id="btnReNameParserString" label="Renaming string values" screentip="Renaming string values in VBA code, UserForms and Ribbon have sung" imageMso="ImportExcel" onAction="ReNameParserString"/>
+						<menuSeparator id="SepamenVisualBasic5" title="Clean up Workbook"/>
+						<button id="btnDeleteAllLinks" label="Deleting all links from a file" screentip="Deleting (breaking) all links from the selected file" imageMso="DataFormDeleteRecord" onAction="onDeleteAllLinks"/>
+						<menuSeparator id="SepamenVisualBasic6"/>
+						<button id="btnAddListLinks" label="Creating a list of all links in a book" screentip="Creating a list of all links in a book" imageMso="CacheListData" onAction="onAddListLinks"/>
+						<button id="btnDeleteLinksOnList" label="Deleting links by list" screentip="Deleting links by the selected list" imageMso="TableDelete" onAction="onDeleteLinksOnList"/>
+						<menuSeparator id="SepamenVisualBasic7"/>
+						<button id="btnDelAllShapes" label="Del all Shapes" screentip="Delete all Shapes on active sheet" imageMso="FrameDelete" onAction="onDelAllShapes"/>
+						<menuSeparator id="SepamenVisualBasic8"/>
+						<button id="btnDelAllUnusedFormats" label="Delete unused custom formats" screentip="Delete all unused Custom Formats in active Workbook" imageMso="ClearFormatting" onAction="onDelAllUnusedFormats"/>
+						<button id="btnDelAllFormats" label="Delete custom formats" screentip="Delete all Custom Formats in active Workbook" imageMso="ClearAll" onAction="onDelAllCustomFormats"/>
+					</menu>
+				</group>
+				<group id="Navigation" label="Navigation" imageMso="RmsNavigationBar">
+					<button id="BtnReferenceStyle" label="Reference Style" screentip="Switching the link style R1C1" imageMso="R" size="large" onAction="onSwitcherReferenceStyle"/>
+					<separator id="SeparatorNavigation1"/>
+					<button id="BtnAddIn" label="Add-ons" imageMso="GroupSiteAssetsManage" size="large" onAction="AddInBtn"/>
+					<separator id="SeparatorNavigation2"/>
+					<button id="BtnVBA" label="Visual Basic" imageMso="VisualBasic" size="large" onAction="VBABtn"/>
+				</group>
+				<group id="Helps" imageMso="Help" label="Help">
+					<menu id="MenuOptions" label="Settings" imageMso="ReadingViewToolsMenu" size="large">
+						<menuSeparator id="SepaOptions1" title="Code Style Settings"/>
+						<button id="BtnOptionsStyle" label="Code Style Settings" screentip="Code Formatting Settings" imageMso="ReadingViewToolsMenu" onAction="onOptions"/>
+						<menuSeparator id="SeparOptions2" title="Settings comment"/>
+						<button id="BtnOptionsComment" label="Settings comment" screentip="Auto settings VBA code comment" imageMso="ReadingViewToolsMenu" onAction="onOptionsComments"/>
+						<menuSeparator id="SeparOptions3" title="VBE Environment Design Settings"/>
+						<button id="BtnBlackTheme" label="Dark theme" screentip="Enable Dark theme editor VBE" imageMso="BlackAndWhiteBlack" onAction="onBlackTheme"/>
+						<button id="BtnWhiteTheme" label="Light theme" screentip="Turn on the light theme of the VBE editor" imageMso="AppointmentColor0" onAction="onWhiteTheme"/>
+					</menu>
+					<separator id="SeparatorHelp1"/>
+					<menu id="MenuHelps" label="Help" imageMso="Help" size="large">
+						<menuSeparator id="SeparHelps1" title="Contacts"/>
+						<button id="BtnHelpMain" label="Home MacroTools" imageMso="StarRatedFull" onAction="BtnHelpMain"/>
+						<menuSeparator id="SeparHelps2"/>
+						<button id="BtnHelpSnippets" label="Code Library" imageMso="BuildingBlocksOrganizer" onAction="BtnHelpSnippets" screentip="Library of ready-made macros and code style"/>
+						<button id="BtnHelpBuilders" label="Constructors" imageMso="ControlsGallery" onAction="BtnMainBuilders" screentip="Constructors: procedures, formats and MsgBox"/>
+						<button id="BtnHelpControls" label="Form Elements" imageMso="ViewsFormView" onAction="BtnHelpControls" screentip="Micro-adjustment of form elements"/>
+						<button id="BtnHelpPass" label="Operations with an Excel file" imageMso="TableExcelSpreadsheetInsert" onAction="BtnHelpPass" screentip="Operations on an Excel file"/>
+					</menu>
+				</group>
+				<group id="Version" imageMso="Recurrence" getVisible="getVisible">
+					<button id="btnVersion" imageMso="Recurrence" label="An update is available" size="large" screentip="Go to the website VBATools.ru to update the add-in" onAction="onVisible"/>
+				</group>
+			</tab>
+		</tabs>
+	</ribbon>
+</customUI>

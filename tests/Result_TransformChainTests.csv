@@ -1,0 +1,1526 @@
+ID;Method;Purpose;Status;Notices (actual/expected);Note;Rationale;Input;Expected;Actual
+T01;CHAIN;Leeres CodeModule;PASS;0/0;;Jede Methode muss bei 0 Zeilen sofort enden.;| ;| ;| 
+T02;CHAIN;CodeModule mit nur einer Zeile;PASS;0/0;;Einzeilige Module ohne Fortsetzung bleiben unveraendert.;| Dim x As Long;| Dim x As Long;| Dim x As Long
+T02b;OPT;Einzige Zeile ist Option Explicit;PASS;0/0;;Loeschen der einzigen Zeile ergibt ein leeres Modul.;| Option Explicit;| ;| 
+T03;EMPTY;CodeModule mit nur einer Leerzeile;PASS;0/0;;Leerzeile an Position 1 hat keine Vorgaengerzeile.;| ;| ;| 
+T04;EMPTY;Mehrere aufeinanderfolgende Leerzeilen;PASS;0/0;;Zusammenhaengende Leerzeilen werden gemeinsam geloescht, keine Zeile wird uebersprungen.;"| Sub P04()
+|     x = 1
+| 
+| 
+|     y = 2
+| End Sub";"| Sub P04()
+|     x = 1
+|     y = 2
+| End Sub";"| Sub P04()
+|     x = 1
+|     y = 2
+| End Sub"
+T05;EMPTY;Leerzeilen am Modulanfang;PASS;0/0;;Zeile 1 und 2 leer.;"| 
+| 
+| Sub P05()
+| End Sub";"| Sub P05()
+| End Sub";"| Sub P05()
+| End Sub"
+T06;EMPTY;Leerzeilen am Modulende;PASS;0/0;;Letzte Zeilen leer.;"| Sub P06()
+| End Sub
+| 
+| ";"| Sub P06()
+| End Sub";"| Sub P06()
+| End Sub"
+T07;CMT;Kommentarzeichen innerhalb von Zeichenketten;PASS;0/0;;Apostroph im String ist kein Kommentarbeginn.;"| Sub P07()
+|     Debug.Print ""Text ' kein Kommentar""
+|     s = ""a'b"" ' echter Kommentar
+| End Sub";"| Sub P07()
+|     Debug.Print ""Text ' kein Kommentar""
+|     s = ""a'b""
+| End Sub";"| Sub P07()
+|     Debug.Print ""Text ' kein Kommentar""
+|     s = ""a'b""
+| End Sub"
+T08;CMT;Doppelte Anfuehrungszeichen innerhalb von Zeichenketten;PASS;0/0;;Escapte Anfuehrungszeichen beenden den String nicht.;"| Sub P08()
+|     Debug.Print ""Er sagte """"Hallo""""""
+|     s = ""x """"' y"""" z"" ' echt
+| End Sub";"| Sub P08()
+|     Debug.Print ""Er sagte """"Hallo""""""
+|     s = ""x """"' y"""" z""
+| End Sub";"| Sub P08()
+|     Debug.Print ""Er sagte """"Hallo""""""
+|     s = ""x """"' y"""" z""
+| End Sub"
+T09;CMT;Rem-Kommentare;PASS;1/1;"Fixture is not compilable; module removed.";"Rem am Anweisungsanfang und nach ':' wird entfernt; 'remark' und String bleiben; Rem direkt nach Then bleibt (Notice), da die Wirkung auf die If-Form nicht belegt ist.";"| Sub P09()
+| Rem tatsaechlicher Kommentar
+|     x = 1: Rem nach Trenner
+|     s = ""Rem Test""
+|     remark = 2
+|     If x Then Rem nach Then
+| End Sub";"| Sub P09()
+|     x = 1
+|     s = ""Rem Test""
+|     remark = 2
+|     If x Then Rem nach Then
+| End Sub";"| Sub P09()
+|     x = 1
+|     s = ""Rem Test""
+|     remark = 2
+|     If x Then Rem nach Then
+| End Sub"
+T10;CMT;Kommentare nach ausfuehrbarem Code;PASS;0/0;;Reine Kommentarzeile wird geloescht, Code vor dem Kommentar bleibt.;"| Sub P10()
+|     ' nur Kommentar
+|     x = 1 ' Kommentar
+| End Sub";"| Sub P10()
+|     x = 1
+| End Sub";"| Sub P10()
+|     x = 1
+| End Sub"
+T11;RLN;Echte alphanumerische Labels;PASS;0/0;;Nur numerische Labels sind Ziel der Methode.;"| Sub P11()
+|     GoTo Weiter
+| Weiter:
+|     x = 1
+| End Sub";"| Sub P11()
+|     GoTo Weiter
+| Weiter:
+|     x = 1
+| End Sub";"| Sub P11()
+|     GoTo Weiter
+| Weiter:
+|     x = 1
+| End Sub"
+T11b;DBG;Debug.Print nach alphanumerischem Label;PASS;0/0;;Das Label bleibt Sprungziel, nur die Anweisung faellt weg.;"| Sub P11b()
+| Weiter: Debug.Print 1
+|     GoTo Weiter
+| End Sub";"| Sub P11b()
+| Weiter:
+|     GoTo Weiter
+| End Sub";"| Sub P11b()
+| Weiter:
+|     GoTo Weiter
+| End Sub"
+T12;RLN;Numerische Zeilennummern (beide Formate);PASS;0/0;;"Doppelpunkt-Format: '10:' weg, genau ein folgendes Leerzeichen weg; Format ohne Doppelpunkt: Ziffern werden durch Leerzeichen ersetzt; reine Nummernzeile wird leer.";"| Sub P12()
+| 10:     x = 1
+| 20      y = 2
+| 30
+| 40: q12 = 3
+| End Sub";"| Sub P12()
+|      x = 1
+|         y = 2
+| 
+| q12 = 3
+| End Sub";"| Sub P12()
+|      x = 1
+|         y = 2
+| 
+| q12 = 3
+| End Sub"
+T13;RLN;Numerische Sprungziele;PASS;0/0;;F2 a: referenzierte Nummer 20 bleibt, 10 und 15 werden entfernt.;"| Sub P13()
+| 10  x = 1
+|     If x = 1 Then GoTo 20
+| 15  x = 2
+| 20  y = x
+| End Sub";"| Sub P13()
+|     x = 1
+|     If x = 1 Then GoTo 20
+|     x = 2
+| 20  y = x
+| End Sub";"| Sub P13()
+|     x = 1
+|     If x = 1 Then GoTo 20
+|     x = 2
+| 20  y = x
+| End Sub"
+T14;RLN;GoTo und On ... GoTo mit Liste;PASS;0/0;;Alle Ziele der Liste und von GoTo bleiben.;"| Sub P14()
+|     On i GoTo 100, 200
+|     GoTo 300
+| 100 a = 1
+| 200 a = 2
+| 300 a = 3
+| 400 a = 4
+| End Sub";"| Sub P14()
+|     On i GoTo 100, 200
+|     GoTo 300
+| 100 a = 1
+| 200 a = 2
+| 300 a = 3
+|     a = 4
+| End Sub";"| Sub P14()
+|     On i GoTo 100, 200
+|     GoTo 300
+| 100 a = 1
+| 200 a = 2
+| 300 a = 3
+|     a = 4
+| End Sub"
+T15;RLN;GoSub-Verwendung;PASS;0/0;;GoSub-Ziel bleibt.;"| Sub P15()
+|     GoSub 500
+|     Exit Sub
+| 500 x = 1
+|     Return
+| 600 y = 2
+| End Sub";"| Sub P15()
+|     GoSub 500
+|     Exit Sub
+| 500 x = 1
+|     Return
+|     y = 2
+| End Sub";"| Sub P15()
+|     GoSub 500
+|     Exit Sub
+| 500 x = 1
+|     Return
+|     y = 2
+| End Sub"
+T16;RLN;Resume-Verwendung;PASS;0/0;;Resume- und On-Error-Ziele bleiben, die Fehlerbehandlung ist unveraendert.;"| Sub P16()
+|     On Error GoTo 70
+|     x = 1 / 0
+| 60  y = 1
+|     Exit Sub
+| 70  Resume 60
+| End Sub";"| Sub P16()
+|     On Error GoTo 70
+|     x = 1 / 0
+| 60  y = 1
+|     Exit Sub
+| 70  Resume 60
+| End Sub";"| Sub P16()
+|     On Error GoTo 70
+|     x = 1 / 0
+| 60  y = 1
+|     Exit Sub
+| 70  Resume 60
+| End Sub"
+T17;RLN;On Error GoTo-Verwendung;PASS;0/0;;90 ist Ziel, 10 nicht.;"| Sub P17()
+|     On Error GoTo 90
+| 10  x = 1
+|     On Error GoTo 0
+| 90  y = 2
+| End Sub";"| Sub P17()
+|     On Error GoTo 90
+|     x = 1
+|     On Error GoTo 0
+| 90  y = 2
+| End Sub";"| Sub P17()
+|     On Error GoTo 90
+|     x = 1
+|     On Error GoTo 0
+| 90  y = 2
+| End Sub"
+T18;RLN;Erl-Verwendung (Entscheidung F2 b);PASS;1/1;;"F2 b: Prozedur wertet Erl aus, alle Zeilennummern bleiben; eine Notice.";"| Sub P18()
+|     On Error GoTo EH
+| 10  x = 1 / 0
+|     Exit Sub
+| EH:
+|     MsgBox ""Fehler in Zeile "" & Erl
+| End Sub";"| Sub P18()
+|     On Error GoTo EH
+| 10  x = 1 / 0
+|     Exit Sub
+| EH:
+|     MsgBox ""Fehler in Zeile "" & Erl
+| End Sub";"| Sub P18()
+|     On Error GoTo EH
+| 10  x = 1 / 0
+|     Exit Sub
+| EH:
+|     MsgBox ""Fehler in Zeile "" & Erl
+| End Sub"
+T19;DBG;Einzeilige Debug.Print-Anweisung;PASS;0/0;;Ganze Zeile entfaellt.;"| Sub P19()
+|     Debug.Print ""a""
+|     x = 1
+| End Sub";"| Sub P19()
+|     x = 1
+| End Sub";"| Sub P19()
+|     x = 1
+| End Sub"
+T20;DBG;Mehrzeilige Debug.Print-Anweisung;PASS;0/0;;Alle physischen Zeilen der Anweisung entfallen.;"| Sub P20()
+|     Debug.Print ""a""; _
+|         ""b""
+|     x = 1
+| End Sub";"| Sub P20()
+|     x = 1
+| End Sub";"| Sub P20()
+|     x = 1
+| End Sub"
+T21;DBG;Debug.Print innerhalb einer Zeichenkette;PASS;0/0;;String-Inhalt ist kein Code.;"| Sub P21()
+|     s = ""Debug.Print""
+| End Sub";"| Sub P21()
+|     s = ""Debug.Print""
+| End Sub";"| Sub P21()
+|     s = ""Debug.Print""
+| End Sub"
+T22;DBG;Debug.Print innerhalb eines Kommentars;PASS;0/0;;"Kommentar ist kein Code; die Zeile bleibt vollstaendig.";"| Sub P22()
+|     x = 1 ' Debug.Print x
+| End Sub";"| Sub P22()
+|     x = 1 ' Debug.Print x
+| End Sub";"| Sub P22()
+|     x = 1 ' Debug.Print x
+| End Sub"
+T23;DBG;Mehrere Anweisungen in einer Zeile;PASS;0/0;;Beide Aufrufe bleiben vollstaendig und in derselben Reihenfolge.;"| Sub P23()
+|     Call ImportantFunction: Debug.Print ""Test"": Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub";"| Sub P23()
+|     Call ImportantFunction: Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub";"| Sub P23()
+|     Call ImportantFunction: Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub"
+T23b;DBG_FALSE;MatchAnywhereInLine:=False liefert dasselbe Ergebnis;PASS;0/0;;Parameter ist nach der Korrektur wirkungslos.;"| Sub P23b()
+|     Call ImportantFunction: Debug.Print ""Test"": Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub";"| Sub P23b()
+|     Call ImportantFunction: Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub";"| Sub P23b()
+|     Call ImportantFunction: Call NextFunction
+| End Sub
+| Sub ImportantFunction()
+| End Sub
+| Sub NextFunction()
+| End Sub"
+T24;DBG;Debug.Print mit Funktionsaufruf und Seiteneffekt (F3 i a);PASS;0/0;;"F3 i a: Auswertung entfaellt mit; der Seiteneffekt geht bewusst verloren.";"| Sub P24()
+|     Debug.Print FunctionWithSideEffect()
+| End Sub
+| Function FunctionWithSideEffect()
+|     n = n + 1
+| End Function";"| Sub P24()
+| End Sub
+| Function FunctionWithSideEffect()
+|     n = n + 1
+| End Function";"| Sub P24()
+| End Sub
+| Function FunctionWithSideEffect()
+|     n = n + 1
+| End Function"
+T25;BREAK;Einfache Zeilenfortsetzung;PASS;0/0;;Ein Leerzeichen ersetzt die Fortsetzung, Token bleiben getrennt.;"| Sub P25()
+|     x = 1 + _
+|         2
+| End Sub";"| Sub P25()
+|     x = 1 + 2
+| End Sub";"| Sub P25()
+|     x = 1 + 2
+| End Sub"
+T26;BREAK;Mehrere aufeinanderfolgende Zeilenfortsetzungen;PASS;0/0;;Alle Teile in Reihenfolge.;"| Sub P26()
+|     s = ""a"" & _
+|         ""b"" & _
+|         ""c""
+| End Sub";"| Sub P26()
+|     s = ""a"" & ""b"" & ""c""
+| End Sub";"| Sub P26()
+|     s = ""a"" & ""b"" & ""c""
+| End Sub"
+T27;BREAK;Zeilenfortsetzung innerhalb eines Funktionsaufrufs;PASS;0/0;;Argumentliste bleibt gueltig.;"| Sub P27()
+|     x = Foo(1, _
+|         2)
+| End Sub
+| Function Foo(a, b)
+|     Foo = a + b
+| End Function";"| Sub P27()
+|     x = Foo(1, 2)
+| End Sub
+| Function Foo(a, b)
+|     Foo = a + b
+| End Function";"| Sub P27()
+|     x = Foo(1, 2)
+| End Sub
+| Function Foo(a, b)
+|     Foo = a + b
+| End Function"
+T28;BREAK;Zeilenfortsetzung mit benannten Argumenten;PASS;0/0;;:=' ist kein Anweisungstrenner.;"| Sub P28()
+|     Call Bar(a:=1, _
+|         b:=2)
+| End Sub
+| Sub Bar(a, b)
+| End Sub";"| Sub P28()
+|     Call Bar(a:=1, b:=2)
+| End Sub
+| Sub Bar(a, b)
+| End Sub";"| Sub P28()
+|     Call Bar(a:=1, b:=2)
+| End Sub
+| Sub Bar(a, b)
+| End Sub"
+T29;CHAIN;Bedingte Kompilierung;PASS;0/0;;Direktiven bleiben, Kommentar hinter #If wird entfernt, Debug.Print im Block entfaellt.;"| #Const DEBUG_MODE = 1
+| Sub P29()
+| #If DEBUG_MODE = 1 Then ' nur Debug
+|     Debug.Print ""dbg""
+|     x = 1
+| #Else
+|     x = 2
+| #End If
+| End Sub";"| #Const DEBUG_MODE = 1
+| Sub P29()
+| #If DEBUG_MODE = 1 Then
+| x = 1
+| #Else
+| x = 2
+| #End If
+| End Sub";"| #Const DEBUG_MODE = 1
+| Sub P29()
+| #If DEBUG_MODE = 1 Then
+| x = 1
+| #Else
+| x = 2
+| #End If
+| End Sub"
+T30;CHAIN;Verschachtelte #If-Bloecke;PASS;0/0;;Struktur der Direktiven unveraendert.;"| Sub P30()
+| #If Win64 Then
+| #If VBA7 Then
+|     x = 1 ' a
+| #Else
+|     x = 2
+| #End If
+| #Else
+|     x = 3
+| #End If
+| End Sub";"| Sub P30()
+| #If Win64 Then
+| #If VBA7 Then
+| x = 1
+| #Else
+| x = 2
+| #End If
+| #Else
+| x = 3
+| #End If
+| End Sub";"| Sub P30()
+| #If Win64 Then
+| #If VBA7 Then
+| x = 1
+| #Else
+| x = 2
+| #End If
+| #Else
+| x = 3
+| #End If
+| End Sub"
+T31;OPT;Option Explicit im Deklarationsbereich, andere Option-Anweisungen bleiben;PASS;0/0;;Nur Option Explicit wird entfernt.;"| Option Explicit
+| Option Compare Text
+| Option Base 1
+| Option Private Module
+| Dim x As Long";"| Option Compare Text
+| Option Base 1
+| Option Private Module
+| Dim x As Long";"| Option Compare Text
+| Option Base 1
+| Option Private Module
+| Dim x As Long"
+T32;OPT;Option Explicit mit fuehrenden Leerzeichen;PASS;0/0;;Einrueckung aendert die Anweisung nicht. Der VBE kann die Einrueckung beim Einfuegen entfernen.;"|     Option Explicit
+| Dim x As Long";| Dim x As Long;| Dim x As Long
+T33;OPT;Option Explicit mit nachfolgendem Kommentar;PASS;0/0;;Kommentar wird nicht veraendert, nur die Anweisung entfaellt.;"| Option Explicit ' Pflicht
+| Dim x As Long";"| ' Pflicht
+| Dim x As Long";"| ' Pflicht
+| Dim x As Long"
+T34;OPT;Option Explicit' innerhalb eines Kommentars;PASS;0/0;;Kommentar bleibt.;"| ' Option Explicit ist aus
+| Dim x As Long";"| ' Option Explicit ist aus
+| Dim x As Long";"| ' Option Explicit ist aus
+| Dim x As Long"
+T35;OPT;Option Explicit' innerhalb einer Zeichenkette;PASS;0/0;;Frueher wurde die ganze Zeile geloescht.;"| Sub P35()
+|     s = ""Option Explicit""
+| End Sub";"| Sub P35()
+|     s = ""Option Explicit""
+| End Sub";"| Sub P35()
+|     s = ""Option Explicit""
+| End Sub"
+T38;TRIM;Leerzeichen innerhalb einer Zeichenkette;PASS;0/0;;Innerer Text unveraendert.;"| Sub P38()
+|     s = ""  a  b  ""
+| End Sub";"| Sub P38()
+| s = ""  a  b  ""
+| End Sub";"| Sub P38()
+| s = ""  a  b  ""
+| End Sub"
+T39;CHAIN;Code direkt an der ersten Modulzeile;PASS;0/0;;Zeile 1 wird wie jede andere behandelt.;"| Dim x As Long ' erste
+| Sub P39()
+| End Sub";"| Dim x As Long
+| Sub P39()
+| End Sub";"| Dim x As Long
+| Sub P39()
+| End Sub"
+T40;CHAIN;Code direkt an der letzten Modulzeile;PASS;0/0;;Letzte Zeile wird erreicht.;"| Sub P40()
+|     x = 1
+| End Sub ' Ende";"| Sub P40()
+| x = 1
+| End Sub";"| Sub P40()
+| x = 1
+| End Sub"
+T41;RLN;Zwei direkt aufeinanderfolgende Prozeduren;PASS;0/0;;"Zeilennummern gelten je Prozedur; die Referenz in P41a schuetzt nur ihre eigene 10.";"| Sub P41a()
+| 10  x = 1
+|     GoTo 10
+| End Sub
+| Sub P41b()
+| 10  y = 1
+| End Sub";"| Sub P41a()
+| 10  x = 1
+|     GoTo 10
+| End Sub
+| Sub P41b()
+|     y = 1
+| End Sub";"| Sub P41a()
+| 10  x = 1
+|     GoTo 10
+| End Sub
+| Sub P41b()
+|     y = 1
+| End Sub"
+T43;CHAIN2;Wiederholte Ausfuehrung der gesamten Kette;PASS;0/0;;Zweiter Lauf darf nichts mehr aendern (Idempotenz).;"| Option Explicit
+| ' Modul-Kommentar
+| Sub P43()
+| 10: x = ""a'b"": Debug.Print ""c ' d"": y = 2 ' Kommentar
+|     If x = """" Then GoTo 10
+| 20  w43 = Foo43(1, _
+|         2) ' Ende
+|     Debug.Print ""a""; _
+|         ""b""
+| 
+| End Sub
+| Function Foo43(a, b)
+|     Foo43 = a + b
+| End Function";"| Sub P43()
+| 10: x = ""a'b"": y = 2
+| If x = """" Then GoTo 10
+| w43 = Foo43(1, 2)
+| End Sub
+| Function Foo43(a, b)
+| Foo43 = a + b
+| End Function";"| Sub P43()
+| 10: x = ""a'b"": y = 2
+| If x = """" Then GoTo 10
+| w43 = Foo43(1, 2)
+| End Sub
+| Function Foo43(a, b)
+| Foo43 = a + b
+| End Function"
+T44;CHAIN;Kombination mehrerer Sonderfaelle in einer Zeile;PASS;0/0;;Referenzierte Nummer, Apostroph im String, Debug.Print zwischen Anweisungen und echter Kommentar.;"| Sub P44()
+| 10: x = ""a'b"": Debug.Print ""c ' d"": y = 2 ' Kommentar
+|     If x = """" Then GoTo 10
+| End Sub";"| Sub P44()
+| 10: x = ""a'b"": y = 2
+| If x = """" Then GoTo 10
+| End Sub";"| Sub P44()
+| 10: x = ""a'b"": y = 2
+| If x = """" Then GoTo 10
+| End Sub"
+X01;BREAK;Grenzwert: zusammengefuehrt genau 1022 Zeichen (TRF_MAX_LINE_LENGTH);PASS;0/0;;F6 a: 1022 Zeichen werden als eine Zeile geschrieben. 1023 teilt Excel 2019 (Testlauf 2).;"| Sub PX01()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & _
+|         ""B""
+| End Sub";"| Sub PX01()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & ""B""
+| End Sub";"| Sub PX01()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & ""B""
+| End Sub"
+X02;BREAK;Grenzwert: zusammengefuehrt 1023 Zeichen;PASS;1/1;;F6 a: Anweisung bleibt mehrzeilig, Notice.;"| Sub PX02()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & _
+|         ""B""
+| End Sub";"| Sub PX02()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & _
+|         ""B""
+| End Sub";"| Sub PX02()
+|     s = ""AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"" & _
+|         ""B""
+| End Sub"
+X05;DBG;Debug.Print in einzeiligem If (F3 ii a);PASS;2/2;;F3 ii a: Zeile unveraendert, je Zeile eine Notice.;"| Sub PX05()
+|     If x Then Debug.Print x
+|     If x Then y = 1 Else Debug.Print y
+| End Sub";"| Sub PX05()
+|     If x Then Debug.Print x
+|     If x Then y = 1 Else Debug.Print y
+| End Sub";"| Sub PX05()
+|     If x Then Debug.Print x
+|     If x Then y = 1 Else Debug.Print y
+| End Sub"
+X06;DBG;Mehrzeilige Zeile mit Debug.Print und weiterer Anweisung;PASS;1/1;;Konservativ: unveraendert und gemeldet (siehe Idempotenz-Hinweis).;"| Sub PX06()
+|     x = 1: Debug.Print ""a""; _
+|         ""b""
+| End Sub";"| Sub PX06()
+|     x = 1: Debug.Print ""a""; _
+|         ""b""
+| End Sub";"| Sub PX06()
+|     x = 1: Debug.Print ""a""; _
+|         ""b""
+| End Sub"
+X07;CMT;Kommentar auf der letzten Zeile einer fortgesetzten Anweisung;PASS;0/0;;"Frueher uebersprungen; Ursache der Nicht-Idempotenz.";"| Sub PX07()
+|     x = 1 + _
+|         2 ' Kommentar
+| End Sub";"| Sub PX07()
+|     x = 1 + _
+|         2
+| End Sub";"| Sub PX07()
+|     x = 1 + _
+|         2
+| End Sub"
+X09;CMT;Mehrzeiliger Kommentar mit Fortsetzung;PASS;0/0;;Fortsetzungszeilen eines Kommentars gehoeren zum Kommentar.;"| ' Kommentar _
+|   Fortsetzung
+| Sub PX09()
+| End Sub";"| Sub PX09()
+| End Sub";"| Sub PX09()
+| End Sub"
+X10;EMPTY;Leerzeile nach Kommentar-Fortsetzung bleibt;PASS;0/0;;Loeschen wuerde 'Sub PX10()' in den Kommentar ziehen.;"| ' Kommentar _
+| 
+| Sub PX10()
+| End Sub";"| ' Kommentar _
+| 
+| Sub PX10()
+| End Sub";"| ' Kommentar _
+| 
+| Sub PX10()
+| End Sub"
+X11;DBG;Datumsliteral mit Doppelpunkten;PASS;0/0;;:' im Datumsliteral ist kein Trenner.;"| Sub PX11()
+|     t = #10:30:00 AM#: Debug.Print t
+| End Sub";"| Sub PX11()
+|     t = #10:30:00 AM#
+| End Sub";"| Sub PX11()
+|     t = #10:30:00 AM#
+| End Sub"
+X13;RLN;obj.GoTo ist keine Sprungreferenz;PASS;0/0;;Memberaufruf nach '.' referenziert kein Label.;"| Sub PX13()
+|     Dim obj As Object
+| 10  Set obj = Nothing
+|     obj.GoTo 10
+| End Sub";"| Sub PX13()
+|     Dim obj As Object
+|     Set obj = Nothing
+|     obj.GoTo 10
+| End Sub";"| Sub PX13()
+|     Dim obj As Object
+|     Set obj = Nothing
+|     obj.GoTo 10
+| End Sub"
+X15;OPT;Option Explicit ueber Zeilenfortsetzung;PASS;0/0;;Logische Zeile wird ganz entfernt.;"| Option _
+|     Explicit
+| Dim x As Long";| Dim x As Long;| Dim x As Long
+X16;DBG;Debug.Print nach referenzierter Zeilennummer;PASS;0/0;;Label bleibt als Sprungziel erhalten.;"| Sub PX16()
+| 10  Debug.Print ""x""
+|     GoTo 10
+| End Sub";"| Sub PX16()
+| 10
+|     GoTo 10
+| End Sub";"| Sub PX16()
+| 10
+|     GoTo 10
+| End Sub"
+X17;DBG;Debug.Print mit Kommentar: Kommentar bleibt;PASS;0/0;;Remove_DebugPrint greift nicht in Kommentare ein.;"| Sub PX17()
+|     Debug.Print x ' Hinweis
+| End Sub";"| Sub PX17()
+|     ' Hinweis
+| End Sub";"| Sub PX17()
+|     ' Hinweis
+| End Sub"
+X18;DBG;Dateinummer # ist kein Datumsliteral;PASS;0/0;;Trenner zwischen #1 ... #1 werden erkannt.;"| Sub PX18()
+|     Open ""x.txt"" For Output As #1: Print #1, ""a"": Debug.Print ""b"": Close #1
+| End Sub";"| Sub PX18()
+|     Open ""x.txt"" For Output As #1: Print #1, ""a"": Close #1
+| End Sub";"| Sub PX18()
+|     Open ""x.txt"" For Output As #1: Print #1, ""a"": Close #1
+| End Sub"
+X19;RLN;Zeilennummern im MZ-Tools-Format;PASS;0/0;;Spalte des Codes bleibt erhalten.;"| Sub PX19()
+|           Dim x As Long
+| 1         x = 1
+| 2         x = 2
+| End Sub";"| Sub PX19()
+|           Dim x As Long
+|           x = 1
+|           x = 2
+| End Sub";"| Sub PX19()
+|           Dim x As Long
+|           x = 1
+|           x = 2
+| End Sub"
+X21;CMT;Rem nach Label;PASS;0/0;;Label bleibt.;"| Sub PX21()
+| Weiter: Rem c
+|     GoTo Weiter
+| End Sub";"| Sub PX21()
+| Weiter:
+|     GoTo Weiter
+| End Sub";"| Sub PX21()
+| Weiter:
+|     GoTo Weiter
+| End Sub"
+X22;CMT;Trenner vor Kommentar;PASS;0/0;;Ueberfluessiger Trenner faellt mit.;"| Sub PX22()
+|     x = 1: ' c
+| End Sub";"| Sub PX22()
+|     x = 1
+| End Sub";"| Sub PX22()
+|     x = 1
+| End Sub"
+X23;CMT;Case Else: Rem;PASS;0/0;;Case Else ist kein If.;"| Sub PX23()
+|     Select Case x
+|     Case Else: Rem c
+|     End Select
+| End Sub";"| Sub PX23()
+|     Select Case x
+|     Case Else
+|     End Select
+| End Sub";"| Sub PX23()
+|     Select Case x
+|     Case Else
+|     End Select
+| End Sub"
+X28;DBG;Block-Else mit Debug.Print;PASS;0/0;;Block-Else bleibt.;"| Sub PX28()
+|     If x Then
+|     Else: Debug.Print x
+|     End If
+| End Sub";"| Sub PX28()
+|     If x Then
+|     Else:
+|     End If
+| End Sub";"| Sub PX28()
+|     If x Then
+|     Else:
+|     End If
+| End Sub"
+X29;BREAK;Kommentar mit Fortsetzung wird eine Zeile;PASS;0/0;;Kommentar bleibt Kommentar.;"| Sub PX29()
+|     x = 1 ' a _
+|     b
+| End Sub";"| Sub PX29()
+|     x = 1 ' a b
+| End Sub";"| Sub PX29()
+|     x = 1 ' a b
+| End Sub"
+X30;RLN_TAB;Nur Format ohne Doppelpunkt;PASS;0/0;;Doppelpunkt-Format bleibt bei vbLabelTab.;"| Sub PX30()
+| 10: x = 1
+| 20  y = 2
+| End Sub";"| Sub PX30()
+| 10: x = 1
+|     y = 2
+| End Sub";"| Sub PX30()
+| 10: x = 1
+|     y = 2
+| End Sub"
+X31;RLN_COLON;Nur Doppelpunkt-Format;PASS;0/0;;Format ohne Doppelpunkt bleibt bei vbLabelColon.;"| Sub PX31()
+| 10: x = 1
+| 20  y = 2
+| End Sub";"| Sub PX31()
+| x = 1
+| 20  y = 2
+| End Sub";"| Sub PX31()
+| x = 1
+| 20  y = 2
+| End Sub"
+X32;CMT;Kommentarzeile innerhalb fortgesetzter Anweisung (Kommentar auf eigener Zeile);PASS;0/0;"Fixture is not compilable; module removed.";Fortsetzung der Vorzeile wird entfernt, wenn ihre Folgezeile entfaellt.;"| Sub PX32()
+|     x = 1 + 2 _
+|     ' c
+| End Sub";"| Sub PX32()
+|     x = 1 + 2
+| End Sub";"| Sub PX32()
+|     x = 1 + 2
+| End Sub"
+X03;CHAIN;Reales Beispiel LoadProfiles (Fehlerbild aus Rueckfrage);PASS;1/1;"Fixture is not compilable; module removed.";"profile.Init haette 1166 Zeichen: bleibt mehrzeilig (F6 a); alle anderen Fortsetzungen werden zusammengefuehrt.";"| Private Sub LoadProfiles(ByVal table As ListObject, ByVal customerIds As Object)
+|     Dim data As Variant
+|     Dim rowIndex As Long
+|     Dim profile As clsParserProfile
+|     Dim ParserProfileId As String
+|     Dim customerId As String
+| 
+|     If table.DataBodyRange Is Nothing Then
+|         Err.Raise ERR_BASE + 30, TypeName(Me), _
+|             TABLE_PARSER_PROFILES & "" contains no data rows.""
+|     End If
+| 
+|     data = table.DataBodyRange.Value2
+| 
+|     For rowIndex = 1 To UBound(data, 1)
+|         ParserProfileId = ReadRequiredText( _
+|             data(rowIndex, GetColumnIndex(table, ""ParserProfileId"")), _
+|             TABLE_PARSER_PROFILES, rowIndex, ""ParserProfileId"")
+| 
+|         customerId = ReadRequiredText( _
+|             data(rowIndex, GetColumnIndex(table, ""CustomerId"")), _
+|             TABLE_PARSER_PROFILES, rowIndex, ""CustomerId"")
+| 
+|         If Not customerIds.Exists(NormalizeKey(customerId)) Then
+|             Err.Raise ERR_BASE + 31, TypeName(Me), _
+|                 ""Parser profile references unknown CustomerId: "" & customerId
+|         End If
+| 
+|         If m_profileIndex.Exists(NormalizeKey(ParserProfileId)) Then
+|             Err.Raise ERR_BASE + 32, TypeName(Me), _
+|                 ""Duplicate ParserProfileId: "" & ParserProfileId
+|         End If
+| 
+|         Set profile = New clsParserProfile
+|         profile.Init _
+|             ParserProfileId, _
+|             customerId, _
+|             ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileName"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""ProfileName""), _
+|             ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileVersion"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""ProfileVersion""), _
+|             ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsDefault"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""IsDefault""), _
+|             ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsActive"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""IsActive""), _
+|             ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""RegexDialect"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""RegexDialect""), _
+|             ReadDouble(data(rowIndex, GetColumnIndex(table, ""AcceptThreshold"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""AcceptThreshold""), _
+|             ReadDouble(data(rowIndex, GetColumnIndex(table, ""ReviewThreshold"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""ReviewThreshold""), _
+|             ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidFrom"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""ValidFrom""), _
+|             ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidTo"")), _
+|                 TABLE_PARSER_PROFILES, rowIndex, ""ValidTo""), _
+|             ReadOptionalText(data(rowIndex, GetColumnIndex(table, ""Notes"")))
+| 
+|         m_profiles.Add profile
+|         m_profileIndex.Add NormalizeKey(ParserProfileId), profile
+|         Set profile = Nothing
+|     Next rowIndex
+| End Sub";"| Private Sub LoadProfiles(ByVal table As ListObject, ByVal customerIds As Object)
+| Dim data As Variant
+| Dim rowIndex As Long
+| Dim profile As clsParserProfile
+| Dim ParserProfileId As String
+| Dim customerId As String
+| If table.DataBodyRange Is Nothing Then
+| Err.Raise ERR_BASE + 30, TypeName(Me), TABLE_PARSER_PROFILES & "" contains no data rows.""
+| End If
+| data = table.DataBodyRange.Value2
+| For rowIndex = 1 To UBound(data, 1)
+| ParserProfileId = ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ParserProfileId"")), TABLE_PARSER_PROFILES, rowIndex, ""ParserProfileId"")
+| customerId = ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""CustomerId"")), TABLE_PARSER_PROFILES, rowIndex, ""CustomerId"")
+| If Not customerIds.Exists(NormalizeKey(customerId)) Then
+| Err.Raise ERR_BASE + 31, TypeName(Me), ""Parser profile references unknown CustomerId: "" & customerId
+| End If
+| If m_profileIndex.Exists(NormalizeKey(ParserProfileId)) Then
+| Err.Raise ERR_BASE + 32, TypeName(Me), ""Duplicate ParserProfileId: "" & ParserProfileId
+| End If
+| Set profile = New clsParserProfile
+| profile.Init _
+| ParserProfileId, _
+| customerId, _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileName"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ProfileName""), _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileVersion"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ProfileVersion""), _
+| ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsDefault"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""IsDefault""), _
+| ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsActive"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""IsActive""), _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""RegexDialect"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""RegexDialect""), _
+| ReadDouble(data(rowIndex, GetColumnIndex(table, ""AcceptThreshold"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""AcceptThreshold""), _
+| ReadDouble(data(rowIndex, GetColumnIndex(table, ""ReviewThreshold"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ReviewThreshold""), _
+| ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidFrom"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ValidFrom""), _
+| ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidTo"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ValidTo""), _
+| ReadOptionalText(data(rowIndex, GetColumnIndex(table, ""Notes"")))
+| m_profiles.Add profile
+| m_profileIndex.Add NormalizeKey(ParserProfileId), profile
+| Set profile = Nothing
+| Next rowIndex
+| End Sub";"| Private Sub LoadProfiles(ByVal table As ListObject, ByVal customerIds As Object)
+| Dim data As Variant
+| Dim rowIndex As Long
+| Dim profile As clsParserProfile
+| Dim ParserProfileId As String
+| Dim customerId As String
+| If table.DataBodyRange Is Nothing Then
+| Err.Raise ERR_BASE + 30, TypeName(Me), TABLE_PARSER_PROFILES & "" contains no data rows.""
+| End If
+| data = table.DataBodyRange.Value2
+| For rowIndex = 1 To UBound(data, 1)
+| ParserProfileId = ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ParserProfileId"")), TABLE_PARSER_PROFILES, rowIndex, ""ParserProfileId"")
+| customerId = ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""CustomerId"")), TABLE_PARSER_PROFILES, rowIndex, ""CustomerId"")
+| If Not customerIds.Exists(NormalizeKey(customerId)) Then
+| Err.Raise ERR_BASE + 31, TypeName(Me), ""Parser profile references unknown CustomerId: "" & customerId
+| End If
+| If m_profileIndex.Exists(NormalizeKey(ParserProfileId)) Then
+| Err.Raise ERR_BASE + 32, TypeName(Me), ""Duplicate ParserProfileId: "" & ParserProfileId
+| End If
+| Set profile = New clsParserProfile
+| profile.Init _
+| ParserProfileId, _
+| customerId, _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileName"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ProfileName""), _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""ProfileVersion"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ProfileVersion""), _
+| ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsDefault"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""IsDefault""), _
+| ReadBoolean(data(rowIndex, GetColumnIndex(table, ""IsActive"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""IsActive""), _
+| ReadRequiredText(data(rowIndex, GetColumnIndex(table, ""RegexDialect"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""RegexDialect""), _
+| ReadDouble(data(rowIndex, GetColumnIndex(table, ""AcceptThreshold"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""AcceptThreshold""), _
+| ReadDouble(data(rowIndex, GetColumnIndex(table, ""ReviewThreshold"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ReviewThreshold""), _
+| ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidFrom"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ValidFrom""), _
+| ReadOptionalDate(data(rowIndex, GetColumnIndex(table, ""ValidTo"")), _
+| TABLE_PARSER_PROFILES, rowIndex, ""ValidTo""), _
+| ReadOptionalText(data(rowIndex, GetColumnIndex(table, ""Notes"")))
+| m_profiles.Add profile
+| m_profileIndex.Add NormalizeKey(ParserProfileId), profile
+| Set profile = Nothing
+| Next rowIndex
+| End Sub"
+X34;DBG;Call verhindert, dass ein Aufruf zum Label wird;PASS;1/1;;"Init34: Run34' am Zeilenanfang waere eine Labeldefinition; Call ist freigegeben.";"| Sub PX34()
+|     Debug.Print ""start"": Init34: Run34
+| End Sub
+| Sub Init34()
+| End Sub
+| Sub Run34()
+| End Sub";"| Sub PX34()
+|     Call Init34: Run34
+| End Sub
+| Sub Init34()
+| End Sub
+| Sub Run34()
+| End Sub";"| Sub PX34()
+|     Call Init34: Run34
+| End Sub
+| Sub Init34()
+| End Sub
+| Sub Run34()
+| End Sub"
+X34b;DBG;Aufruf nach Trenner bleibt Aufruf;PASS;0/0;;Vor Init34b bleibt eine Anweisung, daher kein Label.;"| Sub PX34b()
+|     x = 1: Debug.Print ""a"": Init34b: Run34b
+| End Sub
+| Sub Init34b()
+| End Sub
+| Sub Run34b()
+| End Sub";"| Sub PX34b()
+|     x = 1: Init34b: Run34b
+| End Sub
+| Sub Init34b()
+| End Sub
+| Sub Run34b()
+| End Sub";"| Sub PX34b()
+|     x = 1: Init34b: Run34b
+| End Sub
+| Sub Init34b()
+| End Sub
+| Sub Run34b()
+| End Sub"
+X35;RLN;10 Name:' ohne Doppelpunkt: Name ist ein Label und bleibt es;PASS;0/0;;X35g belegt in Excel: Init35 nach der Nummer ist ein zweites Label. Ohne Nummer steht es als Label am Zeilenanfang. Eingabe in der vom Excel-Editor normalisierten Form.;"| Sub PX35()
+| 10 Init35:  Run35
+| End Sub
+| Sub Init35()
+| End Sub
+| Sub Run35()
+| End Sub";"| Sub PX35()
+| Init35:  Run35
+| End Sub
+| Sub Init35()
+| End Sub
+| Sub Run35()
+| End Sub";"| Sub PX35()
+| Init35:  Run35
+| End Sub
+| Sub Init35()
+| End Sub
+| Sub Run35()
+| End Sub"
+X35b;RLN;10: Name:' mit Doppelpunkt: Name ist ein Aufruf, Call wird eingefuegt;PASS;1/1;;X35h belegt in Excel: Init35b nach '10:' ist ein Aufruf. Ohne Call waere es ein Label.;"| Sub PX35b()
+| 10: Init35b: Run35b
+| End Sub
+| Sub Init35b()
+| End Sub
+| Sub Run35b()
+| End Sub";"| Sub PX35b()
+| Call Init35b: Run35b
+| End Sub
+| Sub Init35b()
+| End Sub
+| Sub Run35b()
+| End Sub";"| Sub PX35b()
+| Call Init35b: Run35b
+| End Sub
+| Sub Init35b()
+| End Sub
+| Sub Run35b()
+| End Sub"
+X36;TRIM;Zeile nur aus Fortsetzungszeichen;PASS;0/0;"Fixture is not compilable; module removed.";Leerzeichen vor '_' bleibt, sonst endet die Fortsetzung (Review-Fund 4).;"| Sub PX36()
+|     x = Foo36(1, _
+|  _
+|         2)
+| End Sub
+| Function Foo36(a, b)
+|     Foo36 = a + b
+| End Function";"| Sub PX36()
+| x = Foo36(1, _
+|  _
+| 2)
+| End Sub
+| Function Foo36(a, b)
+| Foo36 = a + b
+| End Function";"| Sub PX36()
+| x = Foo36(1, _
+|  _
+| 2)
+| End Sub
+| Function Foo36(a, b)
+| Foo36 = a + b
+| End Function"
+X36b;CHAIN2;Kette mit Zeile nur aus Fortsetzungszeichen;PASS;0/0;"Fixture is not compilable; module removed.";Zusammenfuehrung vollstaendig und idempotent.;"| Sub PX36b()
+|     x = Foo36b(1, _
+|  _
+|         2)
+| End Sub
+| Function Foo36b(a, b)
+|     Foo36b = a + b
+| End Function";"| Sub PX36b()
+| x = Foo36b(1, 2)
+| End Sub
+| Function Foo36b(a, b)
+| Foo36b = a + b
+| End Function";"| Sub PX36b()
+| x = Foo36b(1, 2)
+| End Sub
+| Function Foo36b(a, b)
+| Foo36b = a + b
+| End Function"
+X34c;DBG;Schluesselwort vor ':' bleibt unveraendert;PASS;1/1;;"Call Stop' waere ungueltig; Zeile bleibt, Notice.";"| Sub PX34c()
+|     Debug.Print ""a"": Stop: x = 1
+| End Sub";"| Sub PX34c()
+|     Debug.Print ""a"": Stop: x = 1
+| End Sub";"| Sub PX34c()
+|     Debug.Print ""a"": Stop: x = 1
+| End Sub"
+X35c;RLN;Nummer vor Schluesselwort mit ':' bleibt;PASS;1/1;;"Keine Call-Form fuer Stop; Nummer bleibt, Notice.";"| Sub PX35c()
+| 10  Stop: x = 1
+| End Sub";"| Sub PX35c()
+| 10  Stop: x = 1
+| End Sub";"| Sub PX35c()
+| 10  Stop: x = 1
+| End Sub"
+X35d;RLN;F2 b: Erl steuert den Fehlerpfad;PASS;1/1;;"Mit F2 a wuerde Resume Next statt Resume 30 ausgefuehrt; F2 b laesst alle Nummern stehen.";"| Sub PX35d()
+| 10  On Error GoTo 50
+| 20  x = 1 / 0
+| 30  Exit Sub
+| 50  If Erl = 20 Then Resume 30 Else Resume Next
+| End Sub";"| Sub PX35d()
+| 10  On Error GoTo 50
+| 20  x = 1 / 0
+| 30  Exit Sub
+| 50  If Erl = 20 Then Resume 30 Else Resume Next
+| End Sub";"| Sub PX35d()
+| 10  On Error GoTo 50
+| 20  x = 1 / 0
+| 30  Exit Sub
+| 50  If Erl = 20 Then Resume 30 Else Resume Next
+| End Sub"
+X35e;RLN;F2 b gilt nur fuer die Prozedur mit Erl;PASS;1/1;;Zeilennummern und Erl sind prozedurlokal.;"| Sub PX35e1()
+| 10  x = 1
+|     Debug.Print Erl
+| End Sub
+| Sub PX35e2()
+| 10  y = 1
+| End Sub";"| Sub PX35e1()
+| 10  x = 1
+|     Debug.Print Erl
+| End Sub
+| Sub PX35e2()
+|     y = 1
+| End Sub";"| Sub PX35e1()
+| 10  x = 1
+|     Debug.Print Erl
+| End Sub
+| Sub PX35e2()
+|     y = 1
+| End Sub"
+X35f;RLN;obj.Erl ist kein Erl;PASS;0/0;;Membername nach '.' zaehlt nicht als Erl.;"| Sub PX35f()
+|     Dim o As Object
+| 10  x = o.Erl
+| End Sub";"| Sub PX35f()
+|     Dim o As Object
+|     x = o.Erl
+| End Sub";"| Sub PX35f()
+|     Dim o As Object
+|     x = o.Erl
+| End Sub"
+T42;CHAIN;Attribute-Zeilen in exportierten Modulen;PASS;2/2;;Versteckte Attribute bleiben erhalten: die Kopfzeile von Amount bleibt unveraendert (Trim und Zusammenfuehrung unterbleiben, je eine Notice), der Rest des Moduls wird bearbeitet.;| (import of C:\Users\thiemann\AppData\Local\Temp\MT_T42Class.cls);| Attribute Amount.VB_UserMemId = 0 / VB_PredeclaredId = True / header unchanged;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""T42Class""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = True
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Total() As Long
+| Total = 1 + 2
+| End Property
+| Public Property Get Amount( _
+|     ) As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+X26;TrfApplyLineEdits;Verhalten des Editors bei zu langer Zeile;PASS;1/1;;Belegt das tatsaechliche Editorverhalten (Teilung, Fehler oder Kuerzung) und die Wiederherstellung.;"| Sub PX26()
+|     x = 1 + _
+|         2
+| End Sub";"| Sub PX26()
+|     x = 1 + _
+|         2
+| End Sub";"| Sub PX26()
+|     x = 1 + _
+|         2
+| End Sub"
+X35g;RLN + Application.Run;10 Name:' ohne Doppelpunkt: Label bleibt Label;PASS;0/0;Reading: LABEL (Mark was not called). Run before/after: 0/0;Ausfuehrung vor und nach RemoveLineNumbers liefert dasselbe Ergebnis.;"| Private cnt35g As Long
+| Function P35g() As Long
+|     cnt35g = 0
+| 10 Mark35g:  P35g = cnt35g
+| End Function
+| Sub Mark35g()
+|     cnt35g = cnt35g + 1
+| End Sub";"| Private cnt35g As Long
+| Function P35g() As Long
+|     cnt35g = 0
+| Mark35g:  P35g = cnt35g
+| End Function
+| Sub Mark35g()
+|     cnt35g = cnt35g + 1
+| End Sub";"| Private cnt35g As Long
+| Function P35g() As Long
+|     cnt35g = 0
+| Mark35g:  P35g = cnt35g
+| End Function
+| Sub Mark35g()
+|     cnt35g = cnt35g + 1
+| End Sub"
+X35h;RLN + Application.Run;10: Name:' mit Doppelpunkt: Aufruf bleibt Aufruf (Call);PASS;1/1;Reading: CALL (Mark was called). Run before/after: 1/1;Ausfuehrung vor und nach RemoveLineNumbers liefert dasselbe Ergebnis.;"| Private cnt35h As Long
+| Function P35h() As Long
+|     cnt35h = 0
+| 10: Mark35h: P35h = cnt35h
+| End Function
+| Sub Mark35h()
+|     cnt35h = cnt35h + 1
+| End Sub";"| Private cnt35h As Long
+| Function P35h() As Long
+|     cnt35h = 0
+| Call Mark35h: P35h = cnt35h
+| End Function
+| Sub Mark35h()
+|     cnt35h = cnt35h + 1
+| End Sub";"| Private cnt35h As Long
+| Function P35h() As Long
+|     cnt35h = 0
+| Call Mark35h: P35h = cnt35h
+| End Function
+| Sub Mark35h()
+|     cnt35h = cnt35h + 1
+| End Sub"
+X37;InsertLines;Position der angehaengten Leerzeile (Fortsetzungszeichen im eingefuegten Text);PASS;;No empty line appended.;Diagnose: bestimmt, wie TrfReplaceLine die Leerzeile nach der Wiederherstellung finden muss.;"| Sub A()
+| End Sub
+| Sub B()
+| End Sub";| (diagnostic);"| Sub A()
+|     x = 1 + _
+|         2
+| End Sub
+| Sub B()
+| End Sub"
+X38;ReplaceLine;ReplaceLine mit Fortsetzungszeichen am Zeilenende;PASS;;ReplaceLine keeps line count and text.;Diagnose: belegt, dass Trim und Kommentarentfernung fortgesetzte Zeilen ohne Nebenwirkung ersetzen.;"| Sub A()
+|       x = 1 + _
+|         2
+| End Sub";"| Sub A()
+| x = 1 + _
+|         2
+| End Sub";"| Sub A()
+| x = 1 + _
+|         2
+| End Sub"
+X39;ReplaceLine;Laengste Zeile, die ReplaceLine unveraendert speichert;PASS;;1020: unchanged. 1021: unchanged. 1022: unchanged. 1023: stored as 2 line(s) of 1023 + 0 characters. 1024: stored as 2 line(s) of 1023 + 1 characters. ;Diagnose: belegt TRF_MAX_LINE_LENGTH = 1022.;| ;| ;| 
+D0;CHAIN;Kontrolle: Kette ohne jede Aenderung;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD0Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD0Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D1;TRIM;TRIM: eingerueckte Kopfzeile bleibt;PASS;1/1;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD1Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+|     Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD1Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+|     Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D2;CMT;CMT: Kommentar auf der Kopfzeile bleibt;PASS;1/1;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD2Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long ' header
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD2Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long ' header
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D3;BREAK;BREAK: fortgesetzte Kopfzeile bleibt mehrzeilig;PASS;1/1;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD3Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount( _
+|     ) As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD3Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount( _
+|     ) As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D4;CMT;CMT: Zeile im Rumpf wird bearbeitet;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD4Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount ' value
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD4Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D5;TRIM;TRIM: Fortsetzungszeile der Kopfzeile bleibt;PASS;1/1;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD5Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount( _
+|     ) As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD5Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount( _
+|     ) As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D6;EMPTY;EMPTY: Leerzeile ueber der Kopfzeile wird geloescht;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD6Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| 
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD6Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D7;CMT;CMT: Kommentarzeile ueber der Kopfzeile wird geloescht;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD7Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| ' default member
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD7Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D8;TRIM;TRIM: eingerueckte Variablendeklaration mit Attribut bleibt;PASS;1/1;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD8Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+|     Public Amount As Long
+| Attribute Amount.VB_VarDescription = ""Betrag""
+| ";"| Attribute Amount.VB_VarDescription = ""Betrag""";"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD8Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+|     Public Amount As Long
+| Attribute Amount.VB_VarDescription = ""Betrag""
+| "
+D9;DBG;DBG: Debug.Print im Rumpf wird geloescht;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD9Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Debug.Print ""x""
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD9Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D10;EMPTY;EMPTY: Leerzeile im Rumpf unter dem Attribut wird geloescht;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD10Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| 
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD10Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D11;CHAIN;CHAIN: Makro mit Tastenkuerzel im Standardmodul;PASS;4/4;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| Attribute VB_Name = ""TD11Mod""
+| Option Explicit
+|     Public Sub Calc11() ' main
+| Attribute Calc11.VB_ProcData.VB_Invoke_Func = ""Q\n14""
+|     Debug.Print 1
+| End Sub
+| ";"| Attribute Calc11.VB_ProcData.VB_Invoke_Func = ""Q\n14""";"| Attribute VB_Name = ""TD11Mod""
+|     Public Sub Calc11() ' main
+| Attribute Calc11.VB_ProcData.VB_Invoke_Func = ""Q\n14""
+| End Sub
+| "
+D12;TRIM;TRIM: eingerueckte Kommentarzeile direkt ueber der Kopfzeile;PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD12Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+|     ' note
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| ";| Attribute Amount.VB_UserMemId = 0;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD12Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private m_amount As Long
+| ' note
+| Public Property Get Amount() As Long
+| Attribute Amount.VB_UserMemId = 0
+| Amount = m_amount
+| End Property
+| "
+D13;CMT;CMT: WithEvents-Variable mit Kommentar (VB_VarHelpID = -1);PASS;0/0;;Versteckte Attribute bleiben erhalten (Testlauf 2: D1, D2, D5 und D8 verloren sie).;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD13Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private WithEvents m_wb As Workbook ' sink
+| Attribute m_wb.VB_VarHelpID = -1
+| ";| Attribute m_wb.VB_VarHelpID = -1;"| VERSION 1.0 CLASS
+| BEGIN
+|   MultiUse = -1  'True
+| END
+| Attribute VB_Name = ""TD13Cls""
+| Attribute VB_GlobalNameSpace = False
+| Attribute VB_Creatable = False
+| Attribute VB_PredeclaredId = False
+| Attribute VB_Exposed = False
+| Private WithEvents m_wb As Workbook
+| Attribute m_wb.VB_VarHelpID = -1
+| "
