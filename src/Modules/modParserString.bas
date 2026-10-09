@@ -18,7 +18,7 @@ Public Sub ParserStringWB()
     Set Form = New AddStatistic
     With Form
         .Caption = "Collecting string data:"
-        .lbOK.Caption = "to collect"
+        .lbOk.Caption = "to collect"
         .chQuestion.visible = False
         .chQuestion.Value = False
         .Show
@@ -28,6 +28,9 @@ Public Sub ParserStringWB()
     Set objWB = Workbooks(sNameWB)
     If Not objWB.FullName Like "*" & Application.PathSeparator & "*" Then
         Call MsgBox("Selected file [" & sNameWB & "] not saved, save the file to continue!", vbCritical, "Mistake:")
+        Exit Sub
+    ElseIf objWB Is ThisWorkbook Then
+        Call MsgBox("Selected file [" & sNameWB & "] contains the running add-in and cannot be processed, select another file!", vbCritical, "Project:")
         Exit Sub
     ElseIf objWB.VBProject.Protection = vbext_pp_locked Then
         Call MsgBox("Project, file [" & sNameWB & "] protected, remove the password!", vbCritical, "Project:")
@@ -236,7 +239,8 @@ Private Sub ParserStrUI(ByRef wb As Workbook, ByRef WBNew As Workbook, Optional 
     wb.Close savechanges:=True
     Set oEditOpenXML = New CEditOpenXML
     With oEditOpenXML
-        .CreateBackupXML = False
+        'The workbook is closed, saved and rebuilt from the unzipped files: keep a copy next to it
+        .CreateBackupXML = True
         .SourceFile = sFullNameFile
         .UnzipFile
         sFullNameXML = .XMLFolder(XMLFolder_customUI)
@@ -420,7 +424,9 @@ Public Sub ReNameStr()
                     Set WBString = Workbooks.Open(sPath)
                 End If
 
-                If WBString.VBProject.Protection = vbext_pp_locked Then
+                If WBString Is ThisWorkbook Then
+                    Call MsgBox("The file [" & sWBName & "] contains the running add-in and cannot be processed!", vbCritical, "Project:")
+                ElseIf WBString.VBProject.Protection = vbext_pp_locked Then
                     Call MsgBox("The project is protected, remove the password!", vbCritical, "Project:")
                 Else
                     If HaveSheetInFile(WBNew, SH_NAME_FORM) Then
