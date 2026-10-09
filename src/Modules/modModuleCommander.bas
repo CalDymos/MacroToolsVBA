@@ -12,26 +12,44 @@ Option Private Module
 11:    Dim sfileName As Variant
 12:    Dim sFileNameTxt As String
 13:    Dim i As Long, lBas As Long, lCls As Long, lFrm As Long
+    Dim lFailed As Long
+    Dim lErrNumber As Long
+    Dim sFailedList As String
+    Dim sFailedText As String
+    Dim sFirstError As String
 14:    On Error GoTo Error_Handler_
 15:    sfileName = SelectedFile(wb.FullName, True, "*.bas;*.cls;*.frm")
 16:    If TypeName(sfileName) = "Empty" Then Exit Sub
 17:    For i = 1 To UBound(sfileName)
 18:        sFileNameTxt = CStr(sfileName(i))
+        'Probe each file on its own: a failed import is counted and listed in the final message
 19:        On Error Resume Next
+        Err.Clear
 20:        wb.VBProject.VBComponents.Import Filename:=sFileNameTxt
-21:        On Error GoTo 0
-22:        Select Case modPublicFunctions.sGetExtensionName(sFileNameTxt)
-            Case "bas": lBas = lBas + 1
-24:            Case "cls": lCls = lCls + 1
-25:            Case "frm": lFrm = lFrm + 1
-26:        End Select
+        lErrNumber = Err.Number
+        If lErrNumber <> 0 And lFailed = 0 Then sFirstError = lErrNumber & " " & Left$(Err.Description, 200)
+        On Error GoTo Error_Handler_
+        If lErrNumber <> 0 Then
+            lFailed = lFailed + 1
+            If lFailed <= 10 Then sFailedList = sFailedList & vbCrLf & modPublicFunctions.sGetFileName(sFileNameTxt)
+        Else
+            Select Case modPublicFunctions.sGetExtensionName(sFileNameTxt)
+                Case "bas": lBas = lBas + 1
+                Case "cls": lCls = lCls + 1
+                Case "frm": lFrm = lFrm + 1
+            End Select
+        End If
 27:    Next i
-28:    Call MsgBox("Importing a VBA project into a workbook" & wb.Name & "completed!" & vbCrLf & vbCrLf & "Imported:" & _
+    If lFailed > 0 Then
+        If lFailed > 10 Then sFailedList = sFailedList & vbCrLf & "... and " & lFailed - 10 & " more"
+        sFailedText = vbCrLf & vbCrLf & "Not imported (" & lFailed & "):" & sFailedList & vbCrLf & "First error: " & sFirstError
+    End If
+    Call MsgBox("Importing a VBA project into a workbook " & wb.Name & " completed!" & vbCrLf & vbCrLf & "Imported:" & _
                   vbCrLf & vbCrLf & "Modules:" & lBas & _
                   vbCrLf & "Classes:" & lCls & _
                   vbCrLf & "Forms:" & lFrm & _
                   vbCrLf & VBA.String(14, "-") & _
-                  vbCrLf & "Total:" & lFrm + lCls + lBas, vbInformation, "Importing a VBA project:")
+                  vbCrLf & "Total:" & lFrm + lCls + lBas & sFailedText, IIf(lFailed = 0, vbInformation, vbExclamation), "Importing a VBA project:")
 34:    Exit Sub
 Error_Handler_:
 36:    Call MsgBox("Mistake! in ImportAllModules" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
