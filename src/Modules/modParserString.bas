@@ -14,7 +14,7 @@ Public Sub ParserStringWB()
     Dim sNameWB     As String
     Dim objWB       As Workbook
 
-    'On Error GoTo ErrStartParser
+    On Error GoTo ErrStartParser
     Set Form = New AddStatistic
     With Form
         .Caption = "Collecting string data:"
@@ -38,15 +38,21 @@ Public Sub ParserStringWB()
     Set Form = Nothing
     Exit Sub
 ErrStartParser:
-    Application.Calculation = xlCalculationAutomatic
-    Application.ScreenUpdating = True
-    Call MsgBox("Error in ZA_ParserString.ParserStringFromWB" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
-    Call WriteErrorLog("ParserStringFromWB")
+    Call MsgBox("Error in modParserString.ParserStringWB" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
+    Call WriteErrorLog("modParserString.ParserStringWB")
 End Sub
 
 Private Sub ParserStr(ByRef WBString As Workbook, ByRef WBNew As Workbook)
-    'On Error GoTo ErrStartParser
     Dim sNameFile   As String
+    Dim lCalc       As XlCalculation
+    Dim bEvents     As Boolean
+    Dim bScreen     As Boolean
+    Dim bFailed     As Boolean
+    On Error GoTo ErrStartParser
+    'Remember the caller's settings; CleanUp restores them on the normal path and after an error
+    lCalc = Application.Calculation
+    bEvents = Application.EnableEvents
+    bScreen = Application.ScreenUpdating
     sNameFile = WBString.Name
 
     Application.ScreenUpdating = False
@@ -61,21 +67,28 @@ Private Sub ParserStr(ByRef WBString As Workbook, ByRef WBNew As Workbook)
 
     Call ParserStrForms(WBString, WBNew)
     Call ParserStringsInCodeAdd(WBString, WBNew)
+    'ParserStrUI saves and closes the source workbook; it must not be saved in manual calculation mode
+    Application.Calculation = lCalc
     Call ParserStrUI(WBString, WBNew, False)
 
     WBNew.Activate
-    Application.EnableEvents = True
-    Application.Calculation = xlCalculationAutomatic
-    Application.ScreenUpdating = True
+CleanUp:
+    'Restore the caller's settings; a failing restore must not re-enter the error handler
+    On Error Resume Next
+    Application.EnableEvents = bEvents
+    Application.Calculation = lCalc
+    Application.ScreenUpdating = bScreen
+    On Error GoTo ErrStartParser
+    If bFailed Then Exit Sub
     Call MsgBox("String data of the book [" & sNameFile & "] collected!", vbInformation, "Data collection:")
 
 
     Exit Sub
 ErrStartParser:
-    Application.EnableEvents = True
-    Application.Calculation = xlCalculationAutomatic
-    Application.ScreenUpdating = True
-    Call MsgBox("Error in ParserStringFromWB" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
+    bFailed = True
+    Call MsgBox("Error in modParserString.ParserStr" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
+    Call WriteErrorLog("modParserString.ParserStr")
+    Resume CleanUp
 End Sub
 
 '* * * * * ParserStrForm START * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
