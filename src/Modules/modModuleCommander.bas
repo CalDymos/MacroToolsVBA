@@ -41,6 +41,7 @@ Error_Handler_:
 40:    Dim oVBComp As VBIDE.VBComponent
 41:    Dim sDestinationFolder As String
 42:    Dim sFullPathFile As String
+    Dim sFullPathFrx As String
 43:    Dim sFileExt As String
 44:    Dim c      As Long
 45:    Dim i      As Long
@@ -51,15 +52,8 @@ Error_Handler_:
 50:    Else
 51:        Exit Sub
 52:    End If
-53:    If MsgBox("Do you want to export all modules from the book -" & wb.Name & " ?" & vbCrLf & vbCrLf & "Export to a folder:" & sDestinationFolder, vbYesNo, "Uploading a project:") = vbNo Then Exit Sub
+    If MsgBox("Do you want to export all modules from the book -" & wb.Name & " ?" & vbCrLf & vbCrLf & "Export to a folder:" & sDestinationFolder & vbCrLf & vbCrLf & "Existing files with the same names are overwritten; other files in the folder are not touched.", vbYesNo, "Uploading a project:") = vbNo Then Exit Sub
 54:    If Dir(sDestinationFolder, vbDirectory) = vbNullString Then MkDir sDestinationFolder
-55:    On Error Resume Next
-56:    For i = 0 To 2
-57:        If Dir(sDestinationFolder, vbDirectory) <> vbNullString Then
-58:            Kill sDestinationFolder & "\*." & Array("bas", "cls", "fr?")(i)
-59:        End If
-60:    Next
-61:    On Error GoTo Error_Handler_
 62:    For i = 0 To UBound(arrVBComp)
 63:        Set oVBComp = wb.VBProject.VBComponents(arrVBComp(i))
 64:        If ModuleLineCount(oVBComp) > 0 Then
@@ -77,6 +71,12 @@ Error_Handler_:
 76:            End Select
 77:            If sFileExt <> vbNullString Then
 78:                sFullPathFile = sDestinationFolder & "\" & oVBComp.Name & sFileExt
+                'Replace only the files written now (the .frm together with its .frx); other files in the folder stay untouched
+                If Dir(sFullPathFile) <> vbNullString Then Kill sFullPathFile
+                If sFileExt = ".frm" Then
+                    sFullPathFrx = sDestinationFolder & "\" & oVBComp.Name & ".frx"
+                    If Dir(sFullPathFrx) <> vbNullString Then Kill sFullPathFrx
+                End If
 79:                oVBComp.Export sFullPathFile
 80:                c = c + 1
 81:            End If
