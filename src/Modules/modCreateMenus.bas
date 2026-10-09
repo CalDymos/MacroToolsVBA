@@ -50,6 +50,10 @@ Private Sub RetryAutoOpen()
 End Sub
     Public Sub AddContextMenus()
 
+       'Start from a clean state: the buttons are not temporary, so leftovers of an earlier session or of a failed
+       'attempt would be added a second time
+       Call DeleteContextMenus
+
 15     Call AddNewCommandBarMenu(modConst.MENUMOVECONTRL)
 16     Call AddButtom(modConst.MTAG5, 984, "Hilfe fьr das Tool", "HelpMoveControl", modConst.MENUMOVECONTRL, False, True)
 17     Call AddButtom(modConst.MTAG4, 38, "", "MoveControl", modConst.MENUMOVECONTRL)
@@ -107,10 +111,10 @@ End Sub
 
 42     Call AddButtom(modConst.CTAG1, 2045, "Copy Module", "CopyModyleVBE", modConst.COPYMODULE, True, False, , 6)
 
-43     Call AddButtom(modConst.RTAG2, 22, "Paste Style", "PasteStyleForms", modConst.mMSFORMS, True)
-44     Call AddButtom(modConst.RTAG3, 1076, "Copy Style", "CopyStyleControl", modConst.mMSFORMS, True)
-45     Call AddButtom(modConst.RTAG5, 0, "UPPER Case", "UperTextInForm", modConst.mMSFORMS, True, False)
-46     Call AddButtom(modConst.RTAG6, 0, "lower Case", "LowerTextInForm", modConst.mMSFORMS, True, False)
+       Call AddButtom(modConst.RTAG9, 22, "Paste Style", "PasteStyleForms", modConst.mMSFORMS, True)
+       Call AddButtom(modConst.RTAG10, 1076, "Copy Style", "CopyStyleControl", modConst.mMSFORMS, True)
+       Call AddButtom(modConst.RTAG11, 0, "UPPER Case", "UperTextInForm", modConst.mMSFORMS, True, False)
+       Call AddButtom(modConst.RTAG12, 0, "lower Case", "LowerTextInForm", modConst.mMSFORMS, True, False)
 47    End Sub
      Private Sub AddNewCommandBarMenu(ByVal sNameCommandBar As String)
        Dim myCommandBar As CommandBar
@@ -177,7 +181,6 @@ AddNewCommandBar:
 90      End If
 91    End Sub
      Public Sub DeleteContextMenus()
-        Dim myCommandBar As CommandBar
 92      On Error GoTo ErrorHandler
 
 93      Call DeleteButton(modConst.TAG1, modConst.POPMENU)
@@ -201,15 +204,14 @@ AddNewCommandBar:
 108     Call DeleteButton(modConst.RTAG5, modConst.mMSFORMS)
 109     Call DeleteButton(modConst.RTAG6, modConst.mMSFORMS)
 
-110     Set myCommandBar = Application.VBE.CommandBars(modConst.TOOLSMENU)
-111     If Not myCommandBar Is Nothing Then
-112         myCommandBar.Delete
-113     End If
+        'The "MSForms" buttons have their own tags (RTAG9 to RTAG12); RTAG2/3/5/6 above only remove leftovers of earlier sessions
+        Call DeleteButton(modConst.RTAG9, modConst.mMSFORMS)
+        Call DeleteButton(modConst.RTAG10, modConst.mMSFORMS)
+        Call DeleteButton(modConst.RTAG11, modConst.mMSFORMS)
+        Call DeleteButton(modConst.RTAG12, modConst.mMSFORMS)
 
-114     Set myCommandBar = Application.VBE.CommandBars(modConst.MENUMOVECONTRL)
-115     If Not myCommandBar Is Nothing Then
-116         myCommandBar.Delete
-117     End If
+        Call DeleteCommandBar(modConst.TOOLSMENU)
+        Call DeleteCommandBar(modConst.MENUMOVECONTRL)
 
         'очистка колекции
 118     Do Until ToolContextEventHandlers.Count = 0
@@ -230,15 +232,16 @@ ErrorHandler:
 129   End Sub
      Private Sub DeleteButton(ByRef sTag As String, ByVal sMenu As String)
         Dim Cbar        As CommandBar
-        Dim Ctrl        As CommandBarControl
+        Dim i           As Long
 130     On Error GoTo ErrorHandler
-131     Set Cbar = Application.VBE.CommandBars(sMenu)
-132     For Each Ctrl In Cbar.Controls
-133         If Ctrl.Tag = sTag Then
-134             Ctrl.Delete
-                'Exit Sub
+        Set Cbar = TryGetVBECommandBar(sMenu)
+        If Cbar Is Nothing Then Exit Sub
+        'Backwards: deleting a control in a forward loop shifts its neighbour
+        For i = Cbar.Controls.Count To 1 Step -1
+            If Cbar.Controls(i).Tag = sTag Then
+                Cbar.Controls(i).Delete
 135         End If
-136     Next Ctrl
+        Next i
 137     Exit Sub
 ErrorHandler:
 138     Debug.Print "Fehler! в DeleteButton" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "в строке " & Erl
@@ -246,6 +249,24 @@ ErrorHandler:
 140     Err.Clear
 141     Resume Next
 142   End Sub
+     Private Function TryGetVBECommandBar(ByVal sName As String) As CommandBar
+        'The Item indexer raises an error for a missing bar instead of returning Nothing
+        On Error Resume Next
+        Set TryGetVBECommandBar = Application.VBE.CommandBars(sName)
+        Err.Clear
+     End Function
+     Private Sub DeleteCommandBar(ByVal sName As String)
+        Dim myCommandBar As CommandBar
+        Set myCommandBar = TryGetVBECommandBar(sName)
+        If myCommandBar Is Nothing Then Exit Sub
+        On Error GoTo ErrorHandler
+        myCommandBar.Delete
+        Exit Sub
+ErrorHandler:
+        Debug.Print "Error in DeleteCommandBar [" & sName & "]" & vbLf & Err.Number & vbLf & Err.Description
+        Call WriteErrorLog("DeleteCommandBar")
+        Err.Clear
+     End Sub
      Public Function VBAIsTrusted() As Boolean
 143     On Error GoTo ErrorHandler
         Dim sTxt As String
