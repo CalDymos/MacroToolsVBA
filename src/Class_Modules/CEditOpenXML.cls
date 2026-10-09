@@ -33,6 +33,8 @@ Private mvTipeFile As String
 Private mvTipeFileRels As String
 
 Private Const sUNZIPPED As String = "UnZipped_"
+'Time limit for the repack: the Shell copy runs asynchronously and must not be waited for endlessly
+Private Const lZIP_WAIT_SECONDS As Long = 300
 Public Enum enBaseName
     dimension = 1
     SheetViews = 2
@@ -265,6 +267,9 @@ End Enum
 252:    Dim vFileNameZip As Variant
 253:    Dim FSO    As Object
 254:    Dim lFileCt As Long
+    Dim dtLimit As Date
+    Dim lErrNumber As Long
+    Dim sErrDescription As String
 255:    Set FSO = CreateObject("scripting.filesystemobject")
 256:
 257:    'To ensure a unique filename,
@@ -285,17 +290,33 @@ End Enum
 272:    oShellApp.Namespace(vFileNameZip).CopyHere oShellApp.Namespace(FolderName & sUNZIPPED & FileNameXML & Application.PathSeparator).Items
 273:
 274:    'Keep script waiting until we have same # of files in the new folder
-275:    On Error Resume Next
-276:    Do Until oShellApp.Namespace(vFileNameZip).Items.Count = lFileCt
-277:        Application.Wait (Now + TimeValue("0:00:01"))
-278:    Loop
+    dtLimit = Now + TimeSerial(0, 0, lZIP_WAIT_SECONDS)
+    Do Until ZipIsComplete(oShellApp, vFileNameZip, lFileCt)
+        If Now > dtLimit Then
+            'Give up: keep the original file and the unpacked files, remove the incomplete archive if it is not locked
+            On Error Resume Next
+            Kill vFileNameZip
+            On Error GoTo 0
+            Err.Raise vbObjectError + 513, "CEditOpenXML.ZipAllFilesInFolder", "Repacking the file failed: the new archive was not completed within " & lZIP_WAIT_SECONDS & " seconds." & vbLf & "The original file was not changed. The unpacked files remain in the folder:" & vbLf & FolderName & sUNZIPPED & FileNameXML
+        End If
+        Application.Wait (Now + TimeValue("0:00:01"))
+    Loop
 279:    DoEvents
 280:
 281:    'Remove original file
 282:    Kill SourceFile
 283:
 284:    'Rename new zipped file to same name as original file (with .zip appended)
-285:    Name vFileNameZip As SourceFile
+    On Error Resume Next
+    Name vFileNameZip As SourceFile
+    lErrNumber = Err.Number
+    sErrDescription = Err.Description
+    On Error GoTo 0
+    If lErrNumber <> 0 Then
+        'Nothing is left to rename back at the end, so the class must not try it
+        AddedZip = False
+        Err.Raise lErrNumber, "CEditOpenXML.ZipAllFilesInFolder", "Renaming the new archive failed: " & sErrDescription & vbLf & "The original file was already removed. The complete new archive is saved as:" & vbLf & vFileNameZip
+    End If
 286:    On Error Resume Next
 287:
 288:    'Now remove old folder, just in case something went haywire
@@ -304,6 +325,27 @@ End Enum
 291:
 292:    Set oShellApp = Nothing
 293: End Sub
+
+     Private Function ZipIsComplete(ByVal oShellApp As Object, ByVal sZipFile As String, ByVal lExpectedCount As Long) As Boolean
+    '-------------------------------------------------------------------------
+    ' Procedure : ZipIsComplete
+    ' Purpose   : True when the new archive holds all items and is no longer open for writing (the Shell copy runs asynchronously)
+    '-------------------------------------------------------------------------
+    Dim lCount As Long
+    Dim iFile  As Integer
+    lCount = -1
+    On Error Resume Next
+    lCount = oShellApp.Namespace(sZipFile).Items.Count
+    If lCount <> lExpectedCount Then Exit Function
+    If Len(Dir(sZipFile)) = 0 Then Exit Function
+    iFile = FreeFile
+    Err.Clear
+    Open sZipFile For Binary Access Read Lock Write As #iFile
+    If Err.Number = 0 Then
+        Close #iFile
+        ZipIsComplete = True
+    End If
+End Function
 
      Public Sub UnzipFile()
 296:    '-------------------------------------------------------------------------
