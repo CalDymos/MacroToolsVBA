@@ -79,7 +79,7 @@ errMsg:
 64:    End Select
 65: End Sub
     Private Sub UserForm_Activate()
-67:    lbOK.Enabled = False
+67:    lbOk.Enabled = False
 68:    Me.lbHelp.Picture = Application.CommandBars.GetImageMso("Help", 18, 18)
 69: End Sub
     Private Sub UserForm_Terminate()
@@ -126,10 +126,10 @@ errMsg:
 111:    End If
 112: End Sub
      Private Sub SaveBtn()
-114:    lbOK.Enabled = False
+114:    lbOk.Enabled = False
 115:    If txtCode.Text <> vbNullString And cmbENUM.Text <> vbNullString And txtSNIP.Text <> vbNullString Then
 116:        If txtCode.Text <> txtCodeBack.Text Or cmbENUM.Text <> txtENUMBack.Text Or txtSNIP.Text <> txtSNIPBack.Text Then
-117:            lbOK.Enabled = True
+117:            lbOk.Enabled = True
 118:        End If
 119:    End If
 120: End Sub
@@ -139,16 +139,19 @@ errMsg:
 124:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 125:    With snippets
 126:        row_i = CLng(txtRow.Text)
-127:        If MsgBox(lbOK.Caption & " SNIPPET: [ " & lbPreView.Caption & " ] ?", vbYesNo, lbOK.Caption & " SNIPPET:") = vbYes Then
-128:            If lbOK.Caption = "to create" Then
+127:        If MsgBox(lbOk.Caption & " SNIPPET: [ " & lbPreView.Caption & " ] ?", vbYesNo, lbOk.Caption & " SNIPPET:") = vbYes Then
+128:            If lbOk.Caption = "to create" Then
 129:                .ListRows.Add Position:=row_i, AlwaysInsert:=True
 130:                row_i = row_i + 1
-131:            ElseIf lbOK.Caption = "to change" Then
+131:            ElseIf lbOk.Caption = "to change" Then
 132:                'ничего не делаем
 133:            Else
 134:                Debug.Print "Error in AddEditCode!" & vbLf & "The [lbOK] button does not contain signatures"
 135:                Exit Sub
 136:            End If
+        Else
+            '"No": nothing is written and the dialog stays open
+            Exit Sub
 137:        End If
 138:        .ListColumns(6).Range(row_i, 1) = cmbENUM.Text
 139:        .ListColumns(2).Range(row_i, 1) = txtSNIP.Text
