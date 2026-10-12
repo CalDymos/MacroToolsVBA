@@ -23,11 +23,12 @@ Option Explicit
 14:    Dim frm    As AddEditCode
 15:    Dim snippets As ListObject
 16:    Dim st()   As String
-17:    X = X + 1
 18:    If X <= 0 Then
 19:        Call MsgBox("Nothing is selected in the table!", vbCritical, "Nothing is selected:")
 20:        Exit Sub
 21:    End If
+    'X is the row in ListRows; the Range of a ListColumn below also counts the header row
+    X = X + 1
 22:    Set frm = New AddEditCode
 23:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 24:    With frm
@@ -90,3 +91,29 @@ errMsg:
 81:        Call WriteErrorLog("TbAdd")
 82:    End If
 83: End Sub
+
+'Row of the snippet named sName in the table SNIPPETS as index into ListRows (1 = first data row), 0 if no snippet
+'has this name. The name (column 2) is the key of a snippet; it is compared without regard to case, as InsertCode
+'finds snippets.
+Public Function SnippetRow(ByVal sName As String) As Long
+    Dim snippets As ListObject
+    Dim vName    As Variant
+    Dim i        As Long
+    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
+    For i = 1 To snippets.ListRows.Count
+        vName = snippets.ListColumns(2).DataBodyRange.Cells(i, 1).Value2
+        If Not IsError(vName) Then
+            If StrComp(CStr(vName), sName, vbTextCompare) = 0 Then
+                SnippetRow = i
+                Exit Function
+            End If
+        End If
+    Next i
+End Function
+
+'Row in the table SNIPPETS (index into ListRows) of the snippet shown as item lIndex of objList, whose column 2 holds
+'the snippet name; 0 if lIndex is no item (-1: nothing selected) or the name is not in the table.
+Public Function ListItemSnippetRow(ByRef objList As MSForms.ListBox, ByVal lIndex As Long) As Long
+    If lIndex < 0 Or lIndex >= objList.ListCount Then Exit Function
+    ListItemSnippetRow = SnippetRow(objList.List(lIndex, 2) & vbNullString)
+End Function

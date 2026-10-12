@@ -79,7 +79,7 @@ errMsg:
 64:    End Select
 65: End Sub
     Private Sub UserForm_Activate()
-67:    lbOk.Enabled = False
+67:    lbOK.Enabled = False
 68:    Me.lbHelp.Picture = Application.CommandBars.GetImageMso("Help", 18, 18)
 69: End Sub
     Private Sub UserForm_Terminate()
@@ -126,24 +126,31 @@ errMsg:
 111:    End If
 112: End Sub
      Private Sub SaveBtn()
-114:    lbOk.Enabled = False
+114:    lbOK.Enabled = False
 115:    If txtCode.Text <> vbNullString And cmbENUM.Text <> vbNullString And txtSNIP.Text <> vbNullString Then
 116:        If txtCode.Text <> txtCodeBack.Text Or cmbENUM.Text <> txtENUMBack.Text Or txtSNIP.Text <> txtSNIPBack.Text Then
-117:            lbOk.Enabled = True
+117:            lbOK.Enabled = True
 118:        End If
 119:    End If
 120: End Sub
      Private Sub lbOK_Click()
 122:    Dim snippets    As ListObject
 123:    Dim row_i       As Long
+    Dim lExisting   As Long
 124:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 125:    With snippets
 126:        row_i = CLng(txtRow.Text)
-127:        If MsgBox(lbOk.Caption & " SNIPPET: [ " & lbPreView.Caption & " ] ?", vbYesNo, lbOk.Caption & " SNIPPET:") = vbYes Then
-128:            If lbOk.Caption = "to create" Then
+        'The name is the key of a snippet: refuse a name that another snippet has, also if only the case differs
+        lExisting = modAddCodeViewForm.SnippetRow(txtSNIP.Text)
+        If lExisting > 0 And (lbOK.Caption = "to create" Or lExisting <> row_i - 1) Then
+            Call MsgBox("A snippet named [" & txtSNIP.Text & "] already exists. Choose another name.", vbExclamation, lbOK.Caption & " SNIPPET:")
+            Exit Sub
+        End If
+127:        If MsgBox(lbOK.Caption & " SNIPPET: [ " & lbPreView.Caption & " ] ?", vbYesNo, lbOK.Caption & " SNIPPET:") = vbYes Then
+128:            If lbOK.Caption = "to create" Then
 129:                .ListRows.Add Position:=row_i, AlwaysInsert:=True
 130:                row_i = row_i + 1
-131:            ElseIf lbOk.Caption = "to change" Then
+131:            ElseIf lbOK.Caption = "to change" Then
 132:                'ничего не делаем
 133:            Else
 134:                Debug.Print "Error in AddEditCode!" & vbLf & "The [lbOK] button does not contain signatures"

@@ -153,7 +153,7 @@ ErrPaste:
 132:    SelectedRow = 0
 133:    For X = 0 To m_txtTBox.ListCount - 1
 134:        If m_txtTBox.Selected(X) Then
-135:            SelectedRow = X + 1
+            SelectedRow = modAddCodeViewForm.ListItemSnippetRow(m_txtTBox, X)
 136:            Exit Function
 137:        End If
 138:    Next X

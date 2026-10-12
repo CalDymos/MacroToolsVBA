@@ -23,6 +23,8 @@ Attribute VB_Exposed = False
 Option Explicit
 Private m_colContextMenus As Collection
 Private m_clsAnchors As CAnchors
+'Name of the snippet whose code txtCode shows; saving looks its row up again by this name
+Private m_sShownSnippet As String
     Private Sub btnCancel_Click()
 12:    Unload Me
 13: End Sub
@@ -35,7 +37,7 @@ Private m_clsAnchors As CAnchors
 20: End Sub
 
     Private Sub ListBoxMain_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
-23:    Call modAddCodeViewForm.EditCode(ListBoxMain.ListIndex + 1, ListBoxMain)
+    Call modAddCodeViewForm.EditCode(modAddCodeViewForm.ListItemSnippetRow(ListBoxMain, ListBoxMain.ListIndex), ListBoxMain)
 24: End Sub
     Private Sub UserForm_Terminate()
 26:    Do While m_colContextMenus.Count > 0
@@ -85,32 +87,41 @@ Private m_clsAnchors As CAnchors
 70:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
 71:    With ListBoxMain
 72:        If .ListIndex > -1 Then
-73:            row_i = snippets.ListColumns(2).DataBodyRange.Find(What:=.List(.ListIndex, 2), LookIn:=xlValues, LookAt:=xlWhole).Row
+            row_i = modAddCodeViewForm.ListItemSnippetRow(ListBoxMain, .ListIndex)
 74:            If txtCode.Text <> txtCodeBackCap.Text And txtCodeBackCap.Text <> vbNullString Then
 75:                If MsgBox("Save Code changes ?", vbYesNo, "Saving the code:") = vbYes Then
-76:                    snippets.ListColumns(4).Range(CLng(txtRow.Text), 1).Value = txtCode.Text
+                    Call SaveShownCode
 77:                End If
 78:            End If
-79:            txtCode.Text = snippets.ListColumns(4).Range(row_i, 1).Value
+            If row_i = 0 Then
+                Call MsgBox("The snippet [" & .List(.ListIndex, 2) & "] is no longer in the table.", vbExclamation, "Snippet:")
+                Exit Sub
+            End If
+            txtCode.Text = snippets.ListColumns(4).DataBodyRange.Cells(row_i, 1).Value
 80:            txtCodeBackCap.Text = txtCode.Text
-81:            txtRow.Text = row_i
+            m_sShownSnippet = .List(.ListIndex, 2) & vbNullString
 82:            lbOK.Enabled = False
 83:        End If
 84:    End With
 85: End Sub
     Private Sub lbOK_Click()
-87:    Dim row_i       As Long
-88:    Dim snippets    As ListObject
-89:    Set snippets = SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS)
-90:    With ListBoxMain
-91:        If .ListIndex > -1 Then
-92:            row_i = snippets.ListColumns(2).DataBodyRange.Find(What:=.List(.ListIndex, 2), LookIn:=xlValues, LookAt:=xlWhole).Row
-93:            snippets.ListColumns(4).Range(row_i, 1).Value = txtCode.Text
-94:            txtCodeBackCap.Text = txtCode.Text
-95:            lbOK.Enabled = False
-96:        End If
-97:    End With
+    'As before only while a list item is selected; the code goes to the snippet it was loaded from
+    If ListBoxMain.ListIndex > -1 And m_sShownSnippet <> vbNullString Then Call SaveShownCode
 98: End Sub
+
+'Writes txtCode into the snippet whose code is shown. Its row is looked up by name when saving, so sorting or
+'deleting rows in the meantime cannot redirect the write to another snippet.
+Private Sub SaveShownCode()
+    Dim row_i       As Long
+    row_i = modAddCodeViewForm.SnippetRow(m_sShownSnippet)
+    If row_i = 0 Then
+        Call MsgBox("The snippet [" & m_sShownSnippet & "] is no longer in the table. The code was not saved.", vbExclamation, "Saving the code:")
+        Exit Sub
+    End If
+    SHSNIPPETS.ListObjects(modConst.TB_SNIPPETS).ListColumns(4).DataBodyRange.Cells(row_i, 1).Value = txtCode.Text
+    txtCodeBackCap.Text = txtCode.Text
+    lbOK.Enabled = False
+End Sub
      Private Sub txtCode_Change()
 100:    If txtCode.Text <> txtCodeBackCap.Text Then
 101:        lbOK.Enabled = True
