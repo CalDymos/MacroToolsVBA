@@ -694,6 +694,12 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 367       Set objDictModule = New Scripting.Dictionary
 368       Set objDictModuleOld = New Scripting.Dictionary
           
+          'Step 1 must have parsed this workbook with the same string option; its results are global
+          If Not N_ObfParserVBA.IsParsedWorkbook(objWB, bEncodeStr) Then
+              Call MsgBox("Please start Step 1 : VBA code parser before !", vbCritical, "Run VBA code parser")
+              Exit Function
+          End If
+
 369       If bEncodeStr Then
 370           If Not IsArrayEmpty(CryptFunc()) And Not IsArrayEmpty(CryptKey()) Then
 371               If UBound(CryptFunc()) = -1 Or UBound(CryptKey()) = -1 Then

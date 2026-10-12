@@ -15,6 +15,10 @@ Option Private Module
 
 Private objCollUnical As New Collection
 Private Const CHR_TO As String = "|XX|"
+'Workbook (FullName) and string option of the last COMPLETE run of ParserProjectVBA (step 1). Its results live
+'in globals (CryptFunc, CryptKey, AddCtrlProp), so step 2 may use them only for this workbook and option.
+Private m_sParsedFullName As String
+Private m_bParsedEncodeStr As Boolean
 
 Private Type obfModule
     objName         As Scripting.Dictionary
@@ -142,6 +146,8 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
           Dim z2 As Integer
           Dim blnAddModule1 As Boolean
           
+          'The globals are overwritten from here on: no workbook counts as parsed until this run is complete
+          m_sParsedFullName = vbNullString
           'del old Data
 42        If Not IsArrayEmpty(AddCtrlProp()) Then
 43            For i = 0 To UBound(AddCtrlProp())
@@ -580,7 +586,19 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 388       objWB.Worksheets(NAME_SH).Activate
 
 389       Application.StatusBar = False
+          'The parse is complete: step 2 may use its results for this workbook and string option
+          m_sParsedFullName = objWB.FullName
+          m_bParsedEncodeStr = bEncodeStr
 End Sub
+
+'True if the last complete run of ParserProjectVBA (step 1) parsed objWB with the same string option, so that
+'the global parse results (CryptFunc, CryptKey, AddCtrlProp) belong to it. Step 2 checks this before it
+'changes anything.
+Public Function IsParsedWorkbook(ByVal objWB As Object, ByVal bEncodeStr As Boolean) As Boolean
+          If m_sParsedFullName = vbNullString Then Exit Function
+          If StrComp(objWB.FullName, m_sParsedFullName, vbTextCompare) <> 0 Then Exit Function
+          IsParsedWorkbook = (bEncodeStr = m_bParsedEncodeStr)
+End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : AddShhetInWBook - Creating a Sheet in active Workbook
 '* Created    : 22-03-2023 16:15
