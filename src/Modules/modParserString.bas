@@ -408,6 +408,12 @@ Public Sub ReNameStr()
         Exit Sub
     End If
     Dim WBNew       As Workbook
+    Dim bCodeSheet  As Boolean
+    Dim bUnsaved    As Boolean
+    Dim lInvalid    As Long
+    Dim lUnchanged  As Long
+    Dim sMsg        As String
+    On Error GoTo ErrReNameStr
     Set WBNew = ActiveWorkbook
     With ActiveSheet
         If .Name = SH_NAME_SET Then
@@ -429,13 +435,27 @@ Public Sub ReNameStr()
                 ElseIf WBString.VBProject.Protection = vbext_pp_locked Then
                     Call MsgBox("The project is protected, remove the password!", vbCritical, "Project:")
                 Else
-                    If HaveSheetInFile(WBNew, SH_NAME_FORM) Then
-                        Call ReNameFormControls(WBString, WBNew)
+                    'Check every row of the code sheet before anything in the workbook is renamed
+                    bCodeSheet = HaveSheetInFile(WBNew, SH_NAME_CODE)
+                    If bCodeSheet Then lInvalid = CheckStringCodeRows(WBString, WBNew)
+                    If lInvalid > 0 Then
+                        Call MsgBox(lInvalid & " row(s) on the sheet [" & SH_NAME_CODE & "] cannot be applied, see column ERRORS." & vbNewLine & "Nothing was renamed.", vbExclamation, "Renaming lines:")
+                    Else
+                        bUnsaved = True
+                        If HaveSheetInFile(WBNew, SH_NAME_FORM) Then
+                            Call ReNameFormControls(WBString, WBNew)
+                        End If
+                        If bCodeSheet Then
+                            lUnchanged = ReNameParserStringsInCodeAdd(WBString, WBNew)
+                        End If
+                        Call ParserStrUI(WBString, WBNew, True)
+                        bUnsaved = False
+                        sMsg = "String values of the book [" & sWBName & "] renamed!"
+                        If lUnchanged > 0 Then
+                            sMsg = sMsg & vbNewLine & vbNewLine & lUnchanged & " place(s) in the code were not renamed as listed, see column ERRORS on the sheet [" & SH_NAME_CODE & "]."
+                        End If
+                        Call MsgBox(sMsg, vbInformation, "Renaming lines:")
                     End If
-                    If HaveSheetInFile(WBNew, SH_NAME_CODE) Then
-                        Call ReNameParserStringsInCodeAdd(WBString, WBNew)
-                    End If
-                    Call ParserStrUI(WBString, WBNew, True)
                 End If
             Else
                 Call MsgBox("The file was not found on the sheet: [" & SH_NAME_SET & "]", vbCritical, "Mistake:")
@@ -444,6 +464,17 @@ Public Sub ReNameStr()
             Call MsgBox("Create or navigate to the sheet: [" & SH_NAME_SET & "]", vbCritical, "Search for settings:")
         End If
     End With
+    Exit Sub
+ErrReNameStr:
+    sMsg = "Error in modParserString.ReNameStr" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl
+    Call WriteErrorLog("modParserString.ReNameStr")
+    'ParserStrUI saves the book when it closes it; a book that is still open after an error was not saved by this run
+    If bUnsaved Then
+        If modPublicFunctions.WorkbookIsOpen(sWBName) Then
+            sMsg = sMsg & vbLf & vbLf & "The book [" & sWBName & "] is still open and was not saved by this run; it contains the renames made before the error."
+        End If
+    End If
+    Call MsgBox(sMsg, vbCritical, "Mistake:")
 End Sub
 Private Function HaveSheetInFile(ByRef wb As Workbook, ByVal SHName As String) As Boolean
     Dim SH          As Worksheet
@@ -680,80 +711,175 @@ Private Sub ParserStringsInCodeAdd(ByRef wb As Workbook, ByRef WBNew As Workbook
     End If
 End Sub
 
-Private Sub ReNameParserStringsInCodeAdd(ByRef wb As Workbook, ByRef WBNew As Workbook)
+'Renames the strings listed on the sheet STRING_CODE in the code of wb, module by module (the rows of a module in
+'the order of the sheet), and writes every place that was not renamed as listed into column ERRORS.
+'Returns the number of those places. Precondition: CheckStringCodeRows found no invalid row.
+Private Function ReNameParserStringsInCodeAdd(ByRef wb As Workbook, ByRef WBNew As Workbook) As Long
     Dim oVBP        As VBIDE.VBProject
-    Dim iLineCode   As Long
-    Dim sCode       As String
-    Dim sCodeNew    As String
-    Dim iCount      As Long
+    Dim dicModules  As Scripting.Dictionary
+    Dim colRows     As Collection
     Dim arrData     As Variant
+    Dim arrErr()    As String
+    Dim vKey        As Variant
+    Dim sKey        As String
     Dim lLastRow    As Long
+    Dim lUnchanged  As Long
     Dim i           As Long
-    Dim k           As Long
-    Dim oVBCMod     As VBIDE.CodeModule
-
 
     With WBNew.Worksheets(SH_NAME_CODE)
         lLastRow = .Cells(.Rows.Count, 1).End(xlUp).Row
-        If lLastRow < 2 Then Exit Sub
-        arrData = .Range(.Cells(2, 1), .Cells(lLastRow, 4)).Value2
+        If lLastRow < 2 Then Exit Function
+        arrData = .Range(.Cells(2, 1), .Cells(lLastRow, 3)).Value2
     End With
+    ReDim arrErr(1 To UBound(arrData, 1), 1 To 1)
+
+    'Rows that rename something, grouped by module; each group keeps the order of the sheet
+    Set dicModules = New Scripting.Dictionary
+    For i = 1 To UBound(arrData, 1)
+        If VBA.CStr(arrData(i, 3)) <> vbNullString Then
+            sKey = VBA.LCase$(VBA.CStr(arrData(i, 1)))
+            If Not dicModules.Exists(sKey) Then dicModules.Add sKey, New Collection
+            Set colRows = dicModules.Item(sKey)
+            colRows.Add i
+        End If
+    Next i
 
     Set oVBP = wb.VBProject
-    iCount = UBound(arrData)
-    For i = 1 To iCount
-        k = 1
-        If i = iCount Then k = 0
-        If arrData(i, 1) <> vbNullString Then
-            If i = 1 Then
-                Set oVBCMod = oVBP.VBComponents(arrData(i, 1)).CodeModule
-                sCode = GetCodeFromModule(oVBCMod)
-                sCodeNew = sCode
-                If arrData(i, 3) <> vbNullString Then
-                    sCodeNew = VBA.Replace(sCodeNew, VBA.Chr$(34) & arrData(i, 2) & VBA.Chr$(34), VBA.Chr$(34) & arrData(i, 3) & VBA.Chr$(34))
+    Call modObfuscation.TrfClearNotices
+    For Each vKey In dicModules.Keys
+        Set colRows = dicModules.Item(vKey)
+        lUnchanged = lUnchanged + SetCodeInModule(oVBP.VBComponents(VBA.CStr(arrData(colRows.Item(1), 1))).CodeModule, arrData, colRows, arrErr)
+    Next vKey
+
+    WBNew.Worksheets(SH_NAME_CODE).Cells(2, 4).Resize(UBound(arrErr, 1), 1).Value2 = arrErr
+    ReNameParserStringsInCodeAdd = lUnchanged
+End Function
+
+'Checks the rows of the sheet STRING_CODE before anything in wb is renamed and writes the reason of every invalid
+'row into column ERRORS (the other entries of that column are cleared). Returns the number of invalid rows.
+Private Function CheckStringCodeRows(ByRef wb As Workbook, ByRef WBNew As Workbook) As Long
+    Dim objVB       As VBIDE.VBProject
+    Dim arrData     As Variant
+    Dim arrErr()    As String
+    Dim lLastRow    As Long
+    Dim lInvalid    As Long
+    Dim i           As Long
+
+    With WBNew.Worksheets(SH_NAME_CODE)
+        lLastRow = .Cells(.Rows.Count, 1).End(xlUp).Row
+        If lLastRow < 2 Then Exit Function
+        arrData = .Range(.Cells(2, 1), .Cells(lLastRow, 3)).Value2
+        ReDim arrErr(1 To UBound(arrData, 1), 1 To 1)
+        Set objVB = wb.VBProject
+        For i = 1 To UBound(arrData, 1)
+            arrErr(i, 1) = StringCodeRowError(objVB, arrData(i, 1), arrData(i, 2), arrData(i, 3))
+            If arrErr(i, 1) <> vbNullString Then lInvalid = lInvalid + 1
+        Next i
+        .Cells(2, 4).Resize(UBound(arrErr, 1), 1).Value2 = arrErr
+    End With
+    CheckStringCodeRows = lInvalid
+End Function
+
+'Reason why a row of the sheet STRING_CODE cannot be applied, "" for a valid row.
+'A row without a new string changes nothing; it is only checked for error values.
+Private Function StringCodeRowError(ByRef objVB As VBIDE.VBProject, ByVal vModule As Variant, _
+                                    ByVal vString As Variant, ByVal vNew As Variant) As String
+    Dim sNew        As String
+
+    If VBA.IsError(vModule) Or VBA.IsError(vString) Or VBA.IsError(vNew) Then
+        StringCodeRowError = "A cell of the row contains an error value"
+        Exit Function
+    End If
+    sNew = VBA.CStr(vNew)
+    If sNew = vbNullString Then Exit Function
+    If VBA.CStr(vModule) = vbNullString Then
+        StringCodeRowError = "Module name is empty"
+    ElseIf Not CheckVBComponent(objVB, VBA.CStr(vModule)) Then
+        StringCodeRowError = "Module not found"
+    ElseIf VBA.CStr(vString) = vbNullString Then
+        StringCodeRowError = "STRING is empty"
+    ElseIf VBA.InStr(sNew, vbCr) > 0 Or VBA.InStr(sNew, vbLf) > 0 Then
+        StringCodeRowError = "NEW STRING contains a line break"
+    ElseIf VBA.InStr(VBA.Replace(sNew, VBA.Chr$(34) & VBA.Chr$(34), vbNullString), VBA.Chr$(34)) > 0 Then
+        StringCodeRowError = "NEW STRING contains a single double quote, write it as two"
+    End If
+End Function
+
+'Applies the renames of the given rows to one code module. The lines are changed one by one and written back
+'through modObfuscation.TrfApplyLineEdits, which writes only changed lines and keeps declarations of members
+'with hidden attributes. Every place that does not hold the intended text afterwards is written into arrErr
+'for the row that changed it. Returns the number of those places.
+Private Function SetCodeInModule(ByRef oVBCMod As VBIDE.CodeModule, ByRef arrData As Variant, _
+                                 ByRef colRows As Collection, ByRef arrErr() As String) As Long
+    Dim arrOld()    As String
+    Dim arrNew()    As String
+    Dim abKeep()    As Boolean
+    Dim asRows()    As String
+    Dim vRow        As Variant
+    Dim vHit        As Variant
+    Dim sFind       As String
+    Dim sRepl       As String
+    Dim sLine       As String
+    Dim sError      As String
+    Dim lUnchanged  As Long
+    Dim n           As Long
+    Dim i           As Long
+
+    n = modObfuscation.TrfReadLines(oVBCMod, arrOld)
+    If n = 0 Then Exit Function
+    ReDim arrNew(1 To n)
+    ReDim abKeep(1 To n)
+    ReDim asRows(1 To n)
+    For i = 1 To n
+        arrNew(i) = arrOld(i)
+        abKeep(i) = True
+    Next i
+
+    'A string literal never spans two physical lines, so line by line finds the same matches as the whole text
+    For Each vRow In colRows
+        sFind = VBA.Chr$(34) & arrData(vRow, 2) & VBA.Chr$(34)
+        sRepl = VBA.Chr$(34) & arrData(vRow, 3) & VBA.Chr$(34)
+        For i = 1 To n
+            If VBA.InStr(arrNew(i), sFind) > 0 Then
+                sLine = VBA.Replace(arrNew(i), sFind, sRepl)
+                If sLine <> arrNew(i) Then
+                    If VBA.Len(sLine) > modObfuscation.TRF_MAX_LINE_LENGTH Then
+                        'the editor would split the line
+                        Call AddStringCodeError(arrErr, vRow, "line " & i & " would exceed " & modObfuscation.TRF_MAX_LINE_LENGTH & " characters, not renamed")
+                        lUnchanged = lUnchanged + 1
+                    Else
+                        arrNew(i) = sLine
+                        asRows(i) = asRows(i) & " " & vRow
+                    End If
                 End If
             End If
-            'если в таблице всего одна запись
-            If iCount = 1 Then
-                Call SetCodeInModule(oVBCMod, sCode, sCodeNew)
-            Else
-                If arrData(i, 3) <> vbNullString Then
-                    sCodeNew = VBA.Replace(sCodeNew, VBA.Chr$(34) & arrData(i, 2) & VBA.Chr$(34), VBA.Chr$(34) & arrData(i, 3) & VBA.Chr$(34))
+        Next i
+    Next vRow
+
+    Call modObfuscation.TrfApplyLineEdits(oVBCMod, arrOld, arrNew, abKeep, n, "ReNameStr")
+
+    'TrfApplyLineEdits keeps the line count; a protected line still holds its old text
+    For i = 1 To n
+        If asRows(i) <> vbNullString Then
+            sLine = oVBCMod.Lines(i, 1)
+            If sLine <> arrNew(i) Then
+                If sLine = arrOld(i) Then
+                    sError = "line " & i & " left unchanged (see Immediate window)"
+                Else
+                    sError = "line " & i & ": the editor stored a different text (unsupported characters?)"
                 End If
-                If arrData(i, 1) <> arrData(i + k, 1) Or i = iCount Then
-                    Call SetCodeInModule(oVBCMod, sCode, sCodeNew)
-                    Set oVBCMod = oVBP.VBComponents(arrData(i + k, 1)).CodeModule
-                    sCode = GetCodeFromModule(oVBCMod)
-                    sCodeNew = sCode
-                End If
+                For Each vHit In VBA.Split(VBA.Mid$(asRows(i), 2), " ")
+                    Call AddStringCodeError(arrErr, VBA.CLng(vHit), sError)
+                    lUnchanged = lUnchanged + 1
+                Next vHit
             End If
         End If
     Next i
-End Sub
-
-Private Function GetCodeFromModule(ByRef oVBCMod As VBIDE.CodeModule) As String
-    Dim iLineCode   As Long
-    Dim sCode       As String
-    With oVBCMod
-        iLineCode = .CountOfLines
-        If iLineCode > 0 Then
-            sCode = .Lines(1, iLineCode)
-            If sCode <> vbNullString And sCode Like "*" & VBA.Chr$(34) & "*" Then
-                GetCodeFromModule = sCode
-            End If
-        End If
-    End With
+    SetCodeInModule = lUnchanged
 End Function
 
-Private Sub SetCodeInModule(ByRef oVBCMod As VBIDE.CodeModule, ByVal sCode As String, ByVal sCodeNew As String)
-    If sCode <> sCodeNew Then
-        Dim iLineCode As Long
-        With oVBCMod
-            iLineCode = .CountOfLines
-            If iLineCode > 0 Then
-                Call .DeleteLines(1, iLineCode)
-                Call .InsertLines(1, sCodeNew)
-            End If
-        End With
-    End If
+'Appends sText to the ERRORS entry of row lRow.
+Private Sub AddStringCodeError(ByRef arrErr() As String, ByVal lRow As Long, ByVal sText As String)
+    If arrErr(lRow, 1) <> vbNullString Then arrErr(lRow, 1) = arrErr(lRow, 1) & "; "
+    arrErr(lRow, 1) = arrErr(lRow, 1) & sText
 End Sub
