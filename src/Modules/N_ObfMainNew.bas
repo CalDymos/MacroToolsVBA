@@ -137,7 +137,7 @@ Public Sub StartCompleteObfuscation()
           Application.ScreenUpdating = False
           
 60        Call DelegateMainObfParser(objWB, Form.chQuestion.Value, Form.chQuestion2.Value, True)
-61        Call MainObfuscation(objWB, Form.chQuestion.Value, True)
+61        If Not MainObfuscation(objWB, Form.chQuestion.Value, True) Then GoTo CleanUp
        
           Dim iFile       As Integer
           Dim arr()       As Variant
@@ -280,7 +280,7 @@ End Sub
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 07-09-2023 11:30    CalDymos
 '* Updated    : 12-09-2023 13:31    CalDymos
-Private Sub MainObfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boolean = False, Optional bNoFinishMessage As Boolean = False)
+Private Function MainObfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boolean = False, Optional bNoFinishMessage As Boolean = False) As Boolean
 140       On Error GoTo ErrStartParser
 141       If objWB.VBProject.Protection = vbext_pp_locked Then
 142           Call MsgBox("The project is protected, remove the password!", vbCritical, "Project:")
@@ -303,6 +303,7 @@ Private Sub MainObfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Bool
 155                   If Not bNoFinishMessage Then
 156                       Call MsgBox("Book code [" & objWB.Name & "] encrypted!", vbInformation, "Code encryption:")
 157                   End If
+                      MainObfuscation = True
 158               Else
 159                   Application.EnableEvents = True
 160                   Application.Calculation = xlCalculationAutomatic
@@ -312,14 +313,14 @@ Private Sub MainObfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Bool
 164               Call MsgBox("Create or navigate to the sheet: [" & NAME_SH & "]", vbCritical, "Activating the sheet:")
 165           End If
 166       End If
-167       Exit Sub
+167       Exit Function
 ErrStartParser:
 168       Application.EnableEvents = True
 169       Application.Calculation = xlCalculationAutomatic
 170       Application.ScreenUpdating = True
           Application.StatusBar = False
 171       Call MsgBox("Error in MainObfuscation" & vbLf & Err.Number & vbLf & Err.Description & vbCrLf & "in the line" & Erl, vbCritical, "Mistake:")
-End Sub
+End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : FelterAdd - filtration in the desired order before before passing through the loops
