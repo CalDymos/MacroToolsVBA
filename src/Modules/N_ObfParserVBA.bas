@@ -551,7 +551,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
           'Loading the control properties
 357       Call AddSheetInWBook(NAME_SH_CTL, objWB)
 358       Application.StatusBar = "Collecting Ctrl Properties"
-359       If varModule.objStringCode.Count <> 0 Then
+359       If varModule.objCtrlProps.Count <> 0 Then
 360           ReDim arrRange(1 To varModule.objCtrlProps.Count, 1 To 5) As String
 361           For i = 1 To varModule.objCtrlProps.Count
 362               asSplitKey() = VBA.Split(varModule.objCtrlProps.Keys(i - 1), CHR_TO)
@@ -562,11 +562,11 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 367               arrRange(i, 5) = asSplitKey(3)
 
 368               If i Mod 50 = 0 Then
-369                   Application.StatusBar = "Collecting Ctrl Properties, completed:" & VBA.Format(i / varModule.objStringCode.Count, "Percent")
+369                   Application.StatusBar = "Collecting Ctrl Properties, completed:" & VBA.Format(i / varModule.objCtrlProps.Count, "Percent")
 370                   DoEvents
 371               End If
 372           Next i
-373           Application.StatusBar = "Collecting String variables, completed"
+373           Application.StatusBar = "Collecting Ctrl Properties, completed"
 374           With objWB.ActiveSheet
 375               .Cells(1, 1).Value = "Control Type"
 376               .Cells(1, 2).Value = "Module name"

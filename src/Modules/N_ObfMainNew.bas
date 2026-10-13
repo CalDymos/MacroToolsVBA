@@ -712,17 +712,6 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 378           End If
 379       End If
           
-380       If Not IsArrayEmpty(AddCtrlProp()) Then
-381           If UBound(AddCtrlProp()) = -1 Then
-382               Call MsgBox("Please start Step 1 : VBA code parser before !", vbCritical, "Run VBA code parser")
-383               Exit Function
-384           Else
-385           End If
-386       Else
-387           Call MsgBox("Please start Step 1 : VBA code parser before !", vbCritical, "Run VBA code parser")
-388           Exit Function
-389       End If
-          
           'save and Load
 390       If Not sFolderHave(objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH) Then MkDir (objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH)
 391       objWB.SaveAs Filename:=objWB.Path & Application.PathSeparator & OBF_RELEASE_PATH & Application.PathSeparator & modPublicFunctions.sGetBaseName(objWB.FullName) & "_obf_" & Replace(Now(), ":", ".") & "." & modPublicFunctions.sGetExtensionName(objWB.FullName)    ', FileFormat:=objWB.FileFormat
@@ -738,6 +727,7 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 396       End If
           
           'Insert Control Properties
+          '(AddCtrlProp is empty for a project without UserForms; then nothing is added)
 397       AddProcsToVBProject objWB, AddCtrlProp()
           
           'Obfuscate Control Properties
