@@ -1737,6 +1737,31 @@ Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule 
 1003              Case sTxt Like "*_WorkbookPivotTableOpenConnection(*": Flag = True
 1004              Case sTxt Like "*_WorkbookRowsetComplete(*": Flag = True
 1005              Case sTxt Like "*_WorkbookSync(*": Flag = True
+                  'added in A3.7: Workbook, Worksheet, Chart, Application and QueryTable events
+                  'that were missing above (handlers would be renamed and lose their event)
+                  Case sTxt Like "*_AfterCalculate(*": Flag = True
+                  Case sTxt Like "*_AfterRefresh(*": Flag = True
+                  Case sTxt Like "*_AfterRemoteChange(*": Flag = True
+                  Case sTxt Like "*_BeforeDelete(*": Flag = True
+                  Case sTxt Like "*_BeforeRefresh(*": Flag = True
+                  Case sTxt Like "*_BeforeRemoteChange(*": Flag = True
+                  Case sTxt Like "*_DragOver(*": Flag = True
+                  Case sTxt Like "*_DragPlot(*": Flag = True
+                  Case sTxt Like "*_LensGalleryRenderComplete(*": Flag = True
+                  Case sTxt Like "*_ModelChange(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowActivate(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowBeforeClose(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowBeforeEdit(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowDeactivate(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowOpen(*": Flag = True
+                  Case sTxt Like "*_ProtectedViewWindowResize(*": Flag = True
+                  Case sTxt Like "*_Select(*": Flag = True
+                  Case sTxt Like "*_SheetBeforeDelete(*": Flag = True
+                  Case sTxt Like "*_SheetLensGalleryRenderComplete(*": Flag = True
+                  Case sTxt Like "*_SheetTableUpdate(*": Flag = True
+                  Case sTxt Like "*_TableUpdate(*": Flag = True
+                  Case sTxt Like "*_WorkbookAfterRemoteChange(*": Flag = True
+                  Case sTxt Like "*_WorkbookBeforeRemoteChange(*": Flag = True
 1006          End Select
 1007      End If
 1008      WorkBookAndSheetsEvents = Flag
@@ -1774,6 +1799,10 @@ Private Function UserFormsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE
 1034              Case sTxt Like "*_Scroll(*": Flag = True
 1035              Case sTxt Like "*_Terminate(*": Flag = True
 1036              Case sTxt Like "*_Zoom(*": Flag = True
+                  'added in A3.7: MSForms events that were missing above
+                  Case sTxt Like "*_AddControl(*": Flag = True
+                  Case sTxt Like "*_SpinDown(*": Flag = True
+                  Case sTxt Like "*_SpinUp(*": Flag = True
 1037          End Select
 1038      End If
 1039      UserFormsEvents = Flag

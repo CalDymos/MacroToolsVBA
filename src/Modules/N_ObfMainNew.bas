@@ -805,7 +805,8 @@ Private Function Obfuscation(ByRef objWB As Workbook, Optional bEncodeStr As Boo
 449                   End If
                       'Regulierungsrahmen für Events, vor allem für Formulare
 450                   If sCode Like "* " & Chr$(83) & "ub *" & sFinde & "_*(*)*" Then
-451                       sPattern = "([\s])(Sub)([\s])" & sFinde & "(\_{1}[A-Za-zÀ-ßà-ÿ¨¸]{4,40}\([A-Za-zÀ-ßà-ÿ¨¸\s\.\,]{0,100}\))"
+                      'the parameter list may hold digits and _ (parameters renamed before are ciphers) and has any length
+451                       sPattern = "([\s])(Sub)([\s])" & sFinde & "(\_{1}[A-Za-zÀ-ßà-ÿ¨¸]{4,40}\([A-Za-zÀ-ßà-ÿ¨¸0-9_\s\.\,]*\))"
 452                       sCode = RegExpFindReplace(sCode, sPattern, "$1$2$3" & sReplace & "$4", True, False, False)
 453                       If sCode <> vbNullString Then objDictModule.Item(sKey) = sCode
 454                       sPattern = "([\s])" & sFinde & "(\_{1}[A-Za-zÀ-ßà-ÿ¨¸]{4,40}(?:\:\s|\n|\r))"
