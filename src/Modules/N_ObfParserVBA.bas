@@ -1173,12 +1173,12 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
 15            i2 = i2 + 1
 
 16            If objVBC.Properties("Caption") <> "" Then
-17                varAddCtrlProp(i1).AddCodeLine "Me.Caption = " & Chr$(34) & objVBC.Properties("Caption") & Chr$(34)
+17                varAddCtrlProp(i1).AddCodeLine "Me.Caption = " & VbaLiteral(objVBC.Properties("Caption"))
 18                i2 = i2 + 1
 19                obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Caption" & CHR_TO & objVBC.Properties("Caption"), "UserForm"
 20            End If
 21            If objVBC.Properties("Tag") <> "" Then
-22                varAddCtrlProp(i1).AddCodeLine "Me.Tag= " & Chr$(34) & objVBC.Properties("Tag") & Chr$(34)
+22                varAddCtrlProp(i1).AddCodeLine "Me.Tag= " & VbaLiteral(objVBC.Properties("Tag"))
 23                i2 = i2 + 1
 24                obfNewDict.Add sNameVBC & CHR_TO & "" & CHR_TO & "Tag" & CHR_TO & objVBC.Properties("Tag"), "UserForm"
 25            End If
@@ -1187,35 +1187,35 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
 28                    If TypeOf objCtl Is MSForms.TextBox Then
 29                        Set objTxtBox = objCtl
 30                        If objTxtBox.Text <> "" Then
-31                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Text = " & Chr$(34) & objTxtBox.Text & Chr$(34)
+31                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Text = " & VbaLiteral(objTxtBox.Text)
 32                            i2 = i2 + 1
 33                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Text" & CHR_TO & objTxtBox.Text, TypeName(objCtl)
 34                        End If
 35                    ElseIf TypeOf objCtl Is MSForms.Label Then
 36                        Set objLbl = objCtl
 37                        If objLbl.Caption <> "" Then
-38                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objLbl.Caption & Chr$(34)
+38                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objLbl.Caption)
 39                            i2 = i2 + 1
 40                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objLbl.Caption, TypeName(objCtl)
 41                        End If
 42                    ElseIf TypeOf objCtl Is MSForms.CommandButton Then
 43                        Set objCmdBtn = objCtl
 44                        If objCmdBtn.Caption <> "" Then
-45                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objCmdBtn.Caption & Chr$(34)
+45                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objCmdBtn.Caption)
 46                            i2 = i2 + 1
 47                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objCmdBtn.Caption, TypeName(objCtl)
 48                        End If
 49                    ElseIf TypeOf objCtl Is MSForms.Frame Then
 50                        Set objFrame = objCtl
 51                        If objFrame.Caption <> "" Then
-52                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objFrame.Caption & Chr$(34)
+52                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objFrame.Caption)
 53                            i2 = i2 + 1
 54                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objFrame.Caption, TypeName(objCtl)
 55                        End If
 56                    ElseIf TypeOf objCtl Is MSForms.CheckBox Then
 57                        Set objChkBox = objCtl
 58                        If objChkBox.Caption <> "" Then
-59                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objChkBox.Caption & Chr$(34)
+59                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objChkBox.Caption)
 60                            i2 = i2 + 1
 61                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objChkBox.Caption, TypeName(objCtl)
 62                        End If
@@ -1228,7 +1228,7 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
 69                    ElseIf TypeOf objCtl Is MSForms.OptionButton Then
 70                        Set objOptBtn = objCtl
 71                        If objOptBtn.Caption <> "" Then
-72                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objOptBtn.Caption & Chr$(34)
+72                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objOptBtn.Caption)
 73                            i2 = i2 + 1
 74                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objOptBtn.Caption, TypeName(objCtl)
 75                        End If
@@ -1241,18 +1241,18 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
 82                    ElseIf TypeOf objCtl Is MSForms.ToggleButton Then
 83                        Set objTglBtn = objCtl
 84                        If objTglBtn.Caption <> "" Then
-85                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & Chr$(34) & objTglBtn.Caption & Chr$(34)
+85                            varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Caption = " & VbaLiteral(objTglBtn.Caption)
 86                            i2 = i2 + 1
 87                            obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Caption" & CHR_TO & objTglBtn.Caption, TypeName(objCtl)
 88                        End If
 89                    End If
 90                    If objCtl.Tag <> "" Then
-91                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Tag = " & Chr$(34) & objCtl.Tag & Chr$(34)
+91                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".Tag = " & VbaLiteral(objCtl.Tag)
 92                        i2 = i2 + 1
 93                        obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "Tag" & CHR_TO & objCtl.Tag, TypeName(objCtl)
 94                    End If
 95                    If objCtl.ControlTipText <> "" Then
-96                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".ControlTipText = " & Chr$(34) & objCtl.ControlTipText & Chr$(34)
+96                        varAddCtrlProp(i1).AddCodeLine "Me." & objCtl.Name & ".ControlTipText = " & VbaLiteral(objCtl.ControlTipText)
 97                        i2 = i2 + 1
 98                        obfNewDict.Add sNameVBC & CHR_TO & objCtl.Name & CHR_TO & "ControlTipText" & CHR_TO & objCtl.ControlTipText, TypeName(objCtl)
 99                    End If
@@ -1288,6 +1288,42 @@ Private Sub ParserPropertiesControlsForm(ByVal sNameVBC As String, ByRef objVBC 
 129           End With
 130       End If
 End Sub
+
+'VBA expression for sText in generated code: a literal with doubled quotes; line breaks and other control
+'characters (designer texts may hold them) become vbCrLf, vbCr, vbLf, vbTab or Chr$(n), joined with &
+Private Function VbaLiteral(ByVal sText As String) As String
+          Dim sOut As String
+          Dim sPart As String
+          Dim sConst As String
+          Dim lCode As Long
+          Dim i As Long
+          i = 1
+          Do While i <= Len(sText)
+              lCode = AscW(Mid$(sText, i, 1))
+              If lCode >= 0 And lCode < 32 Then
+                  If lCode = 13 And Mid$(sText, i + 1, 1) = vbLf Then
+                      sConst = "vbCrLf"
+                      i = i + 1
+                  ElseIf lCode = 13 Then
+                      sConst = "vbCr"
+                  ElseIf lCode = 10 Then
+                      sConst = "vbLf"
+                  ElseIf lCode = 9 Then
+                      sConst = "vbTab"
+                  Else
+                      sConst = "Chr$(" & lCode & ")"
+                  End If
+                  If Len(sPart) > 0 Then sOut = sOut & " & " & Chr$(34) & Replace(sPart, Chr$(34), Chr$(34) & Chr$(34)) & Chr$(34)
+                  sOut = sOut & " & " & sConst
+                  sPart = vbNullString
+              Else
+                  sPart = sPart & Mid$(sText, i, 1)
+              End If
+              i = i + 1
+          Loop
+          If Len(sPart) > 0 Or Len(sOut) = 0 Then sOut = sOut & " & " & Chr$(34) & Replace(sPart, Chr$(34), Chr$(34) & Chr$(34)) & Chr$(34)
+          VbaLiteral = Mid$(sOut, 4)
+End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Sub        : ParserNameGlobalVariable - сбор глобальных переменных
