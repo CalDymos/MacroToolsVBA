@@ -426,7 +426,8 @@ Private Sub AddProcsToVBProject(ByRef objWB As Workbook, AddProcs() As CAddProc)
 207                   If Not ProcInCodeModuleExist(objWB.VBProject.VBComponents(objProc.ModuleName).CodeModule, objProc.Name) Then
 208                       sCodeLines = Join(objProc.CodeLines, vbCrLf)
 209                       CompIfLine = -1
-210                       For j = 1 To .CountOfDeclarationLines + 1
+                          'the line after the declarations is read as well, but never one beyond the end of the module
+210                       For j = 1 To IIf(.CountOfDeclarationLines < .CountOfLines, .CountOfDeclarationLines + 1, .CountOfLines)
 211                           If InStr(.Lines(j, 1), "#If") <> 0 Then
                                   'Debug.Print j
 212                               CompIfLine = j
@@ -435,7 +436,8 @@ Private Sub AddProcsToVBProject(ByRef objWB As Workbook, AddProcs() As CAddProc)
 215                       Next j
 
 216                       If CompIfLine <> -1 Then
-217                           .InsertLines .CountOfLines, sCodeLines
+                              'InsertLines inserts before the given line: append after the last line, not into the last procedure
+217                           .InsertLines .CountOfLines + 1, sCodeLines
 218                       Else
 219                           .AddFromString sCodeLines
 220                       End If
