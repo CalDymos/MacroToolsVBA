@@ -932,7 +932,7 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 526       sCodeString = "Option Explicit" & VBA.Chr$(13)
 527       For i = LBound(arrData) To UBound(arrData)
 528           If arrData(i, 7) = "yes" Then
-529               sCodeString = sCodeString & "Public Const " & arrData(i, 8) & " as String = " & Chr$(34) & StringCrypt(TrimA(arrData(i, 5), Chr$(34)), strKey, True) & Chr$(34) & VBA.Chr$(13)
+529               sCodeString = sCodeString & "Public Const " & arrData(i, 8) & " as String = " & Chr$(34) & StringCrypt(LiteralValue(CStr(arrData(i, 5))), strKey, True) & Chr$(34) & VBA.Chr$(13)
 530           End If
 531       Next i
           Dim NameOldMOdule As String
@@ -952,7 +952,7 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 543                           ElseIf IsSubOrFunc(varStr(k)) Then
                                   'Do Nothing
 544                           ElseIf VBA.InStr(1, CStr(varStr(k)), arrData(i, 5)) <> 0 Then
-545                               varStr(k) = VBA.Trim$(VBA.Replace(CStr(varStr(k)), arrData(i, 5), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
+545                               varStr(k) = VBA.Trim$(ReplaceLiteral(CStr(varStr(k)), CStr(arrData(i, 5)), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
 546                           End If
 547                       Next
 548                       sCode = Join(varStr, vbNewLine)
@@ -969,7 +969,7 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 557                           ElseIf IsSubOrFunc(varStr(k)) Then
                                   'Do Nothing
 558                           ElseIf VBA.InStr(1, CStr(varStr(k)), arrData(i, 5)) <> 0 Then
-559                               varStr(k) = VBA.Trim$(VBA.Replace(CStr(varStr(k)), arrData(i, 5), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
+559                               varStr(k) = VBA.Trim$(ReplaceLiteral(CStr(varStr(k)), CStr(arrData(i, 5)), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
 560                           End If
 561                       Next
 562                       sCode = Join(varStr, vbNewLine)
@@ -998,6 +998,32 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 583           Call SetCodeInModule(objVBCitem, sCodeString)
 584       End If
 End Sub
+
+'Run-time value of a string literal as written in the code (column 5 of the STRING sheet): without its outer
+'quotes, each doubled quote as one quote
+Private Function LiteralValue(ByVal sLiteral As String) As String
+          If Len(sLiteral) < 2 Then Exit Function
+          LiteralValue = Replace(Mid$(sLiteral, 2, Len(sLiteral) - 2), Chr$(34) & Chr$(34), Chr$(34))
+End Function
+
+'Replaces each string literal of sLine that equals sLiteral (as written, with its quotes) by sReplacement.
+'Literals that only contain the text of sLiteral, and comments, stay unchanged.
+Private Function ReplaceLiteral(ByVal sLine As String, ByVal sLiteral As String, ByVal sReplacement As String) As String
+          Dim vParts As Variant
+          Dim sOut As String
+          Dim i As Long
+          vParts = N_ObfParserVBA.SplitAtLiterals(sLine)
+          sOut = vParts(0)
+          For i = 1 To UBound(vParts) Step 2
+              If Chr$(34) & vParts(i) & Chr$(34) = sLiteral Then
+                  sOut = sOut & sReplacement
+              Else
+                  sOut = sOut & Chr$(34) & vParts(i) & Chr$(34)
+              End If
+              sOut = sOut & vParts(i + 1)
+          Next i
+          ReplaceLiteral = sOut
+End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Function   : GetCodeFromModule - получить код из модуля в строковую переменную
 '* Created    : 20-04-2020 18:20

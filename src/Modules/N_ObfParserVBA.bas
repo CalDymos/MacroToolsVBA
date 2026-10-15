@@ -876,7 +876,6 @@ Private Sub ParserStringInCode(ByVal sSTR As String, ByVal sNameSub As String, B
           Dim i           As Integer
           Dim sArray      As String
           Dim sYesNo      As String
-          Const CHAR_REPLACE As String = "XXXXX"
           
 
 518       sSTR = VBA.Trim$(sSTR)
@@ -891,8 +890,7 @@ Private Sub ParserStringInCode(ByVal sSTR As String, ByVal sNameSub As String, B
 523               sYesNo = "Yes"
 524           End If
 525           sTxt = VBA.Right$(sSTR, VBA.Len(sSTR) - VBA.InStr(1, sSTR, VBA.Chr$(34)) + 1)
-526           sTxt = VBA.Replace(sTxt, VBA.Chr$(34) & VBA.Chr$(34), CHAR_REPLACE)
-527           arrStr = VBA.Split(sTxt, VBA.Chr$(34))
+527           arrStr = SplitAtLiterals(sTxt)
 
 528           sArray = VBA.Left$(sSTR, VBA.InStr(1, sSTR, VBA.Chr$(34)) - 1)
 529           If sArray Like "* = Array(" Then
@@ -906,7 +904,7 @@ Private Sub ParserStringInCode(ByVal sSTR As String, ByVal sNameSub As String, B
 537               If arrStr(i) <> vbNullString Then
 538                   If sNameSub = vbNullString Then sNameSub = "Declaration" & CHR_TO
 
-539                   sReplace = VBA.Replace(arrStr(i), CHAR_REPLACE, VBA.Chr$(34) & VBA.Chr$(34))
+539                   sReplace = arrStr(i)
 540                   sTxt = objVBC.Name & CHR_TO & sNameSub & CHR_TO & VBA.Chr$(34) & sReplace & VBA.Chr$(34) & CHR_TO & sArray & CHR_TO & sYesNo 'changed 13.09
 541                   If arrStr(i + 1) Like "*: * = *" Then sArray = vbNullString
 542                   If arrStr(i + 1) Like "*: * = Array(*" Then
@@ -920,6 +918,39 @@ Private Sub ParserStringInCode(ByVal sSTR As String, ByVal sNameSub As String, B
 550           sArray = vbNullString
 551       End If
 End Sub
+
+'Splits a code line at its string literals, in the layout of Split(sLine, Chr$(34)) for a line without doubled
+'quotes: even indices hold the code before, between and after the literals, odd indices the literals without
+'their outer quotes (doubled quotes stay doubled), so that joining all parts with Chr$(34) gives sLine again.
+'The tested lexer of modObfuscation finds the literals: a literal may start or end with a doubled quote, and
+'quotes in a comment do not count.
+Public Function SplitAtLiterals(ByVal sLine As String) As Variant
+          Dim asLines() As String
+          Dim toks() As TrfToken
+          Dim nTok As Long
+          Dim info As TrfLineInfo
+          Dim asParts() As String
+          Dim lParts As Long
+          Dim lPos As Long
+          Dim i As Long
+          ReDim asLines(0 To 0)
+          asLines(0) = sLine
+          modObfuscation.TrfScanLogicalLine asLines, 0, 0, toks, nTok, info
+          ReDim asParts(0 To 2 * nTok)
+          lPos = 1
+          For i = 0 To nTok - 1
+              'a literal that is not closed (only in code that does not compile) stays code
+              If toks(i).Kind = TRF_TK_STRING And toks(i).Length >= 2 And Right$(toks(i).Text, 1) = Chr$(34) Then
+                  asParts(lParts) = Mid$(sLine, lPos, toks(i).StartPos - lPos)
+                  asParts(lParts + 1) = Mid$(toks(i).Text, 2, toks(i).Length - 2)
+                  lParts = lParts + 2
+                  lPos = toks(i).StartPos + toks(i).Length
+              End If
+          Next i
+          asParts(lParts) = Mid$(sLine, lPos)
+          ReDim Preserve asParts(0 To lParts)
+          SplitAtLiterals = asParts
+End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Function   : ParserStrDimConst - String parser for initialization of variables and constants
