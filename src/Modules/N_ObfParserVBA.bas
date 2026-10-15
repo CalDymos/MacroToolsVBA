@@ -1762,6 +1762,22 @@ Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule 
                   Case sTxt Like "*_TableUpdate(*": Flag = True
                   Case sTxt Like "*_WorkbookAfterRemoteChange(*": Flag = True
                   Case sTxt Like "*_WorkbookBeforeRemoteChange(*": Flag = True
+                  'added in A3.7b: ActiveX control events on worksheet (Document) modules;
+                  'handlers such as CommandButton1_Click would otherwise be renamed and stop firing
+                  Case sTxt Like "*_BeforeDragOver(*": Flag = True
+                  Case sTxt Like "*_BeforeDropOrPaste(*": Flag = True
+                  Case sTxt Like "*_Click(*": Flag = True
+                  Case sTxt Like "*_DblClick(*": Flag = True
+                  Case sTxt Like "*_DropButtonClick(*": Flag = True
+                  Case sTxt Like "*_Error(*": Flag = True
+                  Case sTxt Like "*_GotFocus(*": Flag = True
+                  Case sTxt Like "*_KeyDown(*": Flag = True
+                  Case sTxt Like "*_KeyPress(*": Flag = True
+                  Case sTxt Like "*_KeyUp(*": Flag = True
+                  Case sTxt Like "*_LostFocus(*": Flag = True
+                  Case sTxt Like "*_Scroll(*": Flag = True
+                  Case sTxt Like "*_SpinDown(*": Flag = True
+                  Case sTxt Like "*_SpinUp(*": Flag = True
 1006          End Select
 1007      End If
 1008      WorkBookAndSheetsEvents = Flag
