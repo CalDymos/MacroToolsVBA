@@ -7,7 +7,7 @@ Attribute VB_Name = "modAddNumbersLine"
 '* Copyright  : VBATools.ru
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 05-10-2026          CalDymos              RemoveLineNumbers replaced: referenced numbers kept,
-'*                                                      all numbers kept in procedures with Erl (F2 b),
+'*                                                      all numbers kept in procedures with Erl,
 '*                                                      '10 Name:' -> label at column 1, '10: Name:' ->
 '*                                                      Call Name (both verified in Excel), notices
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -271,7 +271,7 @@ NextLine:
 '   A line number stays unchanged if a statement of the same procedure
 '   refers to it via GoTo, GoSub, On ... GoTo/GoSub (list), On Error GoTo,
 '   Resume, or the implicit GoTo of "If x Then 10" / "Else 10".
-'   Decision F2 b: in a procedure that uses Erl, every line number stays,
+'   In a procedure that uses Erl, every line number stays,
 '   so Erl keeps returning the same values.
 '   All other numeric labels of the given type are removed. A lone name
 '   followed by ":" right after the number keeps its meaning (verified by
@@ -297,8 +297,8 @@ NextLine:
 '   member calls, not references.
 '   Erl returns the last numbered line executed before the error; code like
 '   "If Erl = 20 Then Resume 30" depends on it. Therefore numbers are kept
-'   in the whole procedure as soon as Erl appears in it (F2 b, replaces the
-'   former decision F2 a). Erl as a member name (obj.Erl) does not count.
+'   in the whole procedure as soon as Erl appears in it.
+'   Erl as a member name (obj.Erl) does not count.
 '   Numbers of any length are recognised (formerly 1 to 4 digits only).
 '===============================================================================
 Public Sub RemoveLineNumbers(ByVal vbCompObj As VBIDE.VBComponent, ByVal LabelType As vbLineNumbers_LabelTypes)
@@ -393,7 +393,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
                     sNew = LineWithoutNumber(arrLines(alLine(j)), alNumPos(j), alNumLen(j), alColonPos(j), LabelType)
                     If sNew <> arrLines(alLine(j)) Then
                         If bErl Then
-                            'decision F2 b: Erl reads the numbers, all of them stay
+                            'Erl reads the numbers, all of them stay
                             nKeptErl = nKeptErl + 1
                         ElseIf abGuard(j) Then
                             If modObfuscation.TrfIsStandaloneKeyword(asGuardWord(j)) Then
@@ -423,7 +423,7 @@ Private Sub RemoveLineNumberEdits(ByRef arrLines() As String, ByVal n As Long, B
             Next j
             If nKeptErl > 0 Then
                 modObfuscation.TrfAddNotice "RemoveLineNumbers", sModule, alLine(1), _
-                    "procedure uses Erl; " & nKeptErl & " line number(s) kept (decision F2 b)"
+                    "procedure uses Erl; " & nKeptErl & " line number(s) kept"
             End If
             nLabels = 0
             sRefs = "|"

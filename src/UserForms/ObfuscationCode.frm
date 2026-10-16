@@ -19,8 +19,17 @@ Attribute VB_Exposed = False
 '* Author     : VBATools
 '* Contacts   : -
 '* Copyright  : VBATools.ru / Byte Ranger Software
+'* Updated    : 15-10-2026          Option "remove unused code" (modRemoveUnusedCode)
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Option Explicit
+
+'Tooltips of the option "remove unused code"; the final message names the full residual risk
+Private Const HINT_UNUSED As String = "Removes Subs, Functions and classes whose name occurs nowhere else " & _
+    "in the code. Risk: callers outside the code, names built at runtime."
+Private Const HINT_UNUSED_CLASS As String = "Also Public members of classes and forms. " & _
+    "Risk: calls via CallByName or from other projects."
+Private Const HINT_UNUSED_MODULE As String = "Also Public procedures of modules and sheets. " & _
+    "Risk: macros run from buttons, shapes, Alt+F8, cell formulas, Word, other workbooks."
 
     Private Sub cmbCancel_Click()
 11:    Unload Me
@@ -218,6 +227,8 @@ Private Sub lbOK_Click()
 201:    Dim sNameWB     As String
         Dim sMsg        As String
         Dim lNotices    As Long
+        Dim dicTargets  As Scripting.Dictionary
+        Dim lRemoved    As Long
 202:    oldWbName = cmbMain.Value
 203:
 204:
@@ -277,6 +288,15 @@ Private Sub lbOK_Click()
 253:            End If
 254:        Next i
             Set vbComp = Nothing
+            If CheckDelUnused Then
+                'after the chain, so that removed Debug.Print calls and comments no longer count as uses
+                Set dicTargets = New Scripting.Dictionary
+                dicTargets.CompareMode = vbTextCompare
+                For i = 0 To ListCode.ListCount - 1
+                    If ListCode.Selected(i) Then dicTargets(CStr(ListCode.List(i, 2))) = True
+                Next i
+                lRemoved = modRemoveUnusedCode.RemoveUnusedCode(vbProj, dicTargets, UnusedScope())
+            End If
 255:
 256:        wb.Save
             On Error GoTo 0
@@ -285,6 +305,16 @@ Private Sub lbOK_Click()
             If lNotices > 0 Then
                 sMsg = sMsg & vbLf & vbLf & lNotices & " place(s) were intentionally left unchanged." & vbLf & _
                        "Details: Immediate window of the VBA editor (Ctrl+G)."
+            End If
+            If CheckDelUnused Then
+                sMsg = sMsg & vbLf & vbLf & lRemoved & " unused procedure(s) or class module(s) removed (scope " & _
+                       UnusedScopeName() & ")."
+                If lRemoved > 0 Then sMsg = sMsg & vbLf & "List: Immediate window of the VBA editor (Ctrl+G)."
+                sMsg = sMsg & vbLf & vbLf & "Not detected: callers outside the code (macros assigned to shapes or " & _
+                       "buttons, Alt+F8, worksheet formulas, ribbon callbacks without IRibbonControl, Word " & _
+                       "command macros, other projects) and names built at runtime (Application.Run, " & _
+                       "CallByName)." & vbLf & _
+                       "Compile the project (Debug > Compile) and test it."
             End If
 257:        Call MsgBox(sMsg, vbInformation, "Removing Formatting:")
 258:        cmbMain.Value = wb.Name
@@ -307,3 +337,53 @@ ShowForm:
         Me.Show
 End Sub
 
+'===============================================================================
+' Option "remove unused code" (modRemoveUnusedCode)
+'   CheckDelUnused          - main option, off by default and not set by CheckAllParam
+'   CheckUnusedPublicClass  - flag: also Public members of classes and UserForms (variant B)
+'   CheckUnusedPublicModule - flag: also Public procedures of standard and document modules
+'   Both flags on = variant C (default), both off = variant A (Private only)
+'===============================================================================
+
+Private Sub UserForm_Initialize()
+    CheckDelUnused.Caption = "Remove unused Subs, Functions and classes"
+    CheckUnusedPublicClass.Caption = "Also Public members of classes and forms"
+    CheckUnusedPublicModule.Caption = "Also Public procedures of modules and sheets"
+    CheckDelUnused.Value = False
+    CheckUnusedPublicClass.Value = True
+    CheckUnusedPublicModule.Value = True
+    CheckDelUnused.ControlTipText = HINT_UNUSED
+    CheckUnusedPublicClass.ControlTipText = HINT_UNUSED_CLASS
+    CheckUnusedPublicModule.ControlTipText = HINT_UNUSED_MODULE
+    UpdateUnusedOptions
+End Sub
+
+Private Sub CheckDelUnused_Click()
+    UpdateUnusedOptions
+End Sub
+
+'The scope flags only apply while the main option is on.
+Private Sub UpdateUnusedOptions()
+    CheckUnusedPublicClass.Enabled = CheckDelUnused.Value
+    CheckUnusedPublicModule.Enabled = CheckDelUnused.Value
+End Sub
+
+'Scope flags for modRemoveUnusedCode.RemoveUnusedCode.
+Private Function UnusedScope() As Long
+    If CheckUnusedPublicClass.Value Then UnusedScope = UnusedScope Or enumUnusedScopePublicClassMembers
+    If CheckUnusedPublicModule.Value Then UnusedScope = UnusedScope Or enumUnusedScopePublicModuleProcs
+End Function
+
+'Name of the selected scope for the final message.
+Private Function UnusedScopeName() As String
+    Select Case UnusedScope()
+        Case enumUnusedScopePrivateOnly
+            UnusedScopeName = "A, Private only"
+        Case enumUnusedScopePublicClassMembers
+            UnusedScopeName = "B, Private and Public of classes and forms"
+        Case enumUnusedScopePublicModuleProcs
+            UnusedScopeName = "Private and Public of modules and sheets"
+        Case Else
+            UnusedScopeName = "C, Private and Public"
+    End Select
+End Function

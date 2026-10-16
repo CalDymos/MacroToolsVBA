@@ -304,7 +304,7 @@ End Sub
 ' Postconditions:
 '   Every continued statement whose joined text fits into
 '   TRF_MAX_LINE_LENGTH characters is one physical line. Longer statements
-'   keep all their line continuations unchanged (decision F6 a) and are
+'   keep all their line continuations unchanged and are
 '   reported as notice.
 '
 ' Errors:
@@ -345,7 +345,7 @@ End Sub
 '
 ' Side Effects:
 '   Removes every statement that starts with Debug.Print, together with its
-'   arguments (decision F3 i a: the evaluation of the arguments is dropped
+'   arguments (the evaluation of the arguments is dropped
 '   too). Other statements of the same line are kept in their order. A line
 '   that becomes empty is deleted, a comment of that line is kept.
 '
@@ -354,7 +354,7 @@ End Sub
 '
 ' Postconditions:
 '   No Debug.Print statement remains, except the cases reported as notice:
-'   Debug.Print inside a single-line If (decision F3 ii a), not at the start
+'   Debug.Print inside a single-line If, not at the start
 '   of a statement, in a continued line that holds other statements too, or
 '   when the removal would put a keyword statement before ":" at the line
 '   start ("Debug.Print x: Stop: y = 1").
@@ -373,7 +373,7 @@ End Sub
 '   lines starting with Debug.Print. Both values now remove exactly the real
 '   Debug.Print statements, so the parameter has no effect any more.
 '   A removed Debug.Print may have called functions with side effects; that
-'   loss is accepted (F3 i a).
+'   loss is accepted.
 '===============================================================================
 Public Sub Remove_DebugPrint(ByRef CurCodeModule As VBIDE.CodeModule, Optional ByVal MatchAnywhereInLine As Boolean = True)
     Dim arrLines() As String
