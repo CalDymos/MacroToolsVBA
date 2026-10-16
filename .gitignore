@@ -1,3 +1,5 @@
 /scripts/**/*.frx
 /scripts/*.frx
 .tmp/**
+
+~$*

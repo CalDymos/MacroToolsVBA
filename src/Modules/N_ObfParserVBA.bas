@@ -208,7 +208,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 91        DelWorksheet NAME_SH_CTL, objWB
           
 92        With varModule
-              'главный парсер
+              'пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 93            Set .objName = AddNewDictionary(.objName)
 94            Set .objDimVar = AddNewDictionary(.objDimVar)
 95            Set .objSubFun = AddNewDictionary(.objSubFun)
@@ -279,7 +279,7 @@ Private Sub ParserProjectVBA(ByRef objWB As Object, Optional bEncodeStr As Boole
 130               If bEncodeStr Then Call ParserVariebleSubFuncFromAddProc(objVBComp, .objDimVar, .objStringCode, CryptFunc())
                   
 131           Next objVBComp
-              'конец парсера
+              'пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 132       End With
 
           'Create a Sheet in the active workbook
@@ -716,7 +716,7 @@ Private Sub ParserVariebleSubFunc(ByRef objVBC As VBIDE.VBComponent, ByRef objDi
 444                                   objDic.Add itemVar, objVBC.Type
 445                               End If
 446                           Next itemVar
-447                           Call ParserStringInCode(itemArr, sSubName, objVBC, objDicStr)
+447                           If Not IsProcedureHeaderLine(itemArr) Then Call ParserStringInCode(itemArr, sSubName, objVBC, objDicStr)
 448                       End If
 449                   Next itemArr
 450               End If
@@ -773,7 +773,7 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 465                                   sVar = ParserStrDimConst(itemArr, sSubName, .Name)
 
 466                               End If
-                                  'Wenn in der Aufzдhlung und im Datentyp
+                                  'Wenn in der AufzпїЅhlung und im Datentyp
 467                               If itemArr Like "Private Enum *" Or itemArr Like "Public Enum *" Or itemArr Like "Enum *" Or itemArr Like "Private Type *" Or itemArr Like "Public Type *" Or itemArr Like "Type *" Then
 468                                   arrEnum = VBA.Split(itemArr, " ")
 469                                   If VBA.CStr(itemArr) Like "Private *" Then
@@ -788,12 +788,12 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 478                                       sType = "Type"
 479                                   End If
 480                               End If
-                                  'aus dem Prozess oder der Aufzдhlung herausgehen
+                                  'aus dem Prozess oder der AufzпїЅhlung herausgehen
 481                               If itemArr Like "*End Sub" Or itemArr Like "*End Function" Or itemArr Like "*End Property" Or itemArr Like "*End Enum" Or itemArr Like "*End Type" Then
 482                                   sSubName = vbNullString
 483                                   sNumTypeName = vbNullString
 484                               End If
-                                  'Falls innerhalb des Typs oder der Aufzдhlung
+                                  'Falls innerhalb des Typs oder der AufzпїЅhlung
 485                               If sNumTypeName <> vbNullString And Not itemArr Like "* Enum *" And Not itemArr Like "Enum *" And Not itemArr Like "* Type *" And Not itemArr Like "Type *" Then
 486                                   arrEnum = VBA.Split(VBA.Trim$(itemArr), " ")
 487                                   sVar = arrEnum(0)
@@ -810,7 +810,7 @@ Private Sub ParserVariebleSubFuncFromAddProc(ByRef objVBC As VBIDE.VBComponent, 
 497                                       objDic.Add itemVar, objVBC.Type
 498                                   End If
 499                               Next itemVar
-500                               Call ParserStringInCode(itemArr, sSubName, objVBC, objDicStr)
+500                               If Not IsProcedureHeaderLine(itemArr) Then Call ParserStringInCode(itemArr, sSubName, objVBC, objDicStr)
 501                           End If
 502                       Next itemArr
 503                   End If
@@ -827,7 +827,7 @@ End Sub
 '* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                 Description
 '*
-'* ByVal sStrCode As String : строка
+'* ByVal sStrCode As String : пїЅпїЅпїЅпїЅпїЅпїЅ
 '*
 '* Modified   : Date and Time       Author              Description
 '* Updated    : 13-09-2023 13:41    CalDymos
@@ -952,6 +952,95 @@ Public Function SplitAtLiterals(ByVal sLine As String) As Variant
           SplitAtLiterals = asParts
 End Function
 
+'the statement on a code line with any leading line number, indentation and access modifiers
+'(Public, Private, Friend, Global, Static) removed, so a declaration can be recognised by its keyword.
+Public Function StatementCore(ByVal sLine As String) As String
+    Dim s As String
+    Dim i As Long
+    Dim bChanged As Boolean
+    s = sLine
+    Do While Len(s) > 0
+        If Right$(s, 1) = vbCr Or Right$(s, 1) = vbLf Then
+            s = Left$(s, Len(s) - 1)
+        Else
+            Exit Do
+        End If
+    Loop
+    s = VBA.LTrim$(s)
+    'drop a leading line number
+    i = 1
+    Do While i <= Len(s)
+        If Mid$(s, i, 1) >= "0" And Mid$(s, i, 1) <= "9" Then
+            i = i + 1
+        Else
+            Exit Do
+        End If
+    Loop
+    If i > 1 Then
+        If i <= Len(s) Then
+            If Mid$(s, i, 1) = " " Or Mid$(s, i, 1) = vbTab Then s = VBA.LTrim$(Mid$(s, i))
+        End If
+    End If
+    'drop leading access modifiers (they may stack, for example Public Static)
+    Do
+        bChanged = False
+        If Left$(s, 7) = "Public " Then s = VBA.LTrim$(Mid$(s, 8)): bChanged = True
+        If Left$(s, 8) = "Private " Then s = VBA.LTrim$(Mid$(s, 9)): bChanged = True
+        If Left$(s, 7) = "Friend " Then s = VBA.LTrim$(Mid$(s, 8)): bChanged = True
+        If Left$(s, 7) = "Global " Then s = VBA.LTrim$(Mid$(s, 8)): bChanged = True
+        If Left$(s, 7) = "Static " Then s = VBA.LTrim$(Mid$(s, 8)): bChanged = True
+    Loop While bChanged
+    StatementCore = s
+End Function
+
+'True if sLine is a procedure header (Sub, Function or Property Get/Let/Set declaration),
+'recognised by its leading keyword. A literal default of an optional parameter must stay a constant,
+'so such a line is excluded from both literal collection (step 1) and literal replacement (step 2).
+Public Function IsProcedureHeaderLine(ByVal sLine As String) As Boolean
+    Dim c As String
+    c = StatementCore(sLine)
+    If c Like "Sub *" Or c Like "Function *" _
+       Or c Like "Property Get *" Or c Like "Property Let *" Or c Like "Property Set *" Then
+        IsProcedureHeaderLine = True
+    End If
+End Function
+
+'True on a code line where VBA requires a constant expression, so an encrypted literal (a function
+'call) would not compile: a procedure header (see above) or a Const or #Const declaration. Step 2 skips
+'these lines when replacing literals.
+Public Function IsConstantContextLine(ByVal sLine As String) As Boolean
+    Dim c As String
+    If IsProcedureHeaderLine(sLine) Then
+        IsConstantContextLine = True
+    Else
+        c = StatementCore(sLine)
+        If c Like "Const *" Then
+            IsConstantContextLine = True
+        ElseIf c Like "#Const *" Then
+            IsConstantContextLine = True
+        End If
+    End If
+End Function
+
+'True if a code line ends with a VBA line continuation (whitespace followed by an underscore). A
+'skipped constant-context line that continues carries the skip to its following physical lines (step 2).
+Public Function LineHasContinuation(ByVal sLine As String) As Boolean
+    Dim s As String
+    s = sLine
+    Do While Len(s) > 0
+        If Right$(s, 1) = vbCr Or Right$(s, 1) = vbLf Then
+            s = Left$(s, Len(s) - 1)
+        Else
+            Exit Do
+        End If
+    Loop
+    If Len(s) >= 2 Then
+        If Right$(s, 1) = "_" Then
+            If Mid$(s, Len(s) - 1, 1) = " " Or Mid$(s, Len(s) - 1, 1) = vbTab Then LineHasContinuation = True
+        End If
+    End If
+End Function
+
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Function   : ParserStrDimConst - String parser for initialization of variables and constants
 '* Created    : 14-04-2020 22:45
@@ -1024,14 +1113,14 @@ End Function
 
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : ParserNameSubFunc - сбор названий процедур и функций
+'* Sub        : ParserNameSubFunc - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 '* Created    : 27-03-2020 13:20
 '* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru / Byte Ranger Software
 '* Argument(s):                             Description
 '*
-'* ByRef objCodeModule As VBIDE.CodeModule : объект модуль
+'* ByRef objCodeModule As VBIDE.CodeModule : пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 '* Modified   : Date and Time       Author              Description
@@ -1326,7 +1415,7 @@ Private Function VbaLiteral(ByVal sText As String) As String
 End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Sub        : ParserNameGlobalVariable - сбор глобальных переменных
+'* Sub        : ParserNameGlobalVariable - пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 '* Created    : 27-03-2020 15:38
 '* Author     : VBATools / CalDymos
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -1510,7 +1599,7 @@ Private Sub ParserNameGlobalVariableFromAddVar(ByVal sNameVBC As String, ByRef o
 867       End If
 End Sub
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : AddNewDictionary -функция инициализации словаря
+'* Function   : AddNewDictionary -пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 '* Created    : 27-03-2020 13:21
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
@@ -1527,36 +1616,36 @@ Private Function AddNewDictionary(ByRef objDict As Scripting.Dictionary) As Scri
 End Function
 
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : DeleteCommentString - удаление в строке комментария
+'* Function   : DeleteCommentString - пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 '* Created    : 20-04-2020 18:18
 '* Author     : VBATools
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
 '* Argument(s):             Description
 '*
-'* ByVal sWord As String : строка
+'* ByVal sWord As String : пїЅпїЅпїЅпїЅпїЅпїЅ
 '*
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 Public Function DeleteCommentString(ByVal sWord As String) As String
-          'есть '
+          'пїЅпїЅпїЅпїЅ '
           Dim sTemp       As String
 871       sTemp = sWord
 872       If VBA.InStr(1, sTemp, "'") <> 0 Then
 873           If VBA.InStr(1, sTemp, VBA.Chr(34)) <> 0 Then
-                  'есть "
+                  'пїЅпїЅпїЅпїЅ "
 874               If VBA.InStr(1, sTemp, "'") < VBA.InStr(1, sTemp, VBA.Chr(34)) Then
-                      'если так -> '"
+                      'пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ -> '"
 875                   sTemp = VBA.Trim$(VBA.Left$(sTemp, VBA.InStr(1, sTemp, "'") - 1))
 876               End If
 877           Else
-                  'нет " -> '
+                  'пїЅпїЅпїЅ " -> '
 878               sTemp = VBA.Trim$(VBA.Left$(sTemp, VBA.InStr(1, sTemp, "'") - 1))
 879           End If
 880       End If
 881       DeleteCommentString = sTemp
 End Function
 '* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-'* Function   : AddEncodeName - Die Funktion der zufдlligen Zuweisung eines zufдllig vergebenen Namens
+'* Function   : AddEncodeName - Die Funktion der zufпїЅlligen Zuweisung eines zufпїЅllig vergebenen Namens
 '* Created    : 27-03-2020 13:22
 '* Contacts   : http://vbatools.ru/ https://vk.com/vbatools
 '* Copyright  : VBATools.ru
@@ -1623,7 +1712,7 @@ Private Function GenerateKey() As String
 
 End Function
 
-'взято
+'пїЅпїЅпїЅпїЅпїЅ
 Private Function TypeOfAccessModifier(ByRef StrDeclarationProcedure As String) As String
 905       If StrDeclarationProcedure Like "*Private *(*)*" Then
 906           TypeOfAccessModifier = "Private"
@@ -1660,7 +1749,7 @@ End Function
 Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE.vbext_ComponentType) As Boolean
           Dim Flag        As Boolean
 930       Flag = False
-          'nur fьr Sheets, Workbooks und Klassenmodule
+          'nur fпїЅr Sheets, Workbooks und Klassenmodule
 931       If TypeModule = vbext_ct_Document Or TypeModule = vbext_ct_ClassModule Then
 932           Select Case True
                   Case sTxt Like "*_Activate(*": Flag = True
@@ -1737,7 +1826,7 @@ Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule 
 1003              Case sTxt Like "*_WorkbookPivotTableOpenConnection(*": Flag = True
 1004              Case sTxt Like "*_WorkbookRowsetComplete(*": Flag = True
 1005              Case sTxt Like "*_WorkbookSync(*": Flag = True
-                  'added in A3.7: Workbook, Worksheet, Chart, Application and QueryTable events
+                  'Workbook, Worksheet, Chart, Application and QueryTable events
                   'that were missing above (handlers would be renamed and lose their event)
                   Case sTxt Like "*_AfterCalculate(*": Flag = True
                   Case sTxt Like "*_AfterRefresh(*": Flag = True
@@ -1762,7 +1851,7 @@ Private Function WorkBookAndSheetsEvents(ByVal sTxt As String, ByVal TypeModule 
                   Case sTxt Like "*_TableUpdate(*": Flag = True
                   Case sTxt Like "*_WorkbookAfterRemoteChange(*": Flag = True
                   Case sTxt Like "*_WorkbookBeforeRemoteChange(*": Flag = True
-                  'added in A3.7b: ActiveX control events on worksheet (Document) modules;
+                  'ActiveX control events on worksheet (Document) modules;
                   'handlers such as CommandButton1_Click would otherwise be renamed and stop firing
                   Case sTxt Like "*_BeforeDragOver(*": Flag = True
                   Case sTxt Like "*_BeforeDropOrPaste(*": Flag = True
@@ -1786,7 +1875,7 @@ End Function
 Private Function UserFormsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE.vbext_ComponentType) As Boolean
           Dim Flag        As Boolean
 1009      Flag = False
-          'Nur fьr Events, der Forms und Klassen
+          'Nur fпїЅr Events, der Forms und Klassen
 1010      If TypeModule = vbext_ct_MSForm Or TypeModule = vbext_ct_ClassModule Then
 1011          Select Case True
                   Case sTxt Like "*_AfterUpdate(*": Flag = True
@@ -1815,7 +1904,7 @@ Private Function UserFormsEvents(ByVal sTxt As String, ByVal TypeModule As VBIDE
 1034              Case sTxt Like "*_Scroll(*": Flag = True
 1035              Case sTxt Like "*_Terminate(*": Flag = True
 1036              Case sTxt Like "*_Zoom(*": Flag = True
-                  'added in A3.7: MSForms events that were missing above
+                  'MSForms events that were missing above
                   Case sTxt Like "*_AddControl(*": Flag = True
                   Case sTxt Like "*_SpinDown(*": Flag = True
                   Case sTxt Like "*_SpinUp(*": Flag = True

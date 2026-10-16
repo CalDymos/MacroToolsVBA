@@ -922,6 +922,7 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
           Dim strCryptFuncCipher As String
           Dim strCryptKeyCipher As String
           Dim strKey As String
+          Dim bSkipCont As Boolean
 
           'Datenverarbeitung
 519       With objWB.Worksheets(NAME_SH_STR)
@@ -947,13 +948,16 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 537                   sCode = GetCodeFromModule(objVBCitem)
 538                   If sCode <> vbNullString Then
 539                       varStr = VBA.Split(sCode, vbNewLine)
+                          bSkipCont = False
 540                       For k = 0 To UBound(varStr())
-541                           If CStr(varStr(k)) = "" Then
+                              If bSkipCont Then
+                                  If Not N_ObfParserVBA.LineHasContinuation(CStr(varStr(k))) Then bSkipCont = False
+541                           ElseIf CStr(varStr(k)) = "" Then
                                   'Do Nothing
 542                           ElseIf Left$(CStr(varStr(k)), 1) = "'" Then
                                   'Do Nothing
-543                           ElseIf IsSubOrFunc(varStr(k)) Then
-                                  'Do Nothing
+543                           ElseIf N_ObfParserVBA.IsConstantContextLine(varStr(k)) Then
+                                  If N_ObfParserVBA.LineHasContinuation(CStr(varStr(k))) Then bSkipCont = True
 544                           ElseIf VBA.InStr(1, CStr(varStr(k)), arrData(i, 5)) <> 0 Then
 545                               varStr(k) = VBA.Trim$(ReplaceLiteral(CStr(varStr(k)), CStr(arrData(i, 5)), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
 546                           End If
@@ -964,13 +968,16 @@ Private Sub EncodedStringCode(ByRef objWB As Workbook)
 551               Else
 552                   If sCode <> vbNullString Then
 553                       varStr = VBA.Split(sCode, vbNewLine)
+                          bSkipCont = False
 554                       For k = 0 To UBound(varStr)
-555                           If CStr(varStr(k)) = "" Then
+                              If bSkipCont Then
+                                  If Not N_ObfParserVBA.LineHasContinuation(CStr(varStr(k))) Then bSkipCont = False
+555                           ElseIf CStr(varStr(k)) = "" Then
                                   'Do Nothing
 556                           ElseIf Left$(CStr(varStr(k)), 1) = "'" Then
                                   'Do Nothing
-557                           ElseIf IsSubOrFunc(varStr(k)) Then
-                                  'Do Nothing
+557                           ElseIf N_ObfParserVBA.IsConstantContextLine(varStr(k)) Then
+                                  If N_ObfParserVBA.LineHasContinuation(CStr(varStr(k))) Then bSkipCont = True
 558                           ElseIf VBA.InStr(1, CStr(varStr(k)), arrData(i, 5)) <> 0 Then
 559                               varStr(k) = VBA.Trim$(ReplaceLiteral(CStr(varStr(k)), CStr(arrData(i, 5)), strCryptFuncCipher & "(" & arrData(i, 8) & ", " & strCryptKeyCipher & ")"))
 560                           End If
